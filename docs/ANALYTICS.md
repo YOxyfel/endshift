@@ -41,6 +41,7 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `ritual_done` | Done pressed, or a guided step's time ran out | `step`, `id`, `auto`, `seconds` | How long each step really takes; whether people use Done |
 | `ritual_choice` | A step's option picked (paper/typed, water/tea, read/music/sit) | `step`, `choice` | Which personal touches people use |
 | `ritual_guide` | Guide me switched on or off | `on` | |
+| `ritual_nudge` | The “Now with narration” note by Adjust was tapped | `where` (setup / door) | |
 | `reset_turn` | The RESET bottle turned by dragging | | Whether people play with the bottle |
 | `guide_tonight` | Something ticked on a guide's "Take this into tonight" | `guide`, `items` | Which guides turn into evenings |
 | `404_switch` | The light switch in the 404 hallway | `on` | |

@@ -1948,11 +1948,13 @@
     parts.push(labelOf('pace'));
     summaryEl.textContent = parts.filter(Boolean).join(' · ');
   }
+  var adjustHooks = [];
   function setAdjust(open) {
     if (!adjust) return;
     adjust.classList.toggle('is-open', open);
     adjustBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     setText(qs('[data-adjust-label]', adjustBtn), open ? CFG.setup.adjustHide : CFG.setup.adjust);
+    adjustHooks.forEach(function (f) { f(open); });
   }
   if (adjustBtn) {
     adjustBtn.addEventListener('click', function () {
@@ -2019,6 +2021,70 @@
   })();
 
   if (qs('[data-quick-label]', form) && stats.prefs && stats.prefs.length) setText(qs('[data-quick-label]', form), CFG.setup.quickSame);
+
+  /* "Now with narration": a hand-drawn arrow and note pointing at Adjust while the recorded voice
+     is new. Only where there is a recorded voice, never once read aloud is on (saved, or switched
+     on here), and not after six visits. A tap on it opens the settings at "Read each step aloud". */
+  (function voiceNudge() {
+    var notes = qsa('[data-nudge]', root);
+    var sp = qs('#set-speak');
+    if (!notes.length || !VO || !sp || sp.disabled || sp.checked) return;
+    var KEY = 'es:nudge-voice';
+    var seen = store.get(KEY);
+    if (seen === 'done' || (parseInt(seen, 10) || 0) >= 6) return;
+    store.set(KEY, String((parseInt(seen, 10) || 0) + 1));
+    var quick = qs('[data-quickstart]', form);
+    var startBtn = quick && qs('.ritual__start', quick);
+    var doorAdj = qs('[data-act="door-adjust"]', root);
+    var over = false;
+    // Adjust sits at the end of the row, or alone under Start on narrow screens: the arrow follows it
+    function stacked() {
+      if (quick && startBtn && adjustBtn && quick.offsetWidth) quick.classList.toggle('is-stacked', adjustBtn.offsetTop > startBtn.offsetTop + 4);
+    }
+    function show(on) {
+      on = on && !over;
+      notes.forEach(function (n) { n.hidden = !on; });
+      [adjustBtn, doorAdj].forEach(function (b) { if (b) b.classList.toggle('is-nudged', on); });
+      if (on) stacked();
+    }
+    function spotlight(go) {
+      var lab = qs('label[for="set-speak"]', form);
+      if (!lab) return;
+      lab.classList.remove('is-spotlit');
+      void lab.offsetWidth;
+      lab.classList.add('is-spotlit');
+      clearTimeout(spotlight.t);
+      spotlight.t = setTimeout(function () { lab.classList.remove('is-spotlit'); }, 3200);
+      if (go) {
+        lab.scrollIntoView({ behavior: still() ? 'auto' : 'smooth', block: 'center' });
+        try { sp.focus({ preventScroll: true }); } catch (e) {}
+      }
+    }
+    notes.forEach(function (n) {
+      n.addEventListener('click', function () {
+        setAdjust(true);
+        spotlight(true);
+        track('ritual_nudge', { where: n.classList.contains('nudge--door') ? 'door' : 'setup' });
+      });
+    });
+    // through Adjust itself, the switch still lights up when you get down to it
+    [adjustBtn, doorAdj].forEach(function (b) {
+      if (b) b.addEventListener('click', function () {
+        setTimeout(function () { if (!over && adjust.classList.contains('is-open')) spotlight(false); }, 0);
+      });
+    });
+    // the settings open: the note steps aside; closed again, it's back (unless you've tried it)
+    adjustHooks.push(function (open) { show(!open); });
+    sp.addEventListener('change', function () {
+      if (!sp.checked) return;
+      over = true;
+      store.set(KEY, 'done');
+      show(false);
+    });
+    window.addEventListener('resize', stacked);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(stacked);
+    show(!(adjust && adjust.classList.contains('is-open')));
+  })();
   summary();
 
   // The context choice is optional: clicking the selected one clears it

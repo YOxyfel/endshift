@@ -30,6 +30,14 @@ export default function ritual(ctx) {
   const sw = (id, s, checked = false) =>
     html`<label class="switch" for="set-${id}"><span class="switch__text"><span class="switch__title">${s.title}</span><span class="switch__hint">${s.hint}</span>${s.credit ? html`<span class="switch__credit">${s.credit}</span>` : ''}</span><input type="checkbox" id="set-${id}" name="${id}"${checked ? ' checked' : ''}></label>`;
 
+  // "Now with narration": a hand-drawn arrow and a note pointing at Adjust (EN only; the script
+  // decides when it shows, and it's gone once read aloud is on)
+  const vn = r.setup.voiceNudge;
+  const nudge = (where) =>
+    vn
+      ? html`<button class="nudge nudge--${where}" type="button" data-nudge hidden aria-label="${esc(vn.aria)}"><svg class="nudge__arrow" viewBox="0 0 64 72" aria-hidden="true" focusable="false"><path class="nudge__spark" d="M30 9 25 3M38 6V0M46 9l5-6"/><path class="nudge__line" pathLength="1" d="M8 64C23 67 39 52 38 17"/><path class="nudge__head" pathLength="1" d="M29 27 38 14l8 12"/></svg><span class="nudge__text" aria-hidden="true"><span class="nudge__big">${vn.big}</span><span class="nudge__small">${vn.small}</span><span class="nudge__stars"><i></i><i></i><i></i></span></span></button>`
+      : '';
+
   const body = html`
 <section class="ritual" data-ritual aria-labelledby="ritual-title">
   <div class="wrap">
@@ -43,7 +51,7 @@ export default function ritual(ctx) {
         </button>
         <div class="door__more">
           <button class="text-btn" type="button" data-act="door-short">${r.setup.door.short}</button>
-          <button class="text-btn" type="button" data-act="door-adjust">${r.setup.adjust}</button>
+          <span class="nudge-anchor"><button class="text-btn" type="button" data-act="door-adjust">${r.setup.adjust}</button>${nudge('door')}</span>
         </div>
         <div class="tonight-slip" data-tonight-slip hidden></div>
       </div>
@@ -69,6 +77,7 @@ export default function ritual(ctx) {
               <button class="btn btn--primary btn--xl ritual__start" type="submit">${icon('play')}<span>${r.setup.startNow}</span></button>
               <button class="btn btn--ghost btn--xl quickstart__adjust" type="button" data-adjust-toggle aria-expanded="false" aria-controls="ritual-adjust"><span data-adjust-label>${r.setup.adjust}</span></button>
             </div>
+            ${nudge('qs')}
           </div>
           <div class="ritual__adjust" id="ritual-adjust" data-adjust>
           <fieldset class="choices">

@@ -171,6 +171,8 @@ export default ({ state }) => ({
     startNow: 'Start now',
     adjust: 'Adjust',
     adjustHide: 'Hide settings',
+    // the callout pointing at Adjust while the recorded voice is new (gone once read aloud is on)
+    voiceNudge: { big: 'NOW WITH NARRATION AVAILABLE', small: 'try it out!', aria: 'Now with narration available: try it out. Opens the settings at “Read each step aloud”.' },
     paceLegend: 'Breathing pace',
     paceHint: 'Pick the one that feels easy. Comfort matters more than the count.',
     music: {
