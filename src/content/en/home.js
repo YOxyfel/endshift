@@ -48,6 +48,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
         ],
       },
       film: 'Or scroll on: the evening, drawn. About two minutes.',
+      watch: 'Or press play and watch it with sound. About four minutes.',
       jobQ: 'What do you do?',
       jobHint: 'Pick one and the game plays your job, and the ritual suggests the right version.',
       jobSaved: 'Got it. Next time the game plays your job.',
@@ -236,6 +237,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
       // The evening as one continuous shot (scroll moves the camera)
       film: {
         skip: 'Skip the story',
+        skipShort: 'Skip',
         hint: 'Scroll',
         calendar: {
           title: 'Every evening this week',
@@ -280,6 +282,22 @@ export default ({ cfg, state, fmt, t, formula }) => {
         out: { line: 'Lights out.', sub: 'Nothing left to check.' },
         end: 'The day is over. Properly, this time.',
         zero: 'Reset. Tomorrow starts fresh.',
+        // "Watch with sound": the film plays by itself, read aloud (film-watch.js)
+        watch: {
+          start: 'Watch with sound',
+          startShort: 'Watch',
+          label: 'Film player',
+          play: 'Play',
+          pause: 'Pause',
+          replay: 'Watch again',
+          position: 'Where you are in the film',
+          of: 'of',
+          voice: 'Voice',
+          sound: 'Music and sound',
+          close: 'Stop watching',
+          deviceVoice: 'Voice: read by your device',
+          noVoice: 'No English voice on this device. The words stay on screen.',
+        },
       },
       // words on things in the drawn rooms
       ad: ['MAKE YOUR', 'OWN PRODUCT', 'Get a quote', '*Minimum order: 500 units'],

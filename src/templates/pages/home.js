@@ -1,3 +1,4 @@
+import { readdirSync, existsSync } from 'node:fs';
 import { html, esc } from '../../lib/html.js';
 import { gameHero, gameClient, welcomeRow } from '../game.js';
 import { film } from '../film.js';
@@ -77,6 +78,18 @@ function classicHero(ctx, pingTrack) {
 </section>`;
 }
 
+/** The film's recorded narration for this locale: { f01: url, … } (empty until recorded). */
+function filmClips(ctx) {
+  const dir = new URL(`../../assets/audio/narration/${ctx.locale}/film/`, import.meta.url);
+  if (!existsSync(dir)) return {};
+  return Object.fromEntries(
+    readdirSync(dir)
+      .filter((f) => /^f\d\d[_.].*\.(mp3|m4a|ogg|webm)$/i.test(f))
+      .sort()
+      .map((f) => [f.slice(0, 3), ctx.asset(`assets/audio/narration/${ctx.locale}/film/${f}`)]),
+  );
+}
+
 export default function home(ctx) {
   const c = ctx.content.home;
   const S = c.story;
@@ -140,7 +153,10 @@ ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
         <div class="jobpick__chips" role="group" aria-label="${esc(Q.jobQ)}">${Q.jobs.map(([id, label]) => `<button class="jobpick__chip" type="button" data-job="${id}" aria-pressed="false">${label}</button>`).join('')}</div>
         <p class="jobpick__hint" data-jobpick-hint data-saved="${esc(Q.jobSaved)}">${Q.jobHint}</p>
       </div>` : ''}
-      <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
+      <div class="in-short__film-row">
+        <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
+        ${Q.watch && S.film.watch ? `<button class="in-short__watch" type="button" data-watch-start data-watch-from="top">${icon('play')}<span>${Q.watch}</span></button>` : ''}
+      </div>
     </div>
   </div>
 </section>
@@ -280,6 +296,9 @@ ${film(ctx)}
         ad: S.ad,
         sponsored: S.sponsored,
         film: { breathIn: S.film.breathIn, breathOut: S.film.breathOut, step: S.film.ritual.step },
+        // "Watch with sound": recorded lines if there are any (f01_….mp3 in
+        // src/assets/audio/narration/<locale>/film/), otherwise the device's own voice
+        watch: { lang: (ctx.localeInfo.ogLocale || ctx.localeInfo.htmlLang).replace('_', '-'), clips: filmClips(ctx), quiet: ctx.asset('assets/audio/quiet.mp3') },
       },
     },
     styles: useGame ? ['game', 'story', 'film'] : ['story', 'film'],

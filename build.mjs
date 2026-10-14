@@ -157,7 +157,7 @@ const JS_BUNDLES = {
   world: ['world.js'],
   ink: ['game-ink.js', 'game-paint.js', 'game-scenes.js'],
   game: ['game-fx.js', 'game-room.js', 'game-flood.js', 'game-torch.js', 'game.js'],
-  story: ['story.js', 'film.js'],
+  story: ['story.js', 'film.js', 'film-watch.js'],
 };
 for (const [name, files] of Object.entries(JS_BUNDLES)) {
   const parts = [];

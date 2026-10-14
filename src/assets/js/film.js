@@ -2020,5 +2020,21 @@
     });
 
   setMode();
-  ES.film = { G: G, TOTAL: TOTAL, beats: TL, at: function () { return cur; }, project: function (p) { return Rnd ? Rnd.project(p) : null; }, debug: function () { return { R: R, K: K }; } };
+  ES.film = {
+    G: G,
+    TOTAL: TOTAL,
+    FADE: FADE,
+    beats: TL,
+    at: function () { return cur; },
+    // where the page has to be scrolled to for film time T (film-watch.js plays the film by scrolling)
+    y: function (T) { return top + clamp(T, 0, TOTAL) * vh; },
+    // film time for a scroll position (unclamped: below 0 is above the film, over TOTAL below it)
+    t: function (y) { return (y - top) / Math.max(1, vh); },
+    live: function () { return on; },
+    ready: function () { return on && built && !!Rnd; },
+    // ask for the rooms now (the film builds them as you come near; the player can't wait for that)
+    build: function () { if (on && !built && !buildQueued) { nearby = true; scroll(); } return on && built; },
+    project: function (p) { return Rnd ? Rnd.project(p) : null; },
+    debug: function () { return { R: R, K: K }; },
+  };
 })();
