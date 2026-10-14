@@ -3254,6 +3254,18 @@ code {
   background: color-mix(in srgb, var(--tungsten) 10%, transparent);
 }
 
+.in-short__credit {
+  display: none;
+  flex-basis: 100%;
+  margin: calc(-1 * var(--s-2)) 0 0;
+  color: var(--fog);
+  font-size: var(--fs-small);
+}
+
+.has-film .in-short__credit {
+  display: block;
+}
+
 .in-short__film {
   color: var(--fog);
   text-decoration: underline;

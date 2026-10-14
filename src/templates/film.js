@@ -37,7 +37,7 @@ const watchBar = (W) => `<div class="watch" data-watch role="group" aria-label="
         <input class="watch__pos" type="range" min="0" max="1000" step="1" value="0" aria-label="${esc(W.position)}" data-watch-pos data-of="${esc(W.of)}">
         <span class="watch__time" aria-hidden="true"><span data-watch-now>0:00</span><span class="watch__total"> / <span data-watch-total>0:00</span></span></span>
       </div>
-      <button class="watch__btn watch__voice" type="button" data-watch-voice aria-pressed="true" aria-label="${esc(W.voice)}" title="${esc(W.voice)}" data-device="${esc(W.deviceVoice)}" data-none="${esc(W.noVoice)}">${icon('voice')}</button>
+      <button class="watch__btn watch__voice" type="button" data-watch-voice aria-pressed="true" aria-label="${esc(W.voice)}" title="${esc(W.voice)}" data-device="${esc(W.deviceVoice)}" data-none="${esc(W.noVoice)}" data-credit="${esc(W.credit || '')}">${icon('voice')}</button>
       <button class="watch__btn watch__sound" type="button" data-watch-sound aria-pressed="true" aria-label="${esc(W.sound)}" title="${esc(W.sound)}">${icon('sound', 'watch__i-on')}${icon('mute', 'watch__i-off')}</button>
       <button class="watch__btn watch__close" type="button" data-watch-close aria-label="${esc(W.close)}" title="${esc(W.close)}">${icon('close')}</button>
     </div>`;

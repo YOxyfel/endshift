@@ -297,6 +297,8 @@ export default ({ cfg, state, fmt, t, formula }) => {
           close: 'Stop watching',
           deviceVoice: 'Voice: read by your device',
           noVoice: 'No English voice on this device. The words stay on screen.',
+          // shown with the recorded voice (free-plan ElevenLabs audio must credit it)
+          credit: 'AI voice, made with ElevenLabs (elevenlabs.io).',
         },
       },
       // words on things in the drawn rooms

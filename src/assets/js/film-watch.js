@@ -176,7 +176,11 @@
     } catch (e) {}
   }
   function hasClip(c) { return !!CLIPS[c.id]; }
-  function deviceOk() { return !!(synth && sv && synthFails < 2); }
+  // the device's own speech voice only if the config asks for it (story.watch.deviceVoice): next
+  // to the recorded narration it sounds robotic, so by default the film is the recorded voice or
+  // no voice (the words on screen and the soundtrack)
+  var DEVICE = WC.deviceVoice === true;
+  function deviceOk() { return !!(DEVICE && synth && sv && synthFails < 2); }
   function mode(c) {
     if (!pref.voice) return 'none';
     if (c && hasClip(c) && ac) return 'clip';
@@ -741,7 +745,7 @@
     // inside the tap: wake the sound and the voice now (browsers only allow it here)
     audio();
     session(true);
-    if (synth) {
+    if (synth && DEVICE) {
       try {
         synth.cancel();
         var u = new SpeechSynthesisUtterance(' ');
@@ -764,6 +768,8 @@
     // from the middle: back to the start of the line that's on screen
     if (st.next < cues.length && cues[st.next].s < st.T) st.T = Math.max(0, cues[st.next].s - 0.04);
     st.el = est(st.T);
+    // the first lines' recordings start loading now, while the page glides to the film
+    preload(st.next);
     st.playing = false;
     st.ended = false;
     st.waiting = true;
@@ -854,11 +860,14 @@
   }
   function voiceUi() {
     var kind = voiceKind();
+    // nothing recorded and no device voice wanted: no voice button at all
+    voiceBtn.hidden = kind === 'none' && !DEVICE;
     var na = kind === 'none' && voicesTried;
     voiceBtn.classList.toggle('is-na', na);
     voiceBtn.setAttribute('aria-pressed', String(pref.voice && !na));
     var label = voiceBtn.getAttribute('aria-label') || '';
-    var note = na ? voiceBtn.getAttribute('data-none') : kind === 'device' ? voiceBtn.getAttribute('data-device') : label;
+    var credit = voiceBtn.getAttribute('data-credit');
+    var note = na ? voiceBtn.getAttribute('data-none') : kind === 'device' ? voiceBtn.getAttribute('data-device') : kind === 'clip' && credit ? label + '. ' + credit : label;
     voiceBtn.title = note || label;
   }
   function soundUi() { soundBtn.setAttribute('aria-pressed', String(pref.sound)); }

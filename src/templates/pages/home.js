@@ -156,6 +156,7 @@ ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
       <div class="in-short__film-row">
         <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
         ${Q.watch && S.film.watch ? `<button class="in-short__watch" type="button" data-watch-start data-watch-from="top">${icon('play')}<span>${Q.watch}</span></button>` : ''}
+        ${Q.watch && S.film.watch?.credit && Object.keys(filmClips(ctx)).length ? `<p class="in-short__credit">${S.film.watch.credit}</p>` : ''}
       </div>
     </div>
   </div>

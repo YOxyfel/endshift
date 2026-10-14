@@ -1566,6 +1566,10 @@
   height: 1.3rem;
 }
 
+.watch__btn[hidden] {
+  display: none;
+}
+
 .watch__btn:hover {
   background: rgba(243, 240, 232, 0.1);
   color: var(--paper);
