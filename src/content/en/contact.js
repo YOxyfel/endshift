@@ -1,0 +1,29 @@
+export default ({ cfg, t }) => ({
+  meta: {
+    title: 'Contact ENDSHIFT: a person reads every message | ENDSHIFT',
+    description: 'Write to ENDSHIFT. A person reads every message and replies, usually within two working days.',
+  },
+  intro: {
+    title: 'Write to a person',
+    lead: `Questions, ideas, corrections, press, or “I tried the ritual and here’s what happened”. A human reads every message and replies ${t(cfg.contact.responseTime)}.`,
+  },
+  email: { title: 'Email', note: 'The fastest way to reach us.' },
+  social: 'Also on',
+  company: { title: 'Company details', pending: 'ENDSHIFT is being set up as a company in Bulgaria. Full details (legal name, UIC, address) are published here before anything is sold.' },
+  form: {
+    title: 'Or use the form',
+    name: 'Your name',
+    nameHint: 'Optional',
+    email: 'Your email',
+    topic: 'About',
+    topics: ['A question about RESET', 'The founding batch', 'The ritual', 'Something on the site is wrong', 'Press or partnerships', 'Something else'],
+    message: 'Message',
+    submit: 'Send message',
+    errorMessage: 'Write a message first. A sentence is enough.',
+    done: 'Sent. Thanks for writing.',
+    doneText: `You’ll hear back ${t(cfg.contact.responseTime)}.`,
+    preview: 'Preview mode: this form isn’t connected yet, so nothing was sent. Use the email address above.',
+    privacy: 'We use your email only to reply.',
+  },
+  medical: 'For anything about your health, please talk to a doctor or pharmacist. We can’t give medical advice, by email or anywhere else.',
+});

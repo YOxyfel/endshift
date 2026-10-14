@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# /api/signup and /api/count live in netlify/functions (they declare their own paths)
+[functions]
+  directory = "netlify/functions"

@@ -1,0 +1,2371 @@
+/* ENDSHIFT home hero: the switch game ----------------------------------------------
+   Phones: the frame (tag, title, mission) sits above the game, the controls below it.
+   Wide screens: the game fills the hero and the frame floats over it.
+   After the switch: the evening (.after) opens up underneath. */
+
+.game {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+  background: #050607;
+  color: var(--paper);
+  overflow: hidden;
+  overflow: clip;
+}
+
+.game__hud {
+  display: contents;
+}
+
+.game__top {
+  order: 1;
+  position: relative;
+  z-index: 3;
+  padding: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 0.35rem) var(--gutter) 0.75rem;
+}
+
+.game__view {
+  order: 2;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 300px;
+}
+
+.game__bottom {
+  order: 3;
+  position: relative;
+  z-index: 3;
+  padding: 0.35rem var(--gutter) calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.game__tag {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.65rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+.game__tag-job {
+  color: var(--paper-2);
+}
+
+.game__tag-job:not(:empty)::before,
+.game__tag-time:not(:empty)::before {
+  content: '·';
+  margin-right: 0.65rem;
+  color: var(--line-strong);
+}
+
+.game__tag-time {
+  color: var(--fluoro);
+  font-variant-numeric: tabular-nums;
+}
+
+.game__title {
+  margin-top: 0.3rem;
+  font-size: clamp(2.05rem, 9.6vw, 3rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.game__l1 {
+  color: var(--paper);
+}
+
+.game__l2 {
+  color: var(--fog);
+}
+
+.game__mission {
+  margin-top: 0.55rem;
+  max-width: 38ch;
+  color: var(--paper-2);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+}
+
+.game__teaser {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.45rem;
+  color: var(--tungsten-hi);
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.game__teaser::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--tungsten);
+  box-shadow: 0 0 0.6rem 0.1rem rgba(242, 168, 75, 0.55);
+}
+
+.game__say {
+  min-height: 2.7em;
+  max-width: 44ch;
+  color: var(--paper);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  line-height: 1.35;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s var(--ease-out);
+}
+
+.game__say.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+.game__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.game__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0 1rem 0 0.8rem;
+  border: 1px solid rgba(236, 235, 230, 0.26);
+  border-radius: var(--r-pill);
+  background: rgba(10, 11, 12, 0.66);
+  color: var(--paper);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.game__btn .icon {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.game__btn:hover {
+  border-color: rgba(236, 235, 230, 0.5);
+}
+
+.game__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.game__timer {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fog);
+}
+
+.game__skip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-left: auto;
+  color: var(--fog);
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.game__skip:hover {
+  color: var(--paper);
+}
+
+/* help is on the way: the hint button glows once the game starts helping */
+.game.assist-2 .game__btn--hint {
+  border-color: rgba(242, 168, 75, 0.55);
+}
+
+/* Without JavaScript: the title, a line, and the ritual */
+.game__nojs {
+  display: none;
+}
+
+html:not(.js) .game {
+  min-height: 0;
+  background: radial-gradient(ellipse 70% 50% at 80% 70%, rgba(242, 168, 75, 0.12), transparent 70%), var(--night);
+}
+
+html:not(.js) .game__nojs {
+  display: grid;
+  gap: var(--s-4);
+  margin-top: var(--s-5);
+  max-width: 40rem;
+  padding-bottom: var(--s-8);
+}
+
+html:not(.js) .game__mission,
+html:not(.js) .game__teaser,
+html:not(.js) .game__bottom,
+html:not(.js) .game__view,
+html:not(.js) .game__tag {
+  display: none;
+}
+
+/* During the opening the frame is already painted under the dark (so the page's largest
+   text counts as shown at once: good for Largest Contentful Paint); it fades in as the
+   switch flies into the game. */
+.intro-reveal .game__hud > * {
+  animation: intro-fade 1.2s ease 0.7s both;
+}
+
+/* Wide screens: the game is the whole hero */
+@media (min-width: 900px) and (min-height: 600px) {
+  .game {
+    display: block;
+    height: 100vh;
+    height: 100svh;
+    min-height: 640px;
+  }
+  .game__view {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+  }
+  .game__hud {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .game__top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: min(44rem, 50vw);
+    padding: calc(var(--header-h) + 1.75rem) 2rem 3rem max(var(--gutter), calc((100vw - var(--wrap)) / 2 + var(--gutter)));
+  }
+  .game__top::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0 -30% -40% 0;
+    background: radial-gradient(ellipse 85% 75% at 15% 25%, rgba(4, 5, 6, 0.9), rgba(4, 5, 6, 0.55) 55%, rgba(4, 5, 6, 0) 100%);
+    pointer-events: none;
+  }
+  .game__title {
+    font-size: clamp(3rem, 5vw, 5.4rem);
+  }
+  .game__mission {
+    font-size: var(--fs-lead);
+  }
+  .game__bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 2.5rem max(var(--gutter), calc((100vw - var(--wrap)) / 2 + var(--gutter))) 1.5rem;
+    background: linear-gradient(0deg, rgba(4, 5, 6, 0.75), rgba(4, 5, 6, 0));
+  }
+  .game__top a,
+  .game__top button,
+  .game__bottom a,
+  .game__bottom button {
+    pointer-events: auto;
+  }
+  .game__say {
+    position: absolute;
+    left: 50%;
+    bottom: 5.25rem;
+    width: max-content;
+    max-width: min(36rem, 70vw);
+    min-height: 0;
+    padding: 0.7rem 1.1rem;
+    border-radius: 14px;
+    background: rgba(8, 9, 10, 0.82);
+    border: 1px solid rgba(236, 235, 230, 0.12);
+    font-size: var(--fs-body);
+    text-align: center;
+    transform: translate(-50%, 6px);
+  }
+  .game__say.is-on {
+    transform: translate(-50%, 0);
+  }
+  .game__bar {
+    justify-content: flex-start;
+  }
+  /* the chat sits right, clear of the title, between the header and the controls */
+  .game--flood .gf {
+    justify-items: end;
+    padding: calc(var(--header-h) + 0.75rem) max(4vw, calc((100vw - var(--wrap)) / 2 + var(--gutter))) 5.75rem 0;
+  }
+}
+
+/* The win: the frame goes, the evening opens underneath the game */
+.game.is-won .game__hud > * {
+  opacity: 0;
+  transition: opacity 0.6s ease 0.2s;
+  pointer-events: none;
+}
+
+.game.is-ending {
+  background: transparent;
+}
+
+.game.is-ending .game__hud {
+  display: none;
+}
+
+.game.is-ending .game__view {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.game.is-after {
+  display: block;
+  height: auto;
+  min-height: 0;
+  background: none;
+}
+
+.game.is-after .game__hud,
+.game.is-after .game__view {
+  display: none;
+}
+
+/* ===================================================================== 3D room */
+.g3d {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  overflow: clip;
+  background: #161a20;
+  perspective: 800px;
+  perspective-origin: 50% 50%;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 1.4s ease;
+}
+
+.g3d.is-dragging {
+  cursor: grabbing;
+}
+
+.g3d.is-pointing {
+  cursor: pointer;
+}
+
+.g3d__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.g3d__world {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+}
+
+.g3d .f {
+  position: absolute;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-origin: 50% 50%;
+}
+
+.g3d .f::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #02040a;
+  opacity: var(--sh, 0);
+  transition:
+    opacity 0.1s linear,
+    background-color 0.2s ease;
+  pointer-events: none;
+}
+
+.g-obj {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.g3d__a11y {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: 1px;
+}
+
+.g3d__ab {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.g3d__ring {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  border: 3px solid var(--tungsten);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.45),
+    0 0 24px rgba(242, 168, 75, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.g3d__ring.is-on {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .g3d:not(.is-dark):not(.is-dragging) .g-obj:hover .f::after {
+    background: #fff;
+    opacity: 0.07;
+  }
+}
+
+.g-obj.is-poked .f::after {
+  animation: g-poke 0.55s ease-out;
+}
+
+@keyframes g-poke {
+  0% {
+    background: #fff;
+    opacity: 0.22;
+  }
+}
+
+/* shell */
+.g-wall,
+.g-floor,
+.g-ceil {
+  background-repeat: repeat;
+}
+
+.g-ceil {
+  --sh: 0.32;
+}
+
+.g-floor {
+  --sh: 0.08;
+}
+
+.g-skirt {
+  pointer-events: none;
+}
+
+/* light: tubes, the pools they throw, and what's left once they're off */
+.g-tube {
+  background: linear-gradient(180deg, #f7fcff, #dcecf2);
+  box-shadow: 0 0 40px 10px rgba(205, 231, 234, 0.35);
+}
+
+.g-tube--disc {
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0 40%, #e4f0f5 70%, #bcd2da);
+}
+
+.g-pool {
+  background: radial-gradient(closest-side, rgba(225, 242, 250, 0.16), rgba(225, 242, 250, 0.05) 60%, rgba(225, 242, 250, 0));
+  pointer-events: none;
+  transition: opacity 0.1s linear;
+}
+
+.g-pool::after,
+.g-warm::after,
+.g-chev::after,
+.g-mark::after,
+.g-pointer::after,
+.g-heatpool::after {
+  display: none;
+}
+
+.g-warm {
+  background: radial-gradient(closest-side, rgba(255, 178, 92, 0.42), rgba(242, 168, 75, 0.14) 55%, rgba(242, 168, 75, 0));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.8s ease 0.6s;
+}
+
+.g-warm--soft {
+  background: radial-gradient(closest-side, rgba(255, 178, 92, 0.2), rgba(242, 168, 75, 0));
+}
+
+.g-warm--dawn {
+  background: radial-gradient(closest-side, rgba(255, 170, 120, 0.36), rgba(255, 140, 90, 0.1) 60%, rgba(255, 140, 90, 0));
+}
+
+.g-heatpool {
+  background: radial-gradient(closest-side, rgba(255, 150, 60, 0.28), rgba(255, 150, 60, 0));
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+.g-heat {
+  box-shadow: 0 0 30px 6px rgba(255, 150, 60, 0.4);
+}
+
+.g3d .emit::after {
+  opacity: 0;
+}
+
+/* Lights out */
+.g3d.is-dark {
+  background: #010203;
+}
+
+.g3d.is-dark .f::after {
+  background: #010309;
+  opacity: calc(0.8 + var(--sh, 0) * 0.18);
+}
+
+.g3d.is-dark .emit::after {
+  opacity: 0.12;
+}
+
+.g3d.is-dark .g-off-dim::after,
+.g3d.is-dark .g-heat::after,
+.g3d.is-dark .g-tube::after {
+  opacity: 0.94;
+  transition: opacity 0.6s ease 0.35s;
+}
+
+.g3d.is-dark .g-tube {
+  box-shadow: none;
+}
+
+.g3d.is-dark .g-heat {
+  box-shadow: none;
+}
+
+.g3d.is-dark .g-pool,
+.g3d.is-dark .g-heatpool {
+  opacity: 0;
+}
+
+.g3d.is-dark .g-warm {
+  opacity: 1;
+}
+
+.g3d.is-dark .g-lampshade {
+  background: radial-gradient(ellipse at 50% 60%, #ffe0a8, #f2a84b 70%, #c47a2a) !important;
+  box-shadow: 0 0 60px 20px rgba(242, 168, 75, 0.35);
+}
+
+.g3d.is-dark .g-lampshade::after {
+  opacity: 0 !important;
+}
+
+.g3d.is-flicker .f:not(.emit)::after {
+  animation: g-flicker 0.32s steps(1) both;
+}
+
+@keyframes g-flicker {
+  0% {
+    opacity: 0.7;
+  }
+  20% {
+    opacity: 0.05;
+  }
+  45% {
+    opacity: 0.78;
+  }
+  70% {
+    opacity: 0.15;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+.g3d.is-crumbling {
+  background-color: transparent;
+  transition: background-color 1.2s ease 0.2s;
+}
+
+/* falling pieces catch the evening light: dark silhouettes against a glowing sky */
+.g3d.is-crumbling .f {
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+}
+
+.g3d.is-crumbling .f::after {
+  background: #120a05;
+  opacity: 0.72;
+  transition: opacity 1.2s ease;
+}
+
+.g3d.is-fading,
+.gf.is-fading,
+.gt.is-fading {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* The switch on the wall */
+.g-switch {
+  overflow: visible;
+}
+
+.g-switch::after {
+  display: none;
+}
+
+.g-switch .wallswitch {
+  --sw: var(--g-sw, 8px);
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+.g-obj--switch.is-hidden {
+  pointer-events: none;
+}
+
+.g-obj--switch.is-calling .wallswitch__led {
+  background: var(--tungsten-hi);
+  opacity: 1;
+  animation: g-led 1.3s ease-in-out infinite;
+}
+
+@keyframes g-led {
+  50% {
+    box-shadow:
+      0 0 0.6em 0.25em rgba(242, 168, 75, 0.9),
+      0 0 2.4em 0.6em rgba(242, 168, 75, 0.5);
+  }
+}
+
+.g-pointer {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.assist-2 .g-pointer {
+  opacity: 1;
+}
+
+.g-pointer i {
+  position: absolute;
+  inset: 0;
+  background: no-repeat center / 80% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21 3.5 11H9V3h6v8h5.5z' fill='%23f2a84b'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 6px rgba(242, 168, 75, 0.8));
+  animation: g-bob 1s ease-in-out infinite;
+}
+
+@keyframes g-bob {
+  50% {
+    transform: translateY(18%);
+  }
+}
+
+.g-chev {
+  pointer-events: none;
+  background: no-repeat center / 78% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 16 12 8l8 8' fill='none' stroke='%23f2a84b' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  opacity: 0.2;
+  animation: g-chev 1.7s ease-in-out infinite;
+  transition: opacity 0.4s;
+}
+
+@keyframes g-chev {
+  40% {
+    opacity: 1;
+  }
+}
+
+.g-mark {
+  pointer-events: none;
+  border: 3px solid rgba(242, 168, 75, 0.8);
+  border-radius: 50%;
+  animation: g-mark 0.9s ease-out forwards;
+}
+
+@keyframes g-mark {
+  to {
+    opacity: 0;
+  }
+}
+
+/* On-screen helpers */
+.g3d__fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 85% 80% at 50% 50%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.55));
+}
+
+.g3d__edge {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.g3d__edge.is-on {
+  opacity: 1;
+}
+
+.g3d__edge i {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(242, 168, 75, 0.95) no-repeat center / 60% url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 5.5 8 12l6.5 6.5' fill='none' stroke='%23111' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  box-shadow: 0 0 18px 4px rgba(242, 168, 75, 0.5);
+  animation: g-nudge-l 0.9s ease-in-out infinite;
+}
+
+.g3d__edge.is-right i {
+  transform: scaleX(-1);
+  animation-name: g-nudge-r;
+}
+
+@keyframes g-nudge-l {
+  50% {
+    translate: -5px 0;
+  }
+}
+
+@keyframes g-nudge-r {
+  50% {
+    translate: 5px 0;
+  }
+}
+
+.g3d__nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.g3d__turn {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-top: -23px;
+  border: 1px solid rgba(236, 235, 230, 0.25);
+  border-radius: 50%;
+  background: rgba(8, 9, 10, 0.55);
+  color: var(--paper);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.g3d__turn[data-turn='-1'] {
+  left: 10px;
+}
+
+.g3d__turn[data-turn='1'] {
+  right: 10px;
+}
+
+.g3d__turn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.g3d.is-dark .g3d__nav,
+.g3d.is-dark .g-pointer,
+.g3d.is-dark .g3d__edge {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+/* The phone in your hand (bed) */
+.g-phone {
+  position: absolute;
+  left: 50%;
+  bottom: -9%;
+  z-index: 2;
+  width: min(42%, 210px);
+  aspect-ratio: 9 / 17;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateX(-50%) rotate(-5deg);
+  transition: transform 0.9s var(--ease-out);
+  cursor: pointer;
+}
+
+.g-phone__body {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: #0a0b0d;
+  box-shadow:
+    0 0 0 2px #2a2d31,
+    0 0 70px 14px rgba(150, 190, 255, 0.22),
+    0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.g-phone__screen {
+  position: absolute;
+  inset: 7px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #1d2c45, #111a29);
+  text-align: left;
+  transition: opacity 0.5s ease;
+}
+
+.g-phone__app {
+  display: block;
+  padding: 10px 10px 6px;
+  color: #cfe0ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.g-phone__list {
+  display: grid;
+  gap: 6px;
+  padding: 0 8px;
+}
+
+.g-phone__msg {
+  display: grid;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #eef3ff;
+  font-size: 11px;
+  line-height: 1.25;
+  animation: gf-in 0.3s var(--ease-out);
+}
+
+.g-phone__msg b {
+  font-size: 10px;
+  color: #9fc0ff;
+}
+
+.g-phone.is-buzz {
+  animation: g-buzz 0.36s linear;
+}
+
+@keyframes g-buzz {
+  20%,
+  60% {
+    translate: 3px 0;
+  }
+  40%,
+  80% {
+    translate: -3px 0;
+  }
+}
+
+.g-phone.is-down {
+  transform: translateX(-50%) translateY(85%) rotate(-12deg);
+  pointer-events: none;
+}
+
+.g-phone.is-down .g-phone__screen {
+  opacity: 0;
+}
+
+.g-phone.is-down .g-phone__body {
+  box-shadow: 0 0 0 2px #2a2d31;
+}
+
+/* ------------------------------------------------------------- things in the rooms */
+.d-pillow {
+  border-radius: 6px 6px 2px 2px;
+}
+
+.d-duvet {
+  background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 2px, rgba(0, 0, 0, 0) 2px 70px), linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12)) !important;
+}
+
+.d-drawer {
+  display: block;
+  height: 44%;
+  margin: 6% 8% 0;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  border-radius: 3px;
+}
+
+.d-digits {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: #090a0b;
+  color: #ff8a4c;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(255, 120, 60, 0.8);
+}
+
+.d-door {
+  background-image:
+    linear-gradient(90deg, transparent 84%, rgba(0, 0, 0, 0.0) 84%),
+    linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));
+  box-shadow: inset 0 0 0 30px rgba(0, 0, 0, 0.0), inset 30px 40px 0 -10px rgba(255, 255, 255, 0.05), inset -30px -40px 0 -10px rgba(0, 0, 0, 0.08);
+}
+
+.d-door::before {
+  content: '';
+  position: absolute;
+  right: 10%;
+  top: 50%;
+  width: 34px;
+  height: 10px;
+  border-radius: 6px;
+  background: #8c8f93;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+}
+
+.d-pocket {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 12%;
+  height: 40%;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.d-screen {
+  overflow: hidden;
+  border: 6px solid #15171a;
+  border-radius: 4px;
+  font-family: var(--font-body);
+}
+
+.d-screen--mail {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 10px;
+  background: linear-gradient(180deg, #e9eef6, #cfd9e8);
+  color: #1d2a3d;
+  box-shadow: 0 0 60px 16px rgba(170, 200, 255, 0.25);
+}
+
+.d-screen--mail b {
+  font-size: 13px;
+}
+
+.d-screen--mail i {
+  display: block;
+  height: 9px;
+  border-radius: 3px;
+  background: #9fb2cc;
+}
+
+.d-screen--mail em {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #d9443a;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.d-screen--vitals {
+  background: #071009;
+  box-shadow: 0 0 50px 10px rgba(80, 255, 160, 0.12);
+}
+
+.d-screen--vitals svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-width: 2;
+}
+
+.d-screen--vitals .ecg {
+  stroke: #49f08f;
+  stroke-dasharray: 160;
+  animation: d-ecg 2.2s linear infinite;
+}
+
+.d-screen--vitals .spo {
+  stroke: #49c8f0;
+}
+
+.d-screen--vitals text {
+  fill: #49f08f;
+  stroke: none;
+  font: 800 12px var(--font-display), sans-serif;
+}
+
+@keyframes d-ecg {
+  from {
+    stroke-dashoffset: 320;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.d-cloth {
+  background-image: linear-gradient(120deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.18)) !important;
+}
+
+.d-frame {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.12)) !important;
+}
+
+.d-city {
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b1630 0%, #1c2a4a 60%, #3a3550 100%);
+}
+
+.d-city i {
+  position: absolute;
+}
+
+.d-city__b {
+  bottom: 0;
+  background-color: #0b0f18;
+  background-image:
+    linear-gradient(#ffd88a, #ffd88a),
+    radial-gradient(circle, rgba(255, 216, 138, 0.9) 0 2.5px, transparent 3px),
+    radial-gradient(circle, rgba(207, 227, 255, 0.55) 0 2px, transparent 2.5px);
+  background-size: 0 0, 46px 58px, 34px 40px;
+  background-position: 0 0, 8px 10px, 22px 30px;
+}
+
+.d-city__b--1 {
+  left: 0;
+  width: 28%;
+  height: 62%;
+}
+
+.d-city__b--2 {
+  left: 26%;
+  width: 22%;
+  height: 80%;
+}
+
+.d-city__b--3 {
+  left: 50%;
+  width: 26%;
+  height: 54%;
+}
+
+.d-city__b--4 {
+  right: 0;
+  width: 22%;
+  height: 72%;
+  background-position: 0 0, 30px 18px, 6px 6px;
+}
+
+.d-mullion {
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 4px), #dcd7cc calc(50% - 4px) calc(50% + 4px), transparent calc(50% + 4px)),
+    linear-gradient(0deg, transparent calc(55% - 4px), #dcd7cc calc(55% - 4px) calc(55% + 4px), transparent calc(55% + 4px));
+}
+
+.d-curtain {
+  background: repeating-linear-gradient(90deg, #6d5466 0 14px, #5a4455 14px 30px, #7a5f72 30px 40px);
+  --sh: 0.1;
+}
+
+.d-wardrobe {
+  position: absolute;
+  inset: 4% 4%;
+  border: 3px solid rgba(0, 0, 0, 0.25);
+  background:
+    linear-gradient(90deg, transparent calc(50% - 2px), rgba(0, 0, 0, 0.35) calc(50% - 2px) calc(50% + 1px), transparent calc(50% + 1px)),
+    radial-gradient(circle at 46% 50%, #c9c3b8 0 6px, transparent 7px),
+    radial-gradient(circle at 54% 50%, #c9c3b8 0 6px, transparent 7px);
+}
+
+.d-photo {
+  padding: 14px;
+  background: #e8e2d6;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.d-photo i {
+  display: block;
+  height: 100%;
+  background:
+    radial-gradient(circle at 70% 38%, #ffd36b 0 14px, transparent 15px),
+    linear-gradient(180deg, #7fc4e6 0 52%, #2f84b0 52% 72%, #e7d29a 72%);
+}
+
+.d-rug {
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0 6px, transparent 6px 22px),
+    #6b4a43;
+  border: 18px solid #5a3c36;
+  border-radius: 6px;
+  --sh: 0.08;
+}
+
+.d-steel {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.06) 60%, rgba(255, 255, 255, 0.08)) !important;
+}
+
+.d-hatch {
+  background: linear-gradient(180deg, #1a120c, #2a1c10);
+  box-shadow: inset 0 0 0 8px #8d969b;
+}
+
+.d-hatch i {
+  position: absolute;
+  top: 18%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd28a, #f2a84b 45%, rgba(242, 168, 75, 0) 70%);
+}
+
+.d-hatch i:nth-child(1) {
+  left: 18%;
+}
+
+.d-hatch i:nth-child(2) {
+  left: 46%;
+  top: 26%;
+}
+
+.d-hatch i:nth-child(3) {
+  left: 74%;
+}
+
+.d-plate {
+  border-radius: 50%;
+  background: radial-gradient(circle, #f6f4ee 0 52%, #dcd8cf 56%, #f6f4ee 60%);
+}
+
+.d-paper,
+.d-ticket {
+  background: #f4f1e8;
+}
+
+.d-ticket {
+  padding: 8px 6px;
+  color: #2a2a2a;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.15;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+  --sh: 0.02;
+}
+
+.d-ticket b {
+  display: block;
+  font-size: 15px;
+}
+
+.d-ticket span {
+  display: block;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.d-ticket i {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.d-clock {
+  border-radius: 50%;
+  background: radial-gradient(circle, #f5f3ec 0 64%, #2d3033 66%);
+}
+
+.d-clock i {
+  position: absolute;
+  left: calc(50% - 3px);
+  bottom: 50%;
+  width: 6px;
+  border-radius: 3px;
+  background: #222;
+  transform-origin: 50% 100%;
+  transform: rotate(var(--a));
+}
+
+.d-clock .h {
+  height: 28%;
+}
+
+.d-clock .m {
+  height: 38%;
+  width: 4px;
+  left: calc(50% - 2px);
+}
+
+.d-oven {
+  display: block;
+  float: left;
+  width: 44%;
+  height: 58%;
+  margin: 22% 3% 0;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #1b1e20, #2e3236);
+  box-shadow: inset 0 0 0 6px #5c6266;
+}
+
+.d-knobs {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 6%;
+  height: 10%;
+  background: radial-gradient(circle, #15181a 0 9px, transparent 10px) 0 50% / 16.6% 100% repeat-x;
+}
+
+.d-burner {
+  border-radius: 50%;
+  background: radial-gradient(circle, #111 0 22%, #3a3e42 24% 32%, #111 34% 58%, #3a3e42 60% 66%, transparent 68%);
+}
+
+.d-rocker {
+  border-radius: 3px;
+  background: linear-gradient(180deg, #d23a2b 0 50%, #8e2219 50%);
+  box-shadow: 0 0 0 5px #2a2d30;
+}
+
+.d-knife {
+  border-radius: 0 0 40% 40% / 0 0 20% 20%;
+  background: linear-gradient(90deg, #dfe5e8, #9aa4a9);
+}
+
+.d-handle::before {
+  content: '';
+  position: absolute;
+  right: 12%;
+  top: 34%;
+  width: 22px;
+  height: 140px;
+  border-radius: 8px;
+  background: #6d777c;
+  box-shadow: 0 3px 4px rgba(0, 0, 0, 0.35);
+}
+
+.d-sign {
+  position: absolute;
+  left: 12%;
+  top: 12%;
+  padding: 6px 10px;
+  background: #1f4e8a;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.d-basin {
+  border-radius: 6px;
+  background: linear-gradient(180deg, #6c757a, #899297);
+  box-shadow: inset 0 0 0 6px #aab3b8;
+}
+
+.d-plateedge {
+  border-radius: 40px;
+  background: #f1efe8;
+}
+
+.d-label {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 30%;
+  padding: 4px 0;
+  background: #fffdf6;
+  color: #222;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.d-rota {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 10px;
+  background: #fbfaf5;
+  color: #222;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
+}
+
+.d-rota b {
+  font-size: 20px;
+}
+
+.d-rota span {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #ddd;
+}
+
+.d-rota em {
+  color: #c0392b;
+  font-style: normal;
+}
+
+.d-counterline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18%;
+  height: 6px;
+  background: #3b7a9e;
+}
+
+.d-folders {
+  position: absolute;
+  inset: 12% 8% 0;
+  background: repeating-linear-gradient(90deg, #e2b63c 0 18px, #3b7a9e 18px 36px, #c0392b 36px 54px, #ece8de 54px 60px);
+}
+
+.d-calls {
+  display: flex;
+  gap: 6px;
+  height: 100%;
+  padding: 10px;
+}
+
+.d-calls i {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #3a3f43;
+  color: #9aa1a5;
+  font: 800 22px var(--font-display), sans-serif;
+  font-style: normal;
+}
+
+.d-calls i.on {
+  background: #f2a84b;
+  color: #1a1206;
+  animation: d-call 1s steps(1) infinite;
+}
+
+@keyframes d-call {
+  50% {
+    background: #3a3f43;
+    color: #9aa1a5;
+  }
+}
+
+.d-dawn {
+  overflow: hidden;
+  background: linear-gradient(180deg, #5b6f9a 0%, #c9879a 45%, #ffb37a 75%, #ffd59a 100%);
+}
+
+.d-dawn i {
+  position: absolute;
+}
+
+.d-dawn__sun {
+  left: 58%;
+  bottom: 14%;
+  width: 90px;
+  height: 90px;
+  margin-left: -45px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3d6 0 40%, #ffc98a 60%, rgba(255, 201, 138, 0) 72%);
+}
+
+.d-dawn__roofs {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30%;
+  background: linear-gradient(90deg, #2b2a3a 0 18%, transparent 18% 22%, #2b2a3a 22% 46%, transparent 46% 50%, #2b2a3a 50% 100%);
+  clip-path: polygon(0 40%, 18% 40%, 18% 10%, 46% 10%, 46% 55%, 72% 55%, 72% 25%, 100% 25%, 100% 100%, 0 100%);
+}
+
+.d-blinds {
+  inset: 0 0 52% 0;
+  background: repeating-linear-gradient(180deg, rgba(235, 232, 225, 0.95) 0 14px, rgba(235, 232, 225, 0) 14px 22px);
+}
+
+.d-gel {
+  position: absolute;
+  inset: 20% 22% 30%;
+  border-radius: 4px;
+  background: #4b9ad4;
+}
+
+.d-wdoor {
+  background: #c8d6d1;
+  box-shadow: inset 0 0 0 5px #9bb0a9;
+}
+
+.d-wdoor i {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  width: 150px;
+  height: 150px;
+  margin-left: -75px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #1c2a2e, #2f4146);
+  box-shadow: inset 0 0 0 8px #8fa49d;
+}
+
+.d-drawers {
+  position: absolute;
+  inset: 6%;
+  background: repeating-linear-gradient(180deg, #4f86b8 0 54px, #2f5f8c 54px 60px);
+}
+
+.d-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  gap: 10px 18px;
+  padding: 16px;
+  background: #f7f7f3;
+  border: 8px solid #b9bcbc;
+  color: #2c3a6a;
+  font: 700 22px var(--font-display), sans-serif;
+}
+
+.d-board b {
+  grid-column: 1 / -1;
+  font-size: 30px;
+  color: #1a1a1a;
+}
+
+.d-board span {
+  border-bottom: 3px solid #c6d0e8;
+}
+
+.d-clip {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 26px 14px 10px;
+  background: #fbfaf4;
+  border-top: 22px solid #6a4e2e;
+  border-radius: 6px;
+  color: #222;
+  font: 800 18px var(--font-display), sans-serif;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.35);
+}
+
+.d-clip i {
+  display: block;
+  height: 7px;
+  background: #c9cfd6;
+}
+
+.d-clip em {
+  margin-top: 6px;
+  font: italic 600 15px var(--font-body), sans-serif;
+  color: #555;
+}
+
+/* ===================================================================== the flood */
+.gf {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  overflow: clip;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem var(--gutter);
+  background: #07090c;
+}
+
+.gf__room {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.gf__still {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.92);
+  transition: filter 0.8s ease;
+}
+
+.gf.is-big .gf__still {
+  filter: saturate(0.85) brightness(0.8);
+}
+
+.gf.is-huge .gf__still {
+  filter: saturate(0.8) brightness(0.62) blur(1.5px);
+}
+
+.gf.is-dark .gf__still {
+  filter: none;
+}
+
+.gf__room.has-still .gf__desk {
+  display: none;
+}
+
+.gf__room.has-still::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 70% at 50% 50%, rgba(5, 6, 8, 0) 40%, rgba(5, 6, 8, 0.55));
+}
+
+.gf__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 45% at 50% 50%, rgba(120, 165, 255, 0.16), rgba(120, 165, 255, 0) 70%);
+  transition: opacity 0.6s ease;
+}
+
+.gf__desk {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -18%;
+  height: 34%;
+  background: linear-gradient(180deg, #1a1612, #0c0a08);
+  transform: perspective(600px) rotateX(55deg);
+  transform-origin: 50% 100%;
+}
+
+.gf__phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 390px);
+  height: min(100%, 720px);
+  overflow: hidden;
+  border-radius: 26px;
+  background: #0c1016;
+  box-shadow:
+    0 0 0 1px #2a3038,
+    0 0 0 7px #050608,
+    0 0 0 8px #22262b,
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 0 120px rgba(110, 160, 255, 0.16);
+  transition: filter 0.6s ease;
+}
+
+.gf__status {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 18px 4px;
+  color: #c9d5e8;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gf__icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gf__icons i {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  background: #c9d5e8;
+}
+
+.gf__icons b {
+  color: #ff8a7a;
+}
+
+.gf__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 10px;
+  border-bottom: 1px solid #1b222c;
+}
+
+.gf__avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #3a5ea8;
+  color: #fff;
+  font-weight: 800;
+}
+
+.gf__who {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  color: #eef2f8;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.gf__who b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gf__who small {
+  color: #7fd1a0;
+  font-size: 12px;
+}
+
+.gf__badge {
+  min-width: 26px;
+  padding: 2px 7px;
+  border-radius: 13px;
+  background: #e0473b;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.gf__banners {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  z-index: 3;
+  display: grid;
+  gap: 6px;
+}
+
+.gf__banner {
+  display: grid;
+  gap: 1px;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(38, 44, 54, 0.96);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+  color: #eef2f8;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  transform: translateY(-140%);
+  transition: transform 0.4s var(--ease-out);
+  cursor: pointer;
+}
+
+.gf__banner.is-in {
+  transform: none;
+}
+
+.gf__banner b {
+  color: #9fb8e0;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gf__log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  padding: 12px 12px 8px;
+  scrollbar-width: none;
+}
+
+.gf__log::-webkit-scrollbar {
+  display: none;
+}
+
+.gf__msg {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  align-self: flex-start;
+  max-width: 82%;
+  padding: 7px 11px 6px;
+  border-radius: 16px 16px 16px 5px;
+  background: #1b2330;
+  color: #eef2f8;
+  font-size: 14.5px;
+  line-height: 1.3;
+  animation: gf-in 0.28s var(--ease-out);
+  cursor: pointer;
+}
+
+.gf__msg b {
+  color: #8fb4ff;
+  font-size: 12px;
+}
+
+.gf__msg small {
+  justify-self: end;
+  color: #7c8796;
+  font-size: 10.5px;
+}
+
+.gf__msg.is-seen small::after {
+  content: ' ✓✓';
+  color: #5fb4ff;
+}
+
+.gf__msg--mine {
+  align-self: flex-end;
+  border-radius: 16px 16px 5px 16px;
+  background: #2b5aa6;
+}
+
+@keyframes gf-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+.gf__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #1b222c;
+}
+
+.gf__reply {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #2a3340;
+  border-radius: 21px;
+  background: #121821;
+  color: #7c8796;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gf__reply:hover {
+  color: #c9d5e8;
+}
+
+.gf__slot {
+  flex: none;
+  width: 22px;
+  height: 34px;
+}
+
+.gf__switch {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper);
+  transform-origin: 50% 50%;
+  transition: transform 0.7s cubic-bezier(0.3, 1.25, 0.5, 1);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gf__switch-in {
+  display: block;
+  font-size: 10px;
+}
+
+.gf__switch .wallswitch {
+  --sw: 10px;
+  display: block;
+  pointer-events: none;
+}
+
+.gf__switch:focus-visible {
+  outline: 3px solid var(--tungsten);
+  outline-offset: 6px;
+}
+
+/* patience: a tiny label under a tiny switch, growing with it */
+.gf__patience {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tungsten-hi);
+}
+
+.gf__switch.is-calling .wallswitch__led {
+  background: var(--tungsten-hi);
+  opacity: 1;
+  animation: g-led 1.2s ease-in-out infinite;
+}
+
+.gf.is-big .gf__phone {
+  filter: brightness(0.75) blur(0.5px);
+}
+
+.gf.is-huge .gf__phone {
+  filter: brightness(0.5) blur(2px);
+}
+
+.gf.is-huge .gf__glow {
+  opacity: 0.4;
+}
+
+.gf__phone.is-shake {
+  animation: gf-shake 0.28s linear;
+}
+
+.gf__phone.is-frantic.is-shake {
+  animation-duration: 0.2s;
+}
+
+@keyframes gf-shake {
+  25% {
+    translate: 2px -1px;
+  }
+  50% {
+    translate: -2px 1px;
+  }
+  75% {
+    translate: 1px 1px;
+  }
+}
+
+.gf__arrows {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.gf__arrows.is-on {
+  opacity: 1;
+}
+
+.gf__arrows i {
+  display: block;
+  width: 26px;
+  height: 14px;
+  margin-top: -3px;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Cpath d='M2 2l10 8 10-8' fill='none' stroke='%23f2a84b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  transform: translate(-50%, -100%);
+  animation: gf-arrow 1.1s ease-in-out infinite;
+}
+
+.gf__arrows i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.gf__arrows i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes gf-arrow {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* the phone goes dark */
+.gf.is-dark .gf__phone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background: #000;
+  animation: gf-off 0.45s ease-in forwards;
+}
+
+.gf.is-dark .gf__glow {
+  opacity: 0;
+}
+
+.gf.is-dark .gf__switch {
+  transition: transform 1.2s ease;
+}
+
+@keyframes gf-off {
+  0% {
+    clip-path: inset(0 0 0 0);
+    background: #fff;
+    opacity: 0.15;
+  }
+  60% {
+    clip-path: inset(49.5% 0 49.5% 0);
+    background: #fff;
+    opacity: 1;
+  }
+  61% {
+    clip-path: inset(0 0 0 0);
+    background: #000;
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    background: #000;
+    opacity: 1;
+  }
+}
+
+/* ===================================================================== the torch */
+.gt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  overflow: clip;
+  background: #000;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.gt__scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.gt__scene > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.gt__thing {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.gt__thing:focus-visible,
+.gt__switch:focus-visible {
+  outline: 3px solid var(--tungsten);
+  outline-offset: 2px;
+}
+
+.gt__switch {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translate(-50%, -50%);
+  transition: transform 0.7s cubic-bezier(0.3, 1.4, 0.5, 1);
+  cursor: pointer;
+}
+
+.gt__switch .wallswitch {
+  --sw: var(--g-sw, 6px);
+  display: block;
+  pointer-events: none;
+}
+
+.gt__switch.is-big {
+  transform: translate(-50%, -50%) scale(1.7);
+}
+
+.gt__dark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle var(--r, 120px) at var(--x, 50%) var(--y, 50%), rgba(255, 244, 220, 0.1), rgba(255, 244, 220, 0) 70%),
+    radial-gradient(circle var(--r, 120px) at var(--x, 50%) var(--y, 50%), rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 55%, rgba(0, 0, 0, 0.965) 100%);
+}
+
+.gt.is-dark .gt__dark {
+  background: #000;
+}
+
+.gt__pilot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--tungsten-hi);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gt__pilot.is-on {
+  animation: gt-pilot 1.5s ease-in-out infinite;
+}
+
+@keyframes gt-pilot {
+  0%,
+  100% {
+    opacity: 0.35;
+    box-shadow: 0 0 6px 2px rgba(242, 168, 75, 0.5);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 16px 6px rgba(242, 168, 75, 0.75);
+  }
+}
+
+.gt.is-dark .gt__pilot {
+  opacity: 1;
+  animation: none;
+  box-shadow: 0 0 22px 8px rgba(242, 168, 75, 0.7);
+}
+
+.gt__arrow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.gt__arrow.is-on {
+  opacity: 1;
+}
+
+.gt__arrow i {
+  position: absolute;
+  inset: 0;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M8 4l9 8-9 8' fill='none' stroke='%23f2a84b' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 6px rgba(242, 168, 75, 0.8));
+  animation: g-nudge-r 0.9s ease-in-out infinite;
+}
+
+/* ===================================================================== the way out */
+.fx-strips {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.fx-strip {
+  position: absolute;
+  overflow: hidden;
+  transform-origin: 50% 0;
+  will-change: transform, opacity;
+}
+
+.fx-strips--h .fx-strip {
+  transform-origin: 50% 50%;
+}
+
+.fx-strip__shade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.6), rgba(255, 230, 200, 0.1) 42%, rgba(0, 0, 0, 0.65));
+}
+
+.fx-strips--h .fx-strip__shade {
+  background: linear-gradient(180deg, rgba(255, 210, 150, 0.3), rgba(0, 0, 0, 0.55));
+}
+
+.fx-copy {
+  pointer-events: none;
+}
+
+/* the evening (.after) is styled in story.css, with the rest of the comic */
+
+/* ===================================================================== the switch, in a game
+   Its state is its own (.is-flipped), whatever the rest of the site is doing. */
+.wallswitch--game.wallswitch {
+  --sw-light: var(--fluoro);
+  --tilt: calc(var(--tilt-max) - var(--drag, 0) * var(--tilt-max) * 1.15);
+}
+
+.wallswitch--game.wallswitch.is-flipped {
+  --sw-light: var(--tungsten);
+  --tilt: calc(var(--tilt-max) * -1);
+}
+
+.wallswitch--game.wallswitch .wallswitch__glow::before {
+  opacity: 0.7;
+}
+
+.wallswitch--game.wallswitch .wallswitch__glow::after {
+  opacity: 0;
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__glow::before {
+  opacity: 0;
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__glow::after {
+  opacity: 1;
+}
+
+.wallswitch--game.wallswitch .wallswitch__half--top::before,
+.wallswitch--game.wallswitch .wallswitch__half--bot::after {
+  opacity: 0;
+}
+
+.wallswitch--game.wallswitch .wallswitch__half--top::after,
+.wallswitch--game.wallswitch .wallswitch__half--bot::before {
+  opacity: 1;
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__half--top::before,
+.wallswitch--game.wallswitch.is-flipped .wallswitch__half--bot::after {
+  opacity: 1;
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__half--top::after,
+.wallswitch--game.wallswitch.is-flipped .wallswitch__half--bot::before {
+  opacity: 0;
+}
+
+.wallswitch--game.wallswitch .wallswitch__mark--on {
+  color: var(--paper-2);
+}
+
+.wallswitch--game.wallswitch .wallswitch__mark--off {
+  color: color-mix(in srgb, var(--fog) 55%, transparent);
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__mark--on {
+  color: color-mix(in srgb, var(--fog) 50%, transparent);
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__mark--off {
+  color: var(--tungsten-hi);
+}
+
+.wallswitch--game.wallswitch.is-flipped .wallswitch__led {
+  background: var(--tungsten-hi);
+  opacity: 1;
+  animation: none;
+  box-shadow:
+    0 0 0.45em 0.12em color-mix(in srgb, var(--tungsten) 85%, transparent),
+    0 0 1.5em 0.25em color-mix(in srgb, var(--tungsten) 35%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g-chev,
+  .g-pointer i,
+  .g3d__edge i,
+  .gf__arrows i,
+  .gt__arrow i,
+  .d-calls i.on,
+  .d-screen--vitals .ecg {
+    animation: none !important;
+  }
+  .gt__pilot.is-on {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ---- additions: props, scrims, sizes ---- */
+.d-print {
+  padding: 16px;
+  background: #efe9dc;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+.d-print i {
+  display: block;
+  height: 100%;
+  background:
+    radial-gradient(circle at 50% 38%, #e0603f 0 22px, transparent 23px),
+    linear-gradient(180deg, #f3eee2 0 62%, #2b2d3a 62%);
+}
+
+.d-leaf {
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+  background:
+    radial-gradient(ellipse 22% 38% at 30% 40%, #3f7a4a 98%, transparent),
+    radial-gradient(ellipse 20% 34% at 70% 34%, #4f8d58 98%, transparent),
+    radial-gradient(ellipse 18% 30% at 52% 22%, #3a6e45 98%, transparent),
+    radial-gradient(ellipse 24% 30% at 50% 62%, #457f50 98%, transparent);
+  pointer-events: none;
+}
+
+.g-obj--switch.is-hidden .wallswitch__glow {
+  opacity: 0;
+}
+
+@media (min-width: 900px) and (min-height: 600px) {
+  .game::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: calc(var(--header-h) + 3rem);
+    background: linear-gradient(180deg, rgba(4, 5, 6, 0.8), rgba(4, 5, 6, 0));
+    pointer-events: none;
+  }
+  .game.is-ending::after,
+  .game.is-after::after {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) {
+  .g-phone {
+    width: min(34%, 160px);
+    bottom: -16%;
+  }
+  .g3d__turn {
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
+  }
+}
+
+.gf__slot {
+  width: 16px;
+  height: 26px;
+}
+
+/* copies used by the curtain and the blinds show the last frame, still */
+.fx-copy,
+.fx-copy *,
+.fx-copy *::before,
+.fx-copy *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+.fx-copy.gf.is-dark .gf__phone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  background: #000;
+  opacity: 1;
+}
+
+/* fabric: the folds catch a little warm light */
+.fx-strip__shade {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.55), rgba(255, 196, 130, 0.16) 38%, rgba(255, 210, 160, 0.06) 55%, rgba(0, 0, 0, 0.62));
+}
+
+/* Experiment "teaser": the plain variant leaves the reward out of the hero */
+html[data-exp-teaser='plain'] .game__teaser {
+  display: none;
+}
+
+/* Bulgarian runs longer: a little smaller so the title keeps to two or three lines */
+html[lang='bg'] .game__title {
+  font-size: clamp(1.9rem, 8.6vw, 2.75rem);
+}
+
+@media (min-width: 900px) and (min-height: 600px) {
+  html[lang='bg'] .game__title {
+    font-size: clamp(2.6rem, 3.9vw, 4.4rem);
+  }
+}
+
+/* "Evening 3?": for someone who's done the ritual here it takes the teaser's place, so the
+   headline card doesn't grow over the scene */
+.game__top:has(.welcome-row:not([hidden])) .game__teaser {
+  display: none;
+}
+
+@media (min-width: 900px) and (min-height: 600px) {
+  .game__top .welcome-row {
+    margin-top: 0.7rem;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .game__top .welcome-row__q {
+    font-size: 1.15rem;
+  }
+}

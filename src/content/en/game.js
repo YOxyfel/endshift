@@ -1,0 +1,342 @@
+// The hero game: find the switch and clock out. One game a day (see game.week in site.config.js).
+// type "room" = a 3D room to look around and walk through, "flood" = a chat that won't stop,
+// "torch" = a dark place searched with a phone light. Object ids match src/assets/js/game-*.js.
+
+export default ({ cfg }) => {
+  const R = cfg.game?.reward || {};
+  const p = R.percent;
+  return {
+    hud: {
+      today: 'Today’s shift',
+      teaser: p ? `Find it: ${p}% off your first RESET order.` : '',
+      hint: 'Hint',
+      skip: 'Skip the game',
+      left: 'Look left',
+      right: 'Look right',
+      timer: 'Time',
+      how: {
+        room: 'Drag to look around. Tap the floor to walk there. Tap anything.',
+        flood: 'Tap things. Or don’t.',
+        torch: 'Drag or move the mouse to shine your light.',
+      },
+      keys: {
+        room: 'Keyboard: arrow keys or WASD to look and walk, Tab to go from thing to thing, Enter to use it.',
+        flood: 'Keyboard: Tab to go from thing to thing, Enter to use it.',
+        torch: 'Keyboard: arrow keys move the light, Tab goes from thing to thing, Enter uses it.',
+      },
+      handoff: 'This is your switch. Work is about to hide it.',
+      nowFind: 'Now find it.',
+      ladder: ['Look for a small orange light.', 'Follow the arrows.', 'It’s right there.', 'Just press it.'],
+      switchLabel: 'The switch: clock out',
+      walkTo: 'You walk over.',
+      getUp: 'You get up.',
+      won: (t) => `Shift over. You found the switch in ${t}.`,
+      noJs: 'The game needs JavaScript. The ritual works without it.',
+    },
+
+    after: {
+      stamp: 'Out',
+      title: 'Shift over.',
+      found: (t, job) => `Found in ${t}. ${job}: done for today.`,
+      again: (t) => `You already clocked out of today’s shift, in ${t}.`,
+      lead: 'That feeling, right there. ENDSHIFT is how you get it on a real evening.',
+      ritualTitle: 'Tonight, for real',
+      ritualText: 'The free 20-minute ritual. Seven small steps and a guided breath for the end of a shift. No account.',
+      resetTitle: 'RESET',
+      concept: 'Concept',
+      resetText: 'The evening capsule we’re building in public: one optional step inside the ritual. A concept for now, not for sale.',
+      resetLink: 'See RESET',
+      fitsTitle: 'Where it fits',
+      tomorrow: (job) => `Tomorrow: ${job}. Different job, same switch.`,
+      replay: 'Play again',
+      continue: 'Continue to the site',
+    },
+
+    reward: p
+      ? {
+          kicker: 'Your reward',
+          title: `${p}% off is yours.`,
+          text: `For your first RESET order from Batch #001. Leave your email and we’ll send your code when preorders open. One per person.`,
+          submit: `Send me my ${p}%`,
+          label: 'Email for your code',
+          note: 'You’ll also get the founding list emails (preorder date, build updates). Unsubscribe in one click.',
+          terms: [
+            `${p}% off one RESET order from Batch #001`,
+            R.expiresDays ? `code works for ${R.expiresDays} days after preorders open` : null,
+            'one per person and email',
+            'can’t be combined with other discounts',
+            'no purchase needed to play',
+          ]
+            .filter(Boolean)
+            .join(' · '),
+          termsLink: 'Full terms',
+          draft: 'Draft terms: being finalised before preorders open.',
+          doneTitle: `Saved. Your ${p}% is yours.`,
+          doneText: 'We’ll email your code when preorders open. Check your inbox to confirm your email.',
+          claimed: `Your ${p}% is saved. The code arrives by email when preorders open.`,
+        }
+      : null,
+
+    games: {
+      /* ------------------------------------------------------------------ 3D rooms */
+      bed: {
+        type: 'room',
+        // words on things in the room (signs, screens, papers)
+        props: { print: ['WORK HARD', 'REST', 'HARDER'], staff: 'STAFF' },
+        job: 'In bed, still on the phone',
+        place: 'Your bedroom',
+        time: '23:48',
+        mission: 'The big light is still on. So is your head. Find the switch.',
+        fitsText:
+          'Most nights the switching off happens too late: in bed, with the phone still lit. The free ritual moves it earlier, twenty minutes when you get home, so work is already closed by the time you lie down.',
+        hints: ['Light switches live by the door.', 'Follow the arrows on the floor.', 'There. Next to the door.', 'Just press it.'],
+        phone: {
+          app: 'Work chat',
+          msgs: [
+            ['Manager', 'You up?'],
+            ['Team', 'Rota for next week is up'],
+            ['Manager', 'Quick one for tomorrow'],
+            ['Customer', 'Order #4471: where is it??'],
+            ['Manager', 'Can you come in at 7 instead?'],
+            ['Team', '14 new messages'],
+            ['Manager', '?'],
+          ],
+          down: 'Put it face down. It can buzz without you.',
+        },
+        objects: {
+          laptop: { label: 'Laptop, still open', line: 'Laptop’s still open. So is the work.' },
+          bag: { label: 'Work bag by the door', line: 'Packed for tomorrow. Tomorrow can carry it.' },
+          window: { label: 'Window', line: 'Every window across the street is still lit too.' },
+          wardrobe: { label: 'Wardrobe', line: 'Tomorrow’s uniform is in there. It can stay there.' },
+          clock: { label: 'Alarm clock', line: 'Alarm in six hours. Brain: still on.' },
+          lamp: { label: 'Bedside lamp', line: 'Not yet. First the big light goes off.' },
+          door: { label: 'Bedroom door', line: 'Warm. Very warm.' },
+          bed: { label: 'Bed', line: 'You’re in bed. Your head isn’t.' },
+          ceiling: { label: 'Ceiling light', line: 'That’s the light. The switch is on a wall.' },
+          poster: { label: 'Holiday photo', line: 'Holiday. Two years ago.' },
+          print: { label: 'Print above the desk', line: '“Work hard, rest harder.” Half of that is happening.' },
+          chair: { label: 'Chair with clothes on it', line: 'Every bedroom has this chair.' },
+        },
+      },
+
+      kitchen: {
+        type: 'room',
+        // words on things in the room (signs, screens, papers)
+        props: { tickets: [['T9', '2× RISOTTO'], ['T4', 'STEAK MR'], ['T12', '3× SOUP'], ['T7', 'NO ONION!!'], ['T2', 'BURGER + FRIES'], ['T9', 'DESSERT'], ['T11', 'REFIRE'], ['T6', '4× PASTA'], ['T3', 'ALLERGY'], ['T8', 'MAINS AWAY'], ['T5', '2× SALAD'], ['T1', 'KIDS MENU']], labels: ['RICE', 'FLOUR', 'OIL', 'STOCK', 'SUGAR', 'SALT', 'TINS', 'PASTA'], walkin: 'WALK-IN · 3°C', rota: 'ROTA', days: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'], you: 'YOU', clean: ['CLEAN', 'AS YOU GO'], exit: 'EXIT' },
+        job: 'Restaurant kitchen',
+        place: 'The pass, after service',
+        time: '23:10',
+        mission: 'Service is over. The tickets aren’t. Find the switch.',
+        fitsText:
+          'Service ends at 23:00. Your head is still on the pass at 01:00. Do the ritual once you’re home: write tomorrow’s prep down so it leaves your head, then five slow minutes of breathing.',
+        hints: ['It’s where the orders pile up.', 'Follow the arrows.', 'Behind the tickets.', 'Just press it.'],
+        objects: {
+          tickets: { label: 'Ticket rail full of orders', line: 'Last tickets. Spike them.', reveal: 'Behind the tickets: the switch.' },
+          printer: { label: 'Ticket printer', line: 'It always prints one more.' },
+          stove: { label: 'Stove', line: 'Burners off. Your head’s still on high.' },
+          hood: { label: 'Extractor switch', line: 'That’s the extractor. Wrong switch.' },
+          fridge: { label: 'Walk-in fridge', line: 'Stocked for tomorrow. Door shut.' },
+          rota: { label: 'Rota on the wall', line: 'Your name. Every single day.' },
+          knives: { label: 'Knife rack', line: 'Clean and put away. Unlike your thoughts.' },
+          mop: { label: 'Mop bucket', line: 'Floor’s done. You’re not. Yet.' },
+          lamps: { label: 'Heat lamps', line: 'They stay on till the pass is clear.' },
+          shelf: { label: 'Dry store shelf', line: 'Rice, flour, tomorrow.' },
+          sink: { label: 'Dish station', line: 'Someone else’s turn tomorrow.' },
+          clock: { label: 'Kitchen clock', line: 'Ten past eleven. Feet: done hours ago.' },
+        },
+      },
+
+      ward: {
+        type: 'room',
+        // words on things in the room (signs, screens, papers)
+        props: { ward: 'WARD 4B', beds: [['BED 1', 'Discharge am'], ['BED 2', 'Obs 4-hourly'], ['BED 3', 'Nil by mouth'], ['BED 4', 'Family 10:00'], ['BED 5', 'Bloods'], ['BED 6', 'Stable']], handoverTitle: 'HANDOVER', handover: ['Bed 2: obs due 08:00', 'Bed 4: family at 10', 'Bed 6: stable', '-', 'Pharmacy: call back'], sign: 'sign:' },
+        job: 'Night shift on the ward',
+        place: 'Nurses’ station, ward 4B',
+        time: '07:05',
+        mission: 'Twelve hours done. Handover in five. Find the switch.',
+        fitsText:
+          'Night shifts end at sunrise, and sleep still has to happen. The ritual works at 07:30 too: dim the phone, write down the handover that’s still in your head, five minutes of breathing, then bed.',
+        hints: ['Handover first. Then you’re out.', 'Follow the arrows.', 'Behind the handover sheet.', 'Just press it.'],
+        objects: {
+          clipboard: { label: 'Handover sheet', line: 'Handover signed.', reveal: 'Under the sheet: the switch.' },
+          monitor: { label: 'Patient monitor', line: 'Bed 6: stable. You: running on coffee.' },
+          phone: { label: 'Ward phone', line: 'It rings for the day team now.' },
+          calls: { label: 'Call-light panel', line: 'Call light reset. Not your switch.' },
+          cart: { label: 'Medication cart', line: 'Locked and counted. Twice.' },
+          window: { label: 'Window', line: '07:05. Everyone else is just waking up.' },
+          doors: { label: 'Ward doors', line: 'Day shift comes through here any minute.' },
+          board: { label: 'Patient board', line: 'Read it out at handover. Then let it go.' },
+          coffee: { label: 'Coffee cup', line: 'Cold since three.' },
+          gel: { label: 'Hand gel', line: 'Clean hands. Busy head.' },
+          clock: { label: 'Wall clock', line: 'The longest five minutes of the shift.' },
+        },
+      },
+
+      /* -------------------------------------------------------- message floods */
+      office: {
+        type: 'flood',
+        // words on things in the room (signs, screens, papers)
+        props: { staff: 'STAFF' },
+        job: 'Office',
+        place: 'Work chat, after hours',
+        time: '19:42',
+        mission: 'You logged off at six. Work didn’t. Find the switch.',
+        fitsText:
+          'The laptop closes at 18:00, then the inbox rides home in your pocket. The ritual closes the day on purpose: write down what’s unfinished, put the phone in another room, five minutes of breathing.',
+        hints: ['That tiny switch down there? Your patience.', 'Follow the arrows.', 'It only gets bigger.', 'Just press it.'],
+        chat: {
+          app: 'Work chat',
+          title: 'Martin (manager)',
+          status: 'online',
+          typing: 'typing…',
+          you: 'You',
+          msgs: [
+            ['Martin', 'Hey, quick one'],
+            ['Martin', 'Did you see my email?'],
+            ['Martin', 'Can you look at the deck before tomorrow'],
+            ['Martin', 'Small change: can we move the 09:00 to 08:00?'],
+            ['Team', 'Martin added you to “URGENT: Monday”'],
+            ['Martin', '??'],
+            ['Martin', 'I know it’s late but'],
+            ['Sara', 'are you still online'],
+            ['Martin', 'Call me when you see this'],
+            ['Martin', 'Just need 5 minutes'],
+            ['Martin', 'Actually 20'],
+            ['Team', '3 new files shared with you'],
+            ['Martin', 'Also can you cover Friday'],
+            ['Martin', 'I can see you’re online'],
+          ],
+          spam: ['?', 'Hello??', 'You there?', 'Quick one', 'URGENT', 'Call me', 'Just checking', 'Ping', '??', 'Hellooo'],
+          banners: [
+            ['Mail', 'Re: Re: Re: deadline'],
+            ['Calendar', 'Tomorrow 08:00 · Stand-up'],
+            ['Mail', '14 unread'],
+            ['Phone', 'Missed call: Work'],
+          ],
+          reply: 'Sure, on it',
+          replyBack: ['Great! While you’re there…', 'And one more thing'],
+          replyLine: 'Replying at 19:42 tells them you’re available at 19:42.',
+          seenLine: 'Seen. Now they know you’re up.',
+          bannerLine: 'That’s tomorrow-you’s problem.',
+          patience: ['patience', 'patience: low', 'patience: gone', 'switch off'],
+        },
+      },
+
+      shop: {
+        type: 'flood',
+        // words on things in the room (signs, screens, papers)
+        props: { closed: 'CLOSED', till: 'TOTAL 0.00' },
+        job: 'Shop floor',
+        place: 'Shop group chat',
+        time: '21:15',
+        mission: 'The shutter’s down. The group chat isn’t. Find the switch.',
+        fitsText:
+          'Cashing up isn’t switching off. On the way home, run through the ritual’s first steps: close the day out loud, put tomorrow’s first task on paper, let the shop stay at the shop.',
+        hints: ['That tiny switch down there? Your patience.', 'Follow the arrows.', 'It only gets bigger.', 'Just press it.'],
+        chat: {
+          app: 'Group chat',
+          title: 'Shop team (9)',
+          status: '9 members',
+          typing: 'typing…',
+          you: 'You',
+          msgs: [
+            ['Elena (manager)', 'Who closed tonight? Till’s 4 euro short'],
+            ['Ivo', 'not me'],
+            ['Elena (manager)', 'Can someone cover Saturday 07:00?'],
+            ['Rota', 'New rota posted'],
+            ['Elena (manager)', '@you can you cover Saturday?'],
+            ['Reviews', 'New review: 1★ “staff looked tired”'],
+            ['Elena (manager)', 'Stock count Monday 06:00, everyone'],
+            ['Ivo', 'can we swap Sunday?'],
+            ['Elena (manager)', '@you ??'],
+            ['Elena (manager)', 'Also the window display'],
+            ['Maya', 'who has the keys'],
+            ['Elena (manager)', 'Answer please'],
+          ],
+          spam: ['@you', '??', 'Saturday?', 'Keys??', 'Hello', 'Anyone?', 'Answer pls', '@you @you'],
+          banners: [
+            ['Rota', 'You’re on: Sat, Sun, Mon'],
+            ['Mail', 'Mystery shopper report'],
+            ['Phone', 'Missed call: Elena'],
+          ],
+          reply: 'Ok',
+          replyBack: ['Great so Saturday 07:00 then!', 'And Sunday?'],
+          replyLine: 'One “ok” and you’re opening on Saturday.',
+          seenLine: 'Seen by you. Everyone saw that.',
+          bannerLine: 'That’s tomorrow-you’s problem.',
+          patience: ['patience', 'patience: low', 'patience: gone', 'switch off'],
+        },
+      },
+
+      clients: {
+        type: 'flood',
+        // words on things in the room (signs, screens, papers)
+        props: { tv: 'AUTOPLAY ▸ 0:05' },
+        job: 'Freelance, Sunday night',
+        place: 'Client messages',
+        time: '21:30',
+        mission: 'It’s Sunday. Clients don’t know that. Find the switch.',
+        fitsText:
+          'When you are your own boss, nobody sends you home. The ritual is the clocking-out you have to do yourself: the same twenty minutes at the same time, so Sunday gets to stay Sunday.',
+        hints: ['That tiny switch down there? Your patience.', 'Follow the arrows.', 'It only gets bigger.', 'Just press it.'],
+        chat: {
+          app: 'Messages',
+          title: 'Nova Studio',
+          status: 'online',
+          typing: 'typing…',
+          you: 'You',
+          msgs: [
+            ['Nova Studio', 'Hi! I know it’s Sunday but'],
+            ['Nova Studio', 'tiny change to the logo'],
+            ['Petrov & Co', 'Quick question about the invoice'],
+            ['Nova Studio', 'can it pop a bit more?'],
+            ['Nova Studio', 'actually can we go back to v1'],
+            ['Petrov & Co', 'Call tomorrow 07:30?'],
+            ['Nova Studio', 'and v3'],
+            ['New client', 'Free tonight? Urgent job'],
+            ['Nova Studio', '??'],
+            ['Petrov & Co', 'Following up on my follow-up'],
+            ['Nova Studio', 'just need it by morning'],
+          ],
+          spam: ['??', 'hello?', 'any update?', 'v8?', 'just checking', 'small thing', 'by morning pls', 'call?'],
+          banners: [
+            ['Bank', 'Invoice 0042: 47 days overdue'],
+            ['Calendar', 'Monday 07:30 · Call'],
+            ['Mail', 'Re: final_FINAL_v7'],
+          ],
+          reply: 'Sure, I’ll do it tonight',
+          replyBack: ['Amazing!! While you’re at it…', 'and the website?'],
+          replyLine: 'Say “tonight” once and it becomes the deal.',
+          seenLine: 'Seen at 21:30. On a Sunday.',
+          bannerLine: 'That’s Monday’s problem.',
+          patience: ['patience', 'patience: low', 'patience: gone', 'switch off'],
+        },
+      },
+
+      /* ------------------------------------------------------------ torch */
+      depot: {
+        type: 'torch',
+        // words on things in the room (signs, screens, papers)
+        props: { route: 'ROUTE 7', stops: ['Stop 38  ✓', 'Stop 39  ✓', 'Stop 40  ✓', 'Stop 41  ✓  41/41'], exit: 'EXIT' },
+        job: 'Delivery depot',
+        place: 'Back at the depot, last one in',
+        time: '21:40',
+        mission: 'Last drop done. The depot lights are out. Find the switch.',
+        fitsText:
+          'The last drop isn’t the end of your shift: your head is still routing. Do the ritual in the van before you drive home, or on the sofa once you’re in. Same twenty minutes, every time.',
+        hints: ['Look for a small orange light.', 'Follow the arrow.', 'Your light just got bigger.', 'Just press it.'],
+        objects: {
+          parcels: { label: 'Shelf of parcels', line: '43 parcels for tomorrow. They’ll wait.' },
+          scanner: { label: 'Scanner', line: 'Beep. Pure habit.' },
+          keys: { label: 'Van keys', line: 'Hang them up. You’re done driving.' },
+          board: { label: 'Route board', line: 'Stop 41 of 41. Done.' },
+          vest: { label: 'Hi-vis vest', line: 'Off. Finally.' },
+          door: { label: 'Roller door', line: 'Locked. Good.' },
+          van: { label: 'Van', line: 'Still warm. It’s done too.' },
+          clock: { label: 'Clock', line: '21:40. Shift was meant to end at 19:00.' },
+          trolley: { label: 'Cage trolley', line: 'Empty. For once.' },
+        },
+      },
+    },
+  };
+};

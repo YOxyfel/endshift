@@ -1,0 +1,1428 @@
+/* ENDSHIFT home page: the evening as one continuous shot (film.js).
+   .is-film is on when it runs: one sticky stage, the canvases, words faded in and out by
+   the script. Without it (no WebGL, reduced motion, low-stimulation mode) the same beats are
+   plain comic panels, one under another. */
+
+.film {
+  position: relative;
+  background: var(--ink);
+}
+
+.film__aura,
+.film__gl,
+.film__fx,
+.film__zoom,
+.film__frame,
+.film__lids,
+.film__breath,
+.film__hud,
+.film__hint,
+.film__skip {
+  display: none;
+}
+
+/* ================================================================== the film */
+.is-film .film__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  overflow: clip;
+  background: #0e0d10;
+  isolation: isolate;
+}
+
+.is-film .film__aura,
+.is-film .film__gl,
+.is-film .film__fx {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.is-film .film__aura { z-index: 0; visibility: hidden; }
+.is-film .film__gl { z-index: 1; }
+.is-film .film__fx { z-index: 2; visibility: hidden; pointer-events: none; }
+
+/* a little shade at the top and bottom, so the words read over any room */
+.is-film .film__stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(11, 13, 16, 0.5), rgba(11, 13, 16, 0) 26%, rgba(11, 13, 16, 0) 60%, rgba(11, 13, 16, 0.62));
+  opacity: var(--scrim, 1);
+}
+
+/* the end: the sun has set, it's night; the bar and the skip link step aside */
+.is-film .film__stage.is-ending {
+  background: #0c0d12;
+}
+
+.is-ending .film__hud,
+.is-ending .film__skip,
+.is-ending .film__hint {
+  visibility: hidden;
+}
+
+.is-film .film__zoom {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 7;
+  overflow: hidden;
+  visibility: hidden;
+  border: 2px solid var(--ink);
+  will-change: transform, width, height;
+}
+
+.film__zoom canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* eyelids */
+.is-film .film__lids {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.film__lids i {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: calc(var(--lid, 0) * 56%);
+  /* with your eyes shut it's simply dark */
+  background: #020203;
+  box-shadow: 0 0 60px 40px #020203;
+}
+
+.film__lids i:first-child {
+  top: 0;
+  border-radius: 0 0 50% 50% / 0 0 34% 34%;
+}
+
+.film__lids i:last-child {
+  bottom: 0;
+  border-radius: 50% 50% 0 0 / 34% 34% 0 0;
+}
+
+/* breathing: a ring that fills and empties */
+.is-film .film__breath {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: 6;
+  width: min(44vmin, 280px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.film__breath i {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgba(255, 214, 160, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--ink), inset 0 0 0 2px var(--ink), 0 0 50px rgba(242, 168, 75, 0.35);
+  scale: calc(0.55 + var(--b, 0) * 0.45);
+  background: radial-gradient(circle, rgba(242, 168, 75, calc(0.06 + var(--b, 0) * 0.16)), transparent 70%);
+}
+
+.film__breath span {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--paper);
+  text-shadow: 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink);
+}
+
+/* the ritual's frame: an inked panel border, inset from the screen's edge, on while a step
+   has landed; it goes during the walk to the next one */
+.is-film .film__frame {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ff__edge {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: calc(var(--film-top, var(--header-h)) + 14px);
+  bottom: 18px;
+  border: 5px solid var(--ink);
+  box-shadow: inset 0 0 0 2px rgba(241, 232, 208, 0.85), 0 0 0 9999px rgba(11, 13, 16, 0.3);
+}
+
+.ff__edge::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1.5px solid rgba(241, 232, 208, 0.5);
+}
+
+.ff__head {
+  position: absolute;
+  left: 40px;
+  top: -9px;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.ff__n,
+.ff__t,
+.ff__time {
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.ff__n {
+  display: flex;
+  align-items: center;
+  padding: 0.3em 0.6em 0.2em;
+  background: var(--tungsten);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+.ff__t {
+  padding: 0.08em 0.4em 0;
+  border-left: 0;
+  background: #f1e8d0;
+  color: var(--cap-ink);
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.ff__time {
+  align-self: flex-start;
+  margin-left: 0.9rem;
+  padding: 0.2em 0.5em 0.12em;
+  background: var(--ink);
+  color: var(--tungsten);
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 3px 3px 0 rgba(242, 168, 75, 0.35);
+}
+
+.ff__pips {
+  position: absolute;
+  right: 40px;
+  bottom: -12px;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ff__pips li {
+  width: 17px;
+  height: 17px;
+  border: 3px solid var(--ink);
+  background: #f1e8d0;
+  transform: rotate(45deg);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ff__pips li.done {
+  background: var(--tungsten);
+}
+
+.ff__pips li.now {
+  background: #f1e8d0;
+  box-shadow: 0 0 0 3px #f1e8d0, 0 0 14px 5px rgba(242, 168, 75, 0.75);
+}
+
+/* done: a tick pops up on the step's tab, and its diamond fills */
+.ff__t::after {
+  content: '\2713';
+  display: inline-grid;
+  place-items: center;
+  width: 1.05em;
+  height: 1.05em;
+  margin-left: 0.3em;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--tungsten);
+  color: var(--ink);
+  font-size: 0.62em;
+  line-height: 1;
+  vertical-align: 0.18em;
+  transform: scale(0);
+  transition: transform 0.25s ease;
+}
+
+.film__frame.is-done .ff__t::after {
+  transform: scale(1);
+  transition: transform 0.45s cubic-bezier(0.3, 1.7, 0.5, 1);
+}
+
+.film__frame.is-done .ff__pips li.now {
+  background: var(--tungsten);
+}
+
+@media (max-width: 699px) {
+  .ff__edge {
+    left: 10px;
+    right: 10px;
+    bottom: 12px;
+    border-width: 4px;
+  }
+  .ff__head {
+    left: 18px;
+    align-items: flex-start;
+  }
+  .ff__n { padding: 0.3em 0.5em 0.2em; font-size: 0.82rem; }
+  .ff__time { margin-left: 0.6rem; font-size: 0.95rem; }
+  /* the title goes under the step and the time, leaving the top right for the pips */
+  .ff__t {
+    position: absolute;
+    left: 0;
+    top: calc(100% - 3px);
+    width: max-content;
+    max-width: calc(100vw - 64px);
+    border-left: 3px solid var(--ink);
+    font-size: 1.9rem;
+    white-space: normal;
+  }
+  /* the pips run down the frame's right edge */
+  .ff__pips {
+    flex-direction: column;
+    right: -10px;
+    left: auto;
+    bottom: auto;
+    top: 42%;
+    gap: 7px;
+  }
+  .ff__pips li {
+    width: 12px;
+    height: 12px;
+    border-width: 2.5px;
+  }
+}
+
+/* the last line: the sun's back on the line */
+.is-film .fi--zero {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  width: min(32rem, 86vw);
+  margin: 0;
+  transform: translateX(-50%);
+  color: #f6dfb8;
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
+}
+
+/* the progress line, the skip link */
+.is-film .film__hud {
+  display: block;
+}
+
+.film__bar {
+  position: absolute;
+  z-index: 8;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(243, 240, 232, 0.12);
+}
+
+.film__bar i {
+  display: block;
+  height: 100%;
+  background: var(--tungsten);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+.is-film .film__skip {
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  z-index: 9;
+  right: var(--gutter);
+  top: calc(var(--header-h) + 0.6rem);
+  min-height: 36px;
+  padding: 0.2rem 0.75rem;
+  border: 1.5px solid rgba(243, 240, 232, 0.4);
+  border-radius: 99px;
+  background: rgba(11, 13, 16, 0.82);
+  color: var(--paper-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+
+.is-film .film__skip:hover,
+.is-film .film__skip:focus-visible {
+  color: var(--paper);
+  border-color: var(--tungsten);
+}
+
+.is-film .film__hint {
+  display: block;
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: 1.4rem;
+  margin: 0;
+  translate: -50% 0;
+  color: var(--paper-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.is-film .film__hint::after {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 26px;
+  margin: 0.5rem auto 0;
+  background: linear-gradient(var(--tungsten), transparent);
+  animation: film-hint 1.6s ease-in-out infinite;
+}
+
+@keyframes film-hint {
+  0%, 100% { transform: translateY(-4px); opacity: 0.4; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* ------------------------------------------------------------------ the words */
+.is-film .beat {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.is-film .beat__panel {
+  display: none;
+}
+
+.is-film .beat__text {
+  position: absolute;
+  inset: 0;
+}
+
+.is-film .fi {
+  position: absolute;
+  margin: 0;
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.is-film .fi a,
+.is-film .fi button {
+  pointer-events: auto;
+}
+
+.is-film .fi--pin {
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.is-film .thoughts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.is-film .fi--stamp {
+  left: var(--gutter);
+  top: calc(var(--header-h) + 0.9rem);
+}
+
+.is-film .cap--big.fi--stamp {
+  top: calc(var(--header-h) + 3.4rem);
+}
+
+.hall__title {
+  font-size: clamp(2.5rem, 10.5vw, 6.5rem);
+}
+
+.hall__title .ln + .ln {
+  color: var(--tungsten);
+}
+
+.is-film .fi--title {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: calc(var(--header-h) + 3.2rem);
+}
+
+.is-film .fi--end,
+.is-film .fi--low {
+  left: var(--gutter);
+  bottom: 2.6rem;
+  max-width: min(32ch, calc(100% - 2 * var(--gutter)));
+}
+
+.is-film .fi--low2 {
+  left: var(--gutter);
+  bottom: 6.6rem;
+  max-width: min(32ch, calc(100% - 2 * var(--gutter)));
+}
+
+.is-film .fi--mid {
+  left: var(--gutter);
+  top: 38%;
+  max-width: min(26ch, calc(100% - 2 * var(--gutter)));
+}
+
+.fi--found {
+  font-size: clamp(3rem, 10vw, 6rem);
+  color: var(--tungsten);
+  white-space: nowrap;
+}
+
+.is-film .bubble.fi--pin {
+  max-width: min(24ch, calc(100vw - 2 * var(--gutter)));
+}
+
+.sfx--click {
+  color: var(--paper);
+  transform: none;
+  white-space: nowrap;
+}
+
+.is-film .sfx--buzz {
+  animation: story-buzz 0.16s linear infinite;
+}
+
+.sfx--glug {
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  color: #9fd0f2;
+  white-space: nowrap;
+}
+
+/* work, still on in the dark room: notifications hanging in the air */
+.wpings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wping {
+  display: grid;
+  gap: 0.1rem;
+  width: max-content;
+  max-width: min(22ch, 60vw);
+  padding: 0.5rem 0.75rem 0.55rem;
+  border: 2px solid #0b0d10;
+  border-left: 4px solid #6fb3ff;
+  border-radius: 10px;
+  background: rgba(16, 24, 38, 0.92);
+  color: #dfeaf7;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.25;
+  box-shadow: 0 0 22px rgba(80, 150, 255, 0.35), 3px 4px 0 #0b0d10;
+}
+
+.wping b {
+  color: #8fc3ff;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 860;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* a phone has room for fewer of them at once */
+@media (max-width: 699px) {
+  .is-film .wping:nth-child(4),
+  .is-film .wping:nth-child(5) {
+    display: none;
+  }
+}
+
+.film:not(.is-film) .wpings {
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
+}
+
+.film:not(.is-film) .wping:nth-child(n + 4) {
+  display: none;
+}
+
+.fi--off {
+  font-size: clamp(2.8rem, 8.5vw, 6.5rem);
+  color: var(--tungsten);
+}
+
+.is-film .fi--off {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 62%;
+  text-align: center;
+}
+
+/* the line between work and evening */
+.is-film .fi--idea {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: calc(var(--header-h) + 0.9rem);
+  font-size: clamp(2.2rem, 8.5vw, 5.2rem);
+}
+
+.idea {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.is-film .idea {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: 44%;
+}
+
+.idea__word {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.2rem, 9vw, 5rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  color: var(--paper);
+  text-shadow: 0 2px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink), 3px 5px 0 var(--ink);
+}
+
+.idea__w--work .idea__word {
+  color: rgba(243, 240, 232, 0.55);
+  text-decoration: line-through;
+  text-decoration-color: #d02828;
+  text-decoration-thickness: 0.12em;
+}
+
+.idea__w--shift .idea__word {
+  color: var(--tungsten);
+}
+
+.idea__note {
+  display: block;
+  max-width: 36ch;
+  margin: 0.15rem 0 0.4rem;
+  color: var(--paper-2);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px var(--ink);
+}
+
+.is-film .idea__note {
+  display: none;
+}
+
+.coda {
+  display: grid;
+  justify-items: start;
+  gap: 0.55rem;
+}
+
+.is-film .coda {
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 2.6rem;
+}
+
+/* the ritual: it says so, lists its seven steps, then takes them one by one */
+.rintro {
+  display: grid;
+  justify-items: start;
+  gap: 0.9rem;
+}
+
+.rintro__title {
+  margin: 0;
+  font-size: clamp(2.4rem, 8vw, 5.4rem);
+}
+
+.rintro__title .ln + .ln {
+  color: var(--tungsten);
+}
+
+.rintro__steps {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.6rem;
+  max-width: 46rem;
+}
+
+.rintro__steps li {
+  display: inline-flex;
+  align-items: stretch;
+  border: 2.5px solid var(--ink);
+  background: #f1e8d0;
+  color: var(--cap-ink);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  font-weight: 860;
+  line-height: 1;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.rintro__steps li span {
+  display: grid;
+  place-items: center;
+  min-width: 1.7em;
+  margin-right: 0.45em;
+  border-right: 2.5px solid var(--ink);
+  background: var(--tungsten);
+}
+
+.rintro__steps li {
+  padding-right: 0.55em;
+}
+
+.rintro__steps li,
+.rintro__steps li span {
+  padding-top: 0.28em;
+  padding-bottom: 0.2em;
+}
+
+.is-film .rintro {
+  left: var(--gutter);
+  right: var(--gutter);
+  top: calc(var(--header-h) + 1.4rem);
+}
+
+.rintro__k,
+.rintro__free {
+  max-width: min(60ch, 100%);
+}
+
+/* the steps arrive one after another as the intro plays */
+.is-film .rintro__steps li,
+.is-film .rintro__free {
+  opacity: clamp(0, calc((var(--k, 0) * 9 - var(--i)) * 1.5), 1);
+  transform: translateY(calc((1 - clamp(0, calc((var(--k, 0) * 9 - var(--i)) * 1.5), 1)) * 10px));
+}
+
+.rsteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rstep__card {
+  position: relative;
+  max-width: 30rem;
+  padding: 0.95rem 1.1rem 1rem;
+  border: 3px solid var(--ink);
+  background: #f1e8d0;
+  color: var(--cap-ink);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.rstep__min {
+  position: absolute;
+  top: -0.95rem;
+  left: 0.9rem;
+}
+
+.rstep__title {
+  margin: 0.35rem 0 0.3rem;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.6rem, 5vw, 2.3rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.rstep__do {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.38;
+}
+
+.rstep__why,
+.rstep__opt {
+  margin: 0.45rem 0 0;
+  font-size: 0.94rem;
+  font-weight: 560;
+  line-height: 1.42;
+  color: #4a443b;
+}
+
+.rstep__opt {
+  color: #6a3e10;
+}
+
+.rstep__why b,
+.rstep__opt b {
+  margin-right: 0.35em;
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cap-ink);
+}
+
+/* in the film, the card sits on the frame's bottom line; the frame carries the step and the title */
+.is-film .rstep {
+  left: calc(18px + 40px);
+  bottom: 10px;
+  max-width: min(31rem, calc(100% - 2 * 58px));
+}
+
+.is-film .rstep__card {
+  padding: 0.8rem 1rem 0.85rem;
+}
+
+.is-film .rstep__min,
+.is-film .rstep__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 699px) {
+  .is-film .rstep {
+    left: 18px;
+    right: 18px;
+    bottom: 6px;
+    max-width: none;
+  }
+  .is-film .rstep__card {
+    max-width: none;
+    padding: 0.7rem 0.85rem 0.75rem;
+  }
+  .rstep__do { font-size: 0.98rem; }
+  .rstep__why, .rstep__opt { font-size: 0.86rem; }
+}
+
+.rdone {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+}
+
+.is-film .rdone {
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 2.4rem;
+}
+
+.rdone__title {
+  margin: 0;
+  font-size: clamp(3rem, 12vw, 7rem);
+  color: var(--tungsten);
+}
+
+.rdone__copy {
+  display: grid;
+  gap: 0.2rem;
+  max-width: 40ch;
+}
+
+.rdone__copy p {
+  margin: 0;
+  color: var(--paper);
+  font-weight: 650;
+  text-shadow: 0 1px 3px var(--ink);
+}
+
+/* the end: the bottle in the dream, then the sun on its label sets, then one line in the night sky */
+.is-film .fi--chip {
+  left: var(--gutter);
+  top: calc(var(--header-h) + 0.9rem);
+}
+
+.fi--endline {
+  margin: 0;
+}
+
+.fi--endline .lettering {
+  display: block;
+  font-size: clamp(2.6rem, 8vw, 6rem);
+  line-height: 0.95;
+}
+
+.is-film .fi--endline {
+  left: var(--gutter);
+  right: var(--gutter);
+  /* in the sky, between the header and the horizon (58% down) */
+  top: calc((var(--header-h) + 58%) / 2);
+  translate: 0 -50%;
+  text-align: center;
+}
+
+.is-film .fi--endline .lettering {
+  max-width: 20ch;
+  font-size: clamp(2.4rem, 6.2vw, 5.2rem);
+  margin: 0 auto;
+  color: var(--paper);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* on phones the skip pill takes the top right corner: titles start under it */
+@media (max-width: 699px) {
+  .is-film .fi--idea,
+  .is-film .rintro {
+    top: calc(var(--header-h) + 3rem);
+  }
+  .is-film .fi--chip {
+    top: auto;
+    bottom: 2.2rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .is-film .film__skip {
+    font-size: 0.8rem;
+    min-height: 32px;
+  }
+}
+
+/* ------------------------------------------------------------------ the calendar
+   The full-screen twin of the one on the hallway wall (game-paint.js P.calendar): same
+   proportions, in units of the calendar's own size. */
+.cal {
+  position: relative;
+  background: #f1e8d0;
+  color: var(--cap-ink);
+}
+
+.cal__rings {
+  height: 2.6rem;
+  background:
+    radial-gradient(ellipse 0.55rem 0.62rem at 50% 62%, #0d0f14 92%, transparent 100%) 0 0 / 2.4rem 100% repeat-x,
+    #2a2622;
+}
+
+.cal__head {
+  padding: 0.9rem var(--gutter) 0.6rem;
+}
+
+.cal__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.8rem, 7vw, 3.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--cap-ink);
+}
+
+.cal__sub {
+  margin: 0.2rem 0 0;
+  font-weight: 700;
+  color: #4a443b;
+}
+
+.cal__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gutter) var(--gutter);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+@media (min-width: 800px) {
+  .cal__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.cal__cell {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  background: #1b1d22;
+}
+
+.cal__shot {
+  position: absolute;
+  inset: 0;
+}
+
+.cal__shot canvas {
+  object-fit: cover;
+}
+
+.cal__live {
+  display: none;
+}
+
+.cal__dow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0.18em 0.45em 0.12em;
+  border-right: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  background: #f1e8d0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.cal__time {
+  position: absolute;
+  z-index: 2;
+  left: 0.4rem;
+  bottom: 0.4rem;
+  max-width: calc(100% - 0.8rem);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal__place {
+  margin-left: 0.6em;
+}
+
+.cal__mark {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cal__mark path {
+  fill: none;
+  stroke: rgba(208, 40, 40, 0.92);
+  stroke-width: 5px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.is-film .cal__mark path {
+  vector-effect: none;
+  stroke-dasharray: 1;
+}
+
+.is-film .cal__mark--x path:first-child { stroke-dashoffset: calc(1 - clamp(0, var(--d, 0) * 2, 1)); }
+.is-film .cal__mark--x path:last-child { stroke-dashoffset: calc(1 - clamp(0, var(--d, 0) * 2 - 1, 1)); }
+.is-film .cal__mark--ring path { stroke-dashoffset: calc(1 - var(--d, 0)); }
+
+.cal__tonight {
+  position: absolute;
+  z-index: 3;
+  right: 6%;
+  top: 5%;
+  margin: 0;
+  color: #d02828;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: rotate(-8deg);
+  opacity: var(--d, 1);
+  text-shadow: 0 1px 0 rgba(241, 232, 208, 0.8);
+}
+
+.cal__thought {
+  margin: 0.9rem 0 1.4rem;
+  font-size: 0.95rem;
+}
+
+/* the calendar in the film: the whole screen */
+.is-film .beat--cal {
+  z-index: 6;
+}
+
+.is-film .cal {
+  position: absolute;
+  inset: var(--film-top, 0px) 0 0;
+  visibility: hidden;
+  container-type: size;
+  will-change: opacity, transform;
+  background:
+    radial-gradient(rgba(120, 96, 60, 0.08) 0.6px, transparent 1px) 0 0 / 5px 5px,
+    #f1e8d0;
+  box-shadow: inset 0 0 0 max(2px, 0.6cqmin) var(--ink);
+}
+
+.is-film .cal__rings {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5.5cqh;
+  background:
+    radial-gradient(ellipse 16% 20% at 50% 62%, #0d0f14 92%, transparent 100%) 0 0 / calc(5.5cqh * 1.4) 100% repeat-x,
+    #2a2622;
+  background-position: center 0;
+}
+
+.is-film .cal__head {
+  position: absolute;
+  left: 4cqmin;
+  right: 4cqmin;
+  top: calc(5.5cqh + 2.4cqmin);
+  padding: 0;
+}
+
+.is-film .cal__title {
+  display: inline-block;
+  font-size: min(6cqh, 7.5cqw);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.is-film .cal__sub {
+  white-space: nowrap;
+}
+
+.is-film .cal__sub {
+  margin-top: min(0.7cqh, 0.9cqw);
+  font-size: min(2.6cqh, 4cqw);
+  line-height: 1.2;
+}
+
+.is-film .cal__grid {
+  position: absolute;
+  left: 4cqmin;
+  right: 4cqmin;
+  top: 21.5cqh;
+  bottom: 4cqmin;
+  padding: 0;
+  gap: 2cqmin;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-aspect-ratio: 4/5) {
+  .is-film .cal__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.is-film .cal__day {
+  min-height: 0;
+}
+
+.is-film .cal__cell {
+  aspect-ratio: auto;
+  height: 100%;
+  border-width: max(1.5px, 0.4cqmin);
+  transform: scale(calc(1 + var(--a, 0) * 0.025));
+  box-shadow: 0 0 0 calc(var(--a, 0) * 5px) var(--tungsten), 0 calc(var(--a, 0) * 10px) calc(var(--a, 0) * 30px) rgba(11, 13, 16, 0.45);
+  z-index: calc(1 + var(--a, 0) * 2);
+}
+
+.is-film .cal__day--tonight .cal__shot canvas[data-shot] {
+  display: none;
+}
+
+.is-film .cal__live {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.is-film .cal__dow {
+  border-width: max(1.5px, 0.4cqmin);
+  border-top: 0;
+  border-left: 0;
+  font-size: min(2.4cqh, 4cqw);
+  padding: 0.22em 0.45em 0.18em;
+}
+
+.is-film .cal__time {
+  left: min(0.76cqh, 1.28cqw);
+  bottom: min(0.76cqh, 1.28cqw);
+  max-width: calc(100% - 2 * min(0.76cqh, 1.28cqw));
+  font-size: min(1.9cqh, 3.2cqw);
+  padding: 0.3em 0.55em 0.26em;
+  box-shadow: none;
+}
+
+.is-film .cal__mark path {
+  stroke-width: max(3px, 1.1cqmin);
+}
+
+.is-film .cal__mark--x {
+  opacity: min(1, calc(var(--d, 0) * 20));
+}
+
+.is-film .cal__tonight {
+  font-size: min(3.4cqh, 5.4cqw);
+}
+
+.is-film .cal__day {
+  position: relative;
+}
+
+/* the thought beside its own evening: to the right of the square, or to the left on the last column */
+.is-film .cal__thought {
+  position: absolute;
+  left: calc(100% - 7%);
+  top: 16%;
+  z-index: 6;
+  width: max-content;
+  max-width: min(24ch, 30cqw);
+  margin: 0;
+  font-size: min(2.4cqh, 4.2cqw);
+  opacity: var(--a, 0);
+  transform: translateX(calc((1 - var(--a, 0)) * -14px));
+  pointer-events: none;
+}
+
+.is-film .cal__day:nth-child(3n) .cal__thought {
+  left: auto;
+  right: calc(100% - 7%);
+  transform: translateX(calc((1 - var(--a, 0)) * 14px));
+}
+
+/* the little thought circles point back at the square */
+.is-film .cal__thought::before {
+  left: -0.75em;
+  top: auto;
+  bottom: 0.6em;
+}
+
+.is-film .cal__thought::after {
+  left: -1.45em;
+  top: auto;
+  bottom: 0.1em;
+}
+
+.is-film .cal__day:nth-child(3n) .cal__thought::before {
+  left: auto;
+  right: -0.75em;
+}
+
+.is-film .cal__day:nth-child(3n) .cal__thought::after {
+  left: auto;
+  right: -1.45em;
+}
+
+@media (max-aspect-ratio: 4/5) {
+  .is-film .cal__thought,
+  .is-film .cal__day:nth-child(3n) .cal__thought {
+    left: calc(100% - 9%);
+    right: auto;
+    top: 30%;
+    max-width: min(22ch, 46cqw);
+    transform: translateX(calc((1 - var(--a, 0)) * -14px));
+  }
+  .is-film .cal__day:nth-child(2n) .cal__thought {
+    left: auto;
+    right: calc(100% - 9%);
+    transform: translateX(calc((1 - var(--a, 0)) * 14px));
+  }
+  .is-film .cal__day:nth-child(3n) .cal__thought::before { left: -0.75em; right: auto; }
+  .is-film .cal__day:nth-child(3n) .cal__thought::after { left: -1.45em; right: auto; }
+  .is-film .cal__day:nth-child(2n) .cal__thought::before { left: auto; right: -0.75em; }
+  .is-film .cal__day:nth-child(2n) .cal__thought::after { left: auto; right: -1.45em; }
+}
+
+/* ================================================================== the comic (no film) */
+.film:not(.is-film) .beat {
+  position: relative;
+  border-top: var(--gut) solid var(--ink);
+}
+
+.film:not(.is-film) .beat__panel {
+  aspect-ratio: 4 / 5;
+  max-height: 80vh;
+  width: 100%;
+  border: 0;
+}
+
+@media (min-width: 800px) {
+  .film:not(.is-film) .beat__panel {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.film:not(.is-film) .beat__text {
+  display: grid;
+  justify-items: start;
+  gap: 1.1rem;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 1.6rem var(--gutter) 2.6rem;
+}
+
+.film:not(.is-film) .hall__title {
+  font-size: clamp(2.4rem, 9vw, 5rem);
+}
+
+.film:not(.is-film) .thoughts {
+  list-style: none;
+  margin: 0.4rem 0 0.8rem;
+  padding: 0;
+  display: grid;
+  justify-items: start;
+  gap: 1.6rem;
+}
+
+.film:not(.is-film) .thoughts .bubble:nth-child(even) {
+  margin-left: 2rem;
+}
+
+.film:not(.is-film) .sfx {
+  font-size: clamp(2.4rem, 7vw, 4rem);
+}
+
+.film:not(.is-film) .fi--found {
+  font-size: clamp(2.4rem, 7vw, 4rem);
+}
+
+.film:not(.is-film) .beat--cal {
+  padding: 1.5rem 0 0.5rem;
+}
+
+.film:not(.is-film) .cal {
+  max-width: var(--wrap);
+  margin: 0 auto;
+  border: 3px solid var(--ink);
+}
+
+.film:not(.is-film) .rsteps {
+  display: grid;
+  gap: 1.6rem;
+  width: 100%;
+}
+
+@media (min-width: 800px) {
+  .film:not(.is-film) .rsteps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.film:not(.is-film) .rstep .beat__panel {
+  aspect-ratio: 16 / 10;
+  margin-bottom: -1.2rem;
+  border: 3px solid var(--ink);
+}
+
+.film:not(.is-film) .rstep__card {
+  margin: 0 0.6rem;
+}
+
+.film:not(.is-film) .beat--finale .beat__panel {
+  aspect-ratio: 1;
+  max-height: 70vh;
+}
+
+
+/* the product right after the film: the film has just shown the bottle, so no picture here;
+   the words on the left, the spec sheet on the right */
+.has-film .ch--reset .reset__panel {
+  display: none;
+}
+
+.has-film .ch--reset .reset__name {
+  font-size: clamp(4.5rem, 13vw, 9rem);
+}
+
+@media (min-width: 900px) {
+  .has-film .ch--reset .reset__page {
+    grid-template-columns: 1fr;
+  }
+  .has-film .ch--reset .reset__text {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    column-gap: 3.5rem;
+    align-items: start;
+  }
+  .has-film .ch--reset .reset__text > * {
+    grid-column: 1;
+  }
+  .has-film .ch--reset .reset__text > .spec-sheet {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    align-self: center;
+  }
+}
+
+.has-film .ch--reset {
+  /* the ground under the horizon the sun has just set behind */
+  border-top: 0;
+  background: #0c0d12;
+}
+
+.has-film .ch--reset .reset__name {
+  color: var(--paper);
+}
+
+.film:not(.is-film) .sfx--glug,
+.film:not(.is-film) .sfx--click {
+  display: none;
+}
+
+@keyframes story-buzz {
+  25% { translate: 2px -1px; }
+  75% { translate: -2px 1px; }
+}

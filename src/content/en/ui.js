@@ -1,0 +1,250 @@
+// Shared interface copy: header, footer, buttons, forms, status labels.
+// Each locale has its own ui.js; missing keys fall back to English.
+
+export default ({ cfg }) => ({
+  skip: 'Skip to content',
+  nav: {
+    label: 'Main',
+    home: 'home',
+    ritual: 'Free ritual',
+    reset: 'RESET',
+    batch: 'Batch #001',
+    story: 'Story',
+    formula: 'Formula',
+    faq: 'FAQ',
+    journal: 'Journal',
+    contact: 'Contact',
+    shipping: 'Shipping & returns',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    cookies: 'Cookie preferences',
+    system: 'Design system',
+  },
+  menu: { open: 'Open menu', close: 'Close menu' },
+  calm: {
+    label: 'Low-stim',
+    hint: 'Low-stimulation mode: no motion, softer contrast',
+    on: 'Low-stimulation mode on',
+    off: 'Low-stimulation mode off',
+  },
+
+  // The work-mode switch: on the home page, in the header of every page, and at the end of the opening.
+  shift: {
+    labelOn: 'Work: on',
+    labelOff: 'Work: off',
+    toastOff: 'Work: off. The site stays in evening mode until 5 a.m.',
+    toastOn: 'Work: on again.',
+    name: 'Work mode',
+    toOff: 'Switch off work mode',
+    toOn: 'Switch work mode back on',
+    markOn: 'Work',
+    markOff: 'Off',
+    lineOn: 'All that’s left is to switch off.',
+    hintOn: 'Flip it.',
+    // Off, by time of day. {now} = the time now, {out} = the usual end of shift
+    offEvening: 'Good. Now give it twenty minutes.',
+    offNight: 'It’s {now}. Twenty minutes, then sleep.',
+    offDay: 'It’s {now}. Done for the day? Good.',
+    offAt: 'Switched off at {t}',
+    remind: 'Still on shift? Remind me at {out}',
+    remindTitle: 'Switch off. ENDSHIFT',
+    announceOff: 'Work mode off at {t}.',
+    announceOn: 'Work mode back on.',
+    outEdit: 'Change your usual end of shift',
+    outLabel: 'When does your shift usually end?',
+    outSave: 'Save',
+    outCancel: 'Cancel',
+    outHint: 'Saved on this device only. Used for your reminder and to tell day from evening.',
+    outSaved: 'Your end of shift is now {t}.',
+    gateHint: 'Flip it, or scroll to look around.',
+    // Shown for a few seconds when someone switches work mode back on
+    pings: [
+      ['Manager', 'quick question?'],
+      ['Work chat', '@you'],
+      ['Re: Re: Re:', 'deadline moved up'],
+      ['Calendar', 'Sync in 5 min'],
+      ['Client', 'just one small change'],
+      ['Shift lead', 'can you come in early?'],
+    ],
+  },
+
+  cta: {
+    ritual: 'Start the free ritual',
+    ritualOff: 'Start your 20 minutes',
+    // the bar at the bottom of phones (the same here; Bulgarian needs a shorter one)
+    sticky: 'Start the free ritual',
+    stickyOff: 'Start your 20 minutes',
+    ritualShortOff: 'Your 20 minutes',
+    ritualShort: 'Free ritual',
+    ritualLong: 'Start the 20-minute ritual',
+    meet: 'Meet RESET',
+    seeReset: 'See RESET',
+    joinBatch: 'Join Batch #001',
+    batchConcept: 'Join the founding list',
+    batchPreorder: 'Become a founder',
+    batchProduction: 'Get production updates',
+    batchInStock: 'Buy RESET',
+    follow: 'Follow the build',
+    formula: 'See the shortlist',
+    allFaq: 'All questions',
+  },
+
+  status: {
+    concept: 'In development',
+    preorder: 'Preorders open',
+    production: 'In production',
+    in_stock: 'In stock',
+  },
+  statusLine: {
+    concept: 'No payments yet. The founding list is free.',
+    preorder: 'Preorders for Batch #001 are open.',
+    production: 'Batch #001 is being made.',
+    in_stock: 'Ready to ship.',
+  },
+
+  product: {
+    renderAlt: 'The ENDSHIFT RESET jar',
+    renderAltConcept: 'Drawing of the planned ENDSHIFT RESET jar: square, warm white, an amber cap and a light switch set to OFF on the front. The artwork isn’t final.',
+    renderCaption: 'ENDSHIFT RESET',
+    renderCaptionConcept: 'Drawn concept. Not the final jar.',
+    // drawings of the planned jar (packaging direction C, drawn with the site's ink renderer), until real photos exist
+    photoStudioAlt: 'Drawing of the planned RESET jar: a square, warm white jar with an amber cap and a raised light switch set to OFF on the front, next to its box.',
+    photoNightAlt: 'Drawing of the RESET jar on a bedside table at night, between the alarm clock at 22:41, a glass of water and the lamp.',
+    photoCaption: 'A drawing of the planned jar, not a photo. Real photos come before anything is sold.',
+    photoNightCaption: 'Where it’s meant to live: on the bedside table, by the lamp. A drawing, not a photo.',
+    labelLine1: (n) => `${n} CAPSULES`,
+    labelLine2: 'AFTER WORK',
+  },
+
+  signup: {
+    label: 'Email',
+    placeholder: 'you@example.com',
+    submit: 'Join the list',
+    note: 'Free. We email you when preorders open, plus the occasional build update. Unsubscribe in one click.',
+    sending: 'Sending…',
+    errorEmail: 'Enter an email address like name@example.com.',
+    errorNetwork: 'That didn’t go through. Check your connection and try again.',
+    doneTitle: 'You’re on the list.',
+    doneText: 'Check your inbox to confirm. If nothing arrives in a few minutes, look in spam.',
+    previewText: 'Preview mode: this form isn’t connected yet, so no email was sent anywhere.',
+  },
+
+  // After joining: the next steps, the remembered state on every page, and the founder card
+  joined: {
+    next: 'Next',
+    confirm: 'Confirm the email we just sent. Your founder number is set then.',
+    tonight: 'Tonight: the free 20-minute ritual.',
+    tonightCta: 'Start tonight’s ritual',
+    colleague: 'Know someone who can’t switch off either?',
+    colleagueCta: 'Send them the ritual',
+    shareTitle: 'ENDSHIFT: a free 20-minute ritual for the end of the shift',
+    shareText: 'A free 20-minute way to end the shift and actually switch off. In the browser, no account.',
+    state: 'You’re on the founding list.',
+    stateUpdates: 'You get the build updates.',
+    colleagueShort: 'Send the ritual to someone',
+    stateNo: 'You’re on the founding list as founder Nº {n}.',
+    statePreview: 'Preview: nothing was sent. This device only remembers that you tried the form.',
+    again: 'Use another email',
+    seeCard: 'See your card',
+    sheet: {
+      kicker: 'Email confirmed',
+      title: 'You’re a founder.',
+      titleNo: 'You’re founder Nº {n}.',
+      text: 'When {goal} people are on the list, Batch #001 gets made. You’ll hear from us before anything can be bought, and never more than a couple of times a month.',
+      save: 'Save the card',
+      share: 'Share the card',
+      close: 'Close',
+      numbered: 'Numbered in the order people confirm.',
+      made: 'Card saved',
+    },
+    card: { brand: 'ENDSHIFT', batch: '#001', title: 'Founder', no: 'No.', in: 'In', out: 'Out', outValue: 'Never, hopefully', stamp: 'Batch 001', alt: 'Your ENDSHIFT founder card' },
+  },
+  founder: { listen: 'Listen to the founder', pause: 'Pause', transcript: 'Read it instead' },
+
+  meter: {
+    early: (goal) => `is free. The first ${goal} people on the founding list are Batch #001’s founders.`,
+    listLabel: (n) => `${n === 1 ? 'person' : 'people'} on the founding list`,
+    foundersLabel: (n, goal) => `${n === 1 ? 'founder' : 'founders'} so far. Production starts at ${goal}.`,
+    source: (date) => `Counted by a person, not a script. Last checked ${date}.`,
+    live: 'Live count of confirmed sign-ups.',
+  },
+
+  timeline: { done: 'Done', now: 'Now', next: 'Next', decision: 'Decision:' },
+
+  formula: {
+    status: { candidate: 'On the shortlist', undecided: 'Undecided', included: 'In the formula' },
+    doseTbc: 'Dose to be confirmed',
+    perServing: 'per daily serving',
+    what: 'What it is',
+    whyCandidate: 'Why it’s on the list',
+    whyIncluded: 'Why it’s in',
+    say: 'What we can say',
+    notPromise: 'What it doesn’t promise',
+    safety: 'Safety',
+    claimsTitle: 'What we can say, and what we can’t',
+    guide: 'Our guide',
+    readMore: 'Read more',
+    claimPending: 'An EU-authorised health claim exists for this ingredient, at a high enough dose. We’ll only print it if the final dose qualifies.',
+    noClaim: 'No authorised health claim exists for it. So you won’t get one from us.',
+    nrv: 'of the NRV',
+  },
+
+  price: {
+    exact: (p) => `${p} for ${cfg.product.servings} servings`,
+    range: (r) => `Target range ${r}. The final price is set before preorders open.`,
+    none: 'Set before preorders open. You’ll see it before you pay anything.',
+  },
+
+  // Founder benefits. Only the ones switched on in site.config.js → batch.benefits are shown.
+  benefits: {
+    founderNumber: { title: 'A founder number', text: 'Founder No. 001 to 150, in the order you joined.', short: 'a founder number' },
+    batchCard: { title: 'Your Batch #001 card', text: 'A digital time card with your number and the day you clocked in.', short: 'a digital Batch #001 card' },
+    formulaVote: { title: 'A vote on the open decisions', text: 'Melatonin or not, packaging, what comes after RESET.', short: 'a vote on formula and packaging decisions' },
+    buildUpdates: { title: 'Private build updates', text: 'Samples, costs, delays and mistakes, by email, as they happen.', short: 'private build updates' },
+    earlyAccess: { title: 'First access to what’s next', text: 'Anything ENDSHIFT makes after RESET, founders see first.', short: 'first access to future products' },
+    founderDiscount: { title: (n) => `${n}% off for life`, text: 'On RESET, for as long as you keep ordering.', short: (n) => `${n}% off for life` },
+    founderWall: { title: 'A place on the founder wall', text: 'Opt-in. Your first name or nickname on the public list of founders.', short: 'an optional place on the founder wall' },
+    and: 'and',
+  },
+
+  toast: {
+    copied: 'Copied',
+    copyFailed: 'Couldn’t copy. Select the text and copy it yourself.',
+    linkCopied: 'Link copied',
+    confirmed: 'Email confirmed. You’re on the list.',
+  },
+
+  consent: {
+    title: 'Analytics',
+    text: 'Can we count visits with Google Analytics? It sets cookies. The site works the same either way.',
+    yes: 'Allow',
+    no: 'No thanks',
+  },
+
+  common: {
+    copy: 'Copy',
+    notFinal: 'Not final',
+    tbc: 'To be confirmed',
+    readMore: 'Read more',
+    backHome: 'Back to the start',
+    updated: 'Last updated',
+  },
+
+  legal: {
+    draft: '<strong>Draft.</strong> This page is a working draft and will be reviewed by a lawyer before anything is sold. It already describes how we actually handle things today.',
+    contents: 'On this page',
+  },
+
+  footer: {
+    line: 'A small ritual between work and the rest of your life.',
+    explore: 'Explore',
+    help: 'Help',
+    legal: 'Legal',
+    uic: 'UIC',
+    vat: 'VAT',
+    companyPending: 'Company details will be published here before anything is sold.',
+    disclaimer:
+      'RESET is planned as a food supplement, not a medicine. Nothing on this site is medical advice. If your evenings are hard because of how you feel, talk to a doctor.',
+    madeIn: 'Built in public in Bulgaria.',
+  },
+});

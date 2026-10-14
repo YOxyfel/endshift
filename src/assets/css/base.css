@@ -1,0 +1,503 @@
+/* ==========================================================================
+   ENDSHIFT design tokens + base
+   Layout concept: the page is one evening. It opens loud, cold and fast and
+   ends dim, warm and slow. Left-aligned editorial columns, type as the image.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* Palette */
+  --night: #0f1112; /* page ground, early evening (cool graphite) */
+  --night-warm: #15110d; /* page ground, late evening (warm dark) */
+  --graphite: #181b1e; /* surfaces: slips, panels, inputs */
+  --graphite-2: #212529; /* raised surfaces, hover */
+  --line: #30363a; /* borders, inactive dial segments */
+  --line-soft: #24282b; /* quiet dividers */
+  --line-strong: #686e72; /* form-control edges (3.6:1, WCAG 1.4.11) */
+  --paper: #f3f0e8; /* primary text */
+  --paper-2: #d8d4ca; /* secondary text, still bright */
+  --fog: #a7aaa8; /* muted text (7.8:1 on night) */
+  --tungsten: #f2a84b; /* the accent: the shift light, about to go off */
+  --tungsten-hi: #f8bf74;
+  --tungsten-lo: #a8722f;
+  --fluoro: #cde7ea; /* work-mode light. Only used for "before" states */
+  --alert: #ff9b8a; /* errors (always paired with an icon + text) */
+  --ok: #bcd7a8; /* success (always paired with text) */
+
+  --bg: var(--night);
+  --warm: 0; /* 0 → 1 as the page is scrolled, set by site.js */
+
+  /* Type */
+  --font-display: 'Sofia Sans Extra Condensed', 'Arial Narrow', 'Roboto Condensed', 'TeX Gyre Heros Cn', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Sofia Sans', 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-hero: clamp(4.25rem, 19.5vw, 7.5rem); /* mobile: 4 lines */
+  --fs-display-l: clamp(3.25rem, 13vw, 8.25rem);
+  --fs-display-m: clamp(2.5rem, 8.5vw, 5.25rem);
+  --fs-display-s: clamp(1.875rem, 5vw, 2.75rem);
+  --fs-h3: clamp(1.375rem, 2.6vw, 1.75rem);
+  --fs-lead: clamp(1.1875rem, 2.1vw, 1.4375rem);
+  --fs-body: 1.0625rem;
+  --fs-small: 0.9375rem;
+  --fs-micro: 0.8125rem;
+
+  --lh-body: 1.55;
+  --measure: 62ch;
+
+  /* Space (4px base) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+
+  --gutter: 1.25rem;
+  --wrap: 78rem;
+  --section-pad: clamp(4.5rem, 11vw, 9rem);
+  --header-h: 4rem;
+
+  /* Shape: radius by role, never one radius for everything */
+  --r-control: 3px; /* buttons, inputs */
+  --r-slip: 12px; /* time-card slips, panels */
+  --r-pill: 999px; /* status chips, toggles */
+
+  /* Motion: things get slower further down the page (see --depth) */
+  --dur-1: 140ms;
+  --dur-2: 260ms;
+  --dur-3: 520ms;
+  --dur-4: 1100ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  --depth: 0;
+  --dur-depth: calc(var(--dur-2) * (1 + var(--depth) * 2));
+
+  /* Elevation: used once or twice, not on every card */
+  --shadow-stage: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: 2rem;
+    --fs-body: 1.125rem;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --gutter: 3rem;
+    --header-h: 4.5rem;
+    --fs-hero: clamp(6rem, min(11.2vw, 19vh), 11.5rem); /* desktop: 2 lines, CTAs above the fold */
+  }
+}
+
+/* Work mode switched off (html[data-shift='off'], set before first paint): the whole site
+   sits warmer for the rest of the evening. site.js keeps --warm at least this high. */
+:root[data-shift='off'] {
+  --warm: 0.6;
+}
+
+.shift-changing body {
+  transition: background-color 1.8s ease;
+}
+
+/* Two versions of a label: work mode on / off */
+.if-off {
+  display: none;
+}
+
+[data-shift='off'] .if-on {
+  display: none;
+}
+
+[data-shift='off'] .if-off {
+  display: inline;
+}
+
+/* Low-stimulation mode: no motion, softer contrast, no decorative layers. */
+:root[data-calm='on'] {
+  --paper: #dcd7cc;
+  --paper-2: #c4bfb4;
+  --fog: #9a9c99;
+  --tungsten: #d9a266;
+  --tungsten-hi: #e2b27c;
+  --tungsten-lo: #8f6a3f;
+  --fluoro: #9a9c99;
+  --night: #12100e;
+  --night-warm: #12100e;
+}
+
+/* -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+  background: var(--night);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--night);
+  background-color: color-mix(in oklab, var(--night-warm) calc(var(--warm) * 100%), var(--night));
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-feature-settings: 'kern' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  flex-shrink: 0;
+}
+
+a {
+  color: inherit;
+}
+
+p,
+ul,
+ol,
+dl,
+figure,
+blockquote,
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+::selection {
+  background: var(--tungsten);
+  color: var(--night);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--tungsten);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--gutter);
+  top: -100px;
+  z-index: 100;
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper);
+  color: var(--night);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--r-control);
+}
+
+.skip-link:focus-visible {
+  top: calc(env(safe-area-inset-top, 0px) + var(--s-3));
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Grain: one fixed, static layer. Off in low-stim mode and for reduced motion. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:root[data-calm='on'] .grain {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Type */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 860;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word; /* safety net if the web font fails to load */
+}
+
+.ln {
+  display: block;
+}
+
+.display--mixed {
+  text-transform: none;
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+}
+
+.display-l {
+  font-size: var(--fs-display-l);
+}
+
+.display-m {
+  font-size: var(--fs-display-m);
+}
+
+.display-s {
+  font-size: var(--fs-display-s);
+  line-height: 0.95;
+}
+
+.h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: 760;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  color: var(--paper-2);
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+
+.prose {
+  max-width: var(--measure);
+  color: var(--paper-2);
+}
+
+.prose > * + * {
+  margin-top: 1em;
+}
+
+.prose > h2:first-child {
+  margin-top: 0;
+}
+
+.prose h2 {
+  margin-top: 2.2em;
+  font-family: var(--font-display);
+  font-size: var(--fs-display-s);
+  font-weight: 820;
+  line-height: 1;
+  color: var(--paper);
+  text-wrap: balance;
+}
+
+.prose h3 {
+  margin-top: 1.8em;
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: 760;
+  line-height: 1.1;
+  color: var(--paper);
+}
+
+.prose strong {
+  color: var(--paper);
+  font-weight: 650;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.2em;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose li::marker {
+  color: var(--tungsten);
+}
+
+.prose a,
+.link {
+  color: var(--paper);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in srgb, var(--tungsten) 70%, transparent);
+  transition: color var(--dur-1), text-decoration-color var(--dur-1);
+}
+
+.prose a,
+.link {
+  position: relative;
+}
+
+/* Bigger hit area for text links without changing the layout */
+.prose a::after,
+.link::after {
+  content: '';
+  position: absolute;
+  inset: -0.75rem -0.25rem;
+}
+
+.prose a:hover,
+.link:hover {
+  color: var(--tungsten-hi);
+  text-decoration-color: currentColor;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--fog);
+}
+
+.small {
+  font-size: var(--fs-small);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Layout */
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--wrap) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-pad);
+}
+
+.section--tight {
+  padding-block: calc(var(--section-pad) * 0.6);
+}
+
+.section--flush-top {
+  padding-top: 0;
+}
+
+.stack > * + * {
+  margin-top: var(--stack, var(--s-5));
+}
+
+.page-intro {
+  padding-top: calc(var(--header-h) + clamp(3rem, 8vw, 6rem));
+  padding-bottom: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.page-intro__title {
+  font-size: var(--fs-display-l);
+  max-width: 14ch;
+  overflow-wrap: break-word;
+}
+
+.page-intro__lead {
+  margin-top: var(--s-5);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-7);
+}
+
+@media (min-width: 900px) {
+  .grid-2 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+:root[data-calm='on'] *,
+:root[data-calm='on'] *::before,
+:root[data-calm='on'] *::after {
+  animation: none !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Bulgarian words run longer: page titles get a little more room */
+html[lang='bg'] .page-intro__title {
+  font-size: clamp(2.75rem, 11vw, 7.5rem);
+}
