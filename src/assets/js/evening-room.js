@@ -52,6 +52,7 @@
   // where things stand on the bedside table (top at 52.5; the tray's top at 53.7)
   var TOP = 52.5, TRAY = 53.7, PLEAT = 13;
   var BOTTLE = [-90, TRAY, 162], GLASS = [-104, TRAY, 153.5], CARAFE = [-110, TRAY, 165], PHONE = [-134, TOP + 0.5, 156];
+  var MUGZ = GLASS[2] + 0.8;
   var DESK = 74; // the desk's top
   var LAMP = [-136, 83.5, 174]; // the bedside lamp's shade (moved to the back left corner)
 
@@ -310,7 +311,7 @@
     // the bedside table, the lamp moved to the back, the clock, the tray
     B.shadow(-116, 168, 84, 62, 0.45);
     add({ geo: 'box', pos: [-116, 25, 168], s: [64, 50, 44], color: '#4a3b31', border: 0.25 });
-    add({ geo: 'box', pos: [-116, 51.25, 168.5], s: [67, 2.5, 45], color: '#5c4839', border: 0.25 });
+    add({ geo: 'box', pos: [-116, 51.25, 167.4], s: [67, 2.5, 45], color: '#5c4839', border: 0.25 }); // (its back edge just off the wall)
     add({ geo: 'box', pos: [-116, 13, 145.4], s: [58, 18, 1.6], color: '#54443a', border: 0.22 });
     add({ geo: 'box', pos: [-116, 15, 144.3], s: [12, 1.6, 1.4], color: '#c9b48a', border: 0.12 });
     var LD = [-16, 0.5, 4], moved = [];
@@ -319,16 +320,19 @@
     B.objs.forEach(function (o) { if (o.grp === 'lamp') mv(o); });
     B.lights.forEach(function (l) { if (l.grp === 'lamp') l.p = addv(l.p, LD); });
     if (B.things.clock) B.things.clock.objs.forEach(function (o) { o.pos = [-98, TOP + 4, 182]; });
-    add({ geo: 'box', pos: [-101, TOP + 0.6, 160], s: [36, 1.2, 22], color: '#3b2b20', border: 0.2 });
-    [[-101, 149.4, 36, 0.9], [-101, 170.6, 36, 0.9], [-118.6, 160, 0.9, 22], [-83.4, 160, 0.9, 22]].forEach(function (q) {
-      add({ geo: 'box', pos: [q[0], TOP + 1.5, q[1]], s: [q[2], 1.8, q[3]], color: '#2c2018', border: 0.12 });
+    // (its rim stands on it, the short sides between the long ones; a little wider on the right,
+    // so the jar's corner clears the rim whichever way it's turned)
+    add({ geo: 'box', pos: [-100.7, TOP + 0.6, 160], s: [36.6, 1.2, 22], color: '#3b2b20', border: 0.2 });
+    [[-100.7, 149.45, 36.6, 0.9], [-100.7, 170.55, 36.6, 0.9], [-118.55, 160, 0.9, 20.2], [-82.85, 160, 0.9, 20.2]].forEach(function (q) {
+      add({ geo: 'box', pos: [q[0], TRAY + 0.9, q[1]], s: [q[2], 1.8, q[3]], color: '#2c2018', border: 0.12 });
     });
 
     // the laptop lid, on its hinge
     if (K.lid) {
       var pl = Ink.place(K.lid);
       var up = M.apply3(pl.R, [0, 1, 0]);
-      K.lidHinge = addv(pl.p, scl(up, -pl.s[1] / 2));
+      // (it turns about the screen side of its bottom edge, so shut it lies on the keyboard, not in it)
+      K.lidHinge = addv(addv(pl.p, scl(up, -pl.s[1] / 2)), scl(M.apply3(pl.R, [0, 0, 1]), pl.s[2] / 2));
       var tgt = [-1, 0, 0];
       K.lidAxis = norm(cross(up, tgt));
       K.lidAngle = Math.acos(clamp(up[0] * tgt[0] + up[1] * tgt[1] + up[2] * tgt[2], -1, 1)) - 4 * DEG;
@@ -390,10 +394,11 @@
     K.stream = add(Object.assign({ geo: 'cylHi', pos: [0, 0, 0], s: [1.3, 10, 1.3], hidden: true }, waterLook, { alpha: 0.88, emit: 0.5 }));
     K.glass = add(Object.assign({ geo: 'cylHi', pos: [GLASS[0], TRAY + 5.5, GLASS[2]], s: [6.4, 11, 6.4] }, glassLook));
     K.water = add(Object.assign({ geo: 'cylHi', pos: [0, 0, 0], s: [5.8, 0.2, 5.8], hidden: true }, waterLook));
+    // (the mug is wider than the glass: it stands a little further back, clear of the tray's rim)
     K.mug = [
-      add({ geo: 'cylHi', pos: [GLASS[0], TRAY + 4.8, GLASS[2]], s: [8, 9.6, 8], color: '#d9c7a8', border: 0.25, hidden: true }),
-      add({ geo: 'cylHi', pos: [GLASS[0], TRAY + 9.2, GLASS[2]], s: [7, 0.4, 7], color: '#8a5a2e', border: 0, hidden: true }),
-      add({ geo: 'box', pos: [GLASS[0] + 5, TRAY + 5.2, GLASS[2]], s: [1.6, 5.4, 3.2], color: '#d9c7a8', border: 0.2, hidden: true }),
+      add({ geo: 'cylHi', pos: [GLASS[0], TRAY + 4.8, MUGZ], s: [8, 9.6, 8], color: '#d9c7a8', border: 0.25, hidden: true }),
+      add({ geo: 'cylHi', pos: [GLASS[0], TRAY + 9.2, MUGZ], s: [7, 0.4, 7], color: '#8a5a2e', border: 0, hidden: true }),
+      add({ geo: 'box', pos: [GLASS[0] + 4.8, TRAY + 5.2, MUGZ], s: [1.6, 5.4, 3.2], color: '#d9c7a8', border: 0.2, hidden: true }),
     ];
     K.steam = [0, 1, 2].map(function () {
       return add({ geo: 'card', pos: [GLASS[0], TRAY + 14, GLASS[2]], s: [4, 7, 1], color: '#f4efe6', shape: 1, soft: 0.9, blend: 'alpha', alpha: 0.18, border: 0, hatch: 0, unlit: true, bill: true, hidden: true });
@@ -650,7 +655,7 @@
       if (!steamOn) return;
       var k = (time * 0.18 + i / 3) % 1;
       var base = gx ? addv(g0, gx.t) : g0;
-      o.pos = [base[0] + Math.sin(time * 0.7 + i * 2) * 1.2, base[1] + 6 + k * 12, base[2] + Math.cos(time * 0.6 + i) * 1.0];
+      o.pos = [base[0] + Math.sin(time * 0.7 + i * 2) * 1.2, base[1] + 6 + k * 12, base[2] + (MUGZ - GLASS[2]) + Math.cos(time * 0.6 + i) * 1.0];
       o.alpha = 0.2 * Math.sin(Math.PI * k) * (1 - drunk * 0.5);
       o.s = [3 + k * 4, 5 + k * 5, 1];
     });
@@ -663,7 +668,7 @@
     var dz = -30 * open * (1 - shut);
     K.drawer.forEach(function (o) { o.pos = [o.p0[0], o.p0[1], o.p0[2] + dz]; });
     var ia = ease.inOut(clamp(into / 0.55, 0, 1)), ib = ease.inOut(clamp((into - 0.45) / 0.55, 0, 1));
-    var pPos = [lerp(PHONE[0], -116, ia), lerp(lerp(PHONE[1], 66, ia), 45.1, ib) + Math.sin(Math.PI * flip) * 6, lerp(PHONE[2], 128, ia) + shut * 30];
+    var pPos = [lerp(PHONE[0], -116, ia), lerp(lerp(PHONE[1], 66, ia), 44.4, ib) + Math.sin(Math.PI * flip) * 6, lerp(PHONE[2], 128, ia) + shut * 30];
     var Rflip = M.axis(K.phoneAxis, Math.PI * flip);
     K.phone.forEach(function (o) {
       o.x = { c: PHONE, R: Rflip, t: subv(pPos, PHONE) };

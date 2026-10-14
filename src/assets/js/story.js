@@ -127,7 +127,7 @@
 
   // draw one view at w×h css px into a 2D canvas
   function shoot(name, out) {
-    var v = V[name];
+    var v = typeof name === 'object' ? name : V[name]; // (a view of your own, for checking a room)
     if (!v || !can) return false;
     var sc = scene(v.scene);
     if (!sc || !Rnd) return false;

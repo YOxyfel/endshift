@@ -243,7 +243,7 @@
     /* the bedside table: 64 cm, a lamp at the back, the clock beside it, a tray for the ritual */
     B.shadow(-116, 168, 84, 62, 0.45);
     add(B, { geo: 'box', pos: [-116, 25, 168], s: [64, 50, 44], color: '#4a3b31', border: 0.25 });
-    add(B, { geo: 'box', pos: [-116, 51.25, 168.5], s: [67, 2.5, 45], color: '#5c4839', border: 0.25 });
+    add(B, { geo: 'box', pos: [-116, 51.25, 167.4], s: [67, 2.5, 45], color: '#5c4839', border: 0.25 }); // (its back edge just off the wall)
     add(B, { geo: 'box', pos: [-116, 13, 145.4], s: [58, 18, 1.6], color: '#54443a', border: 0.22 });
     add(B, { geo: 'box', pos: [-116, 15, 144.3], s: [12, 1.6, 1.4], color: '#c9b48a', border: 0.12 });
     // the lamp and its light move to the back left corner, the clock to the back right
@@ -254,16 +254,19 @@
     B.lights.forEach(function (l) { if (l.grp === 'lamp') l.p = addv(l.p, LD); });
     if (B.things.clock) B.things.clock.objs.forEach(function (o) { o.pos = [-98, TOP + 4, 182]; });
     // the tray
-    add(B, { geo: 'box', pos: [-101, TOP + 0.6, 160], s: [36, 1.2, 22], color: '#3b2b20', border: 0.2 });
-    [[-101, 149.4, 36, 0.9], [-101, 170.6, 36, 0.9], [-118.6, 160, 0.9, 22], [-83.4, 160, 0.9, 22]].forEach(function (q) {
-      add(B, { geo: 'box', pos: [q[0], TOP + 1.5, q[1]], s: [q[2], 1.8, q[3]], color: '#2c2018', border: 0.12 });
+    // (its rim stands on it, the short sides between the long ones; a little wider on the right,
+    // so the jar's corner clears the rim whichever way it's turned)
+    add(B, { geo: 'box', pos: [-100.7, TOP + 0.6, 160], s: [36.6, 1.2, 22], color: '#3b2b20', border: 0.2 });
+    [[-100.7, 149.45, 36.6, 0.9], [-100.7, 170.55, 36.6, 0.9], [-118.55, 160, 0.9, 20.2], [-82.85, 160, 0.9, 20.2]].forEach(function (q) {
+      add(B, { geo: 'box', pos: [q[0], TRAY + 0.9, q[1]], s: [q[2], 1.8, q[3]], color: '#2c2018', border: 0.12 });
     });
 
     // the laptop lid closes on its hinge
     if (K.lid) {
       var pl = Ink.place(K.lid);
       var up = M.apply3(pl.R, [0, 1, 0]);
-      K.lidHinge = addv(pl.p, scl(up, -pl.s[1] / 2));
+      // (it turns about the screen side of its bottom edge, so shut it lies on the keyboard, not in it)
+      K.lidHinge = addv(addv(pl.p, scl(up, -pl.s[1] / 2)), scl(M.apply3(pl.R, [0, 0, 1]), pl.s[2] / 2));
       var tgt = [-1, 0, 0];
       K.lidAxis = norm(cross(up, tgt));
       K.lidAngle = Math.acos(clamp(up[0] * tgt[0] + up[1] * tgt[1] + up[2] * tgt[2], -1, 1)) - 4 * DEG;
@@ -275,15 +278,18 @@
     K.swAxis = M.apply3(K.sw.rocker.R, [1, 0, 0]);
     K.swPoint = [118, 108, 187.6];
 
-    // under the desk: one sock, some dust
-    add(B, { geo: 'box', pos: [150, 1.35, -92], R: M.rotY(64 * DEG), s: [5.4, 2.7, 15], color: '#d9583a', border: 0.18, hatch: 0.3 });
-    add(B, { geo: 'box', pos: [143.2, 1.1, -97.6], R: M.mul3(M.rotY(4 * DEG), M.rotZ(-3 * DEG)), s: [5.1, 2.2, 8.6], color: '#cf5034', border: 0.18, hatch: 0.3 });
-    add(B, { geo: 'box', pos: [153.3, 1.55, -90.35], R: M.rotY(64 * DEG), s: [5.9, 3.1, 2.4], color: '#f1e8d0', border: 0.15, hatch: 0.3 });
+    // under the desk: one sock, some dust. The sock lies flat: the leg, the ribbed cuff at its open
+    // end and the foot turned off at the heel, each butted against the next (none through another)
+    var sockAt = function (a, n, y) { var A = [Math.sin(64 * DEG), Math.cos(64 * DEG)], N = [-A[1], A[0]]; return [150 + a * A[0] + n * N[0], y, -92 + a * A[1] + n * N[1]]; };
+    add(B, { geo: 'box', pos: sockAt(-1.2, 0, 1.35), R: M.rotY(64 * DEG), s: [5.4, 2.7, 12.6], color: '#d9583a', border: 0.18, hatch: 0.3 });
+    add(B, { geo: 'box', pos: sockAt(6.32, 0, 1.55), R: M.rotY(64 * DEG), s: [5.9, 3.1, 2.4], color: '#f1e8d0', border: 0.15, hatch: 0.3 });
+    add(B, { geo: 'box', pos: sockAt(-4.95, -7.03, 1.1), R: M.rotY(64 * DEG), s: [8.6, 2.2, 5.1], color: '#cf5034', border: 0.18, hatch: 0.3 });
     add(B, { geo: 'card', pos: [166, 0.3, -104], R: M.rotX(-90 * DEG), s: [5, 4, 1], color: '#8a8f96', shape: 1, soft: 0.8, blend: 'alpha', alpha: 0.35, border: 0, hatch: 0 });
-    // a crumpled receipt: a few facets, not a cube
-    add(B, { geo: 'box', pos: [138, 2.1, -78], R: M.mul3(M.rotY(40 * DEG), M.rotZ(24 * DEG)), s: [4.4, 3.6, 4.0], color: '#f6f3ea', border: 0.16 });
-    add(B, { geo: 'box', pos: [138.3, 2.3, -78.2], R: M.mul3(M.rotY(-12 * DEG), M.rotX(38 * DEG)), s: [3.9, 3.9, 3.7], color: '#ece6d6', border: 0.16 });
-    add(B, { geo: 'box', pos: [137.7, 2.0, -77.6], R: M.mul3(M.rotY(74 * DEG), M.rotZ(-30 * DEG)), s: [3.6, 3.4, 4.2], color: '#f2ede0', border: 0.16 });
+    // a receipt, dropped and half folded over: two panels of thin paper meeting at the fold
+    // (none of it through the rest)
+    var rY = 32 * DEG, rA = [Math.sin(rY), Math.cos(rY)], fold = 38 * DEG, r0 = [136, -80], Rr = M.rotY(rY);
+    add(B, { geo: 'box', pos: [r0[0] + rA[0] * 3.5, 0.3, r0[1] + rA[1] * 3.5], R: Rr, s: [5.6, 0.1, 7], color: '#f6f3ea', border: 0.14 });
+    add(B, { geo: 'box', pos: [r0[0] + rA[0] * (7 + 2.5 * Math.cos(fold)), 0.3 + 2.5 * Math.sin(fold), r0[1] + rA[1] * (7 + 2.5 * Math.cos(fold))], R: M.mul3(Rr, M.rotX(-fold)), s: [5.6, 0.1, 5], color: '#ece6d6', border: 0.14 });
 
     // after the click the light comes from lamps you can see: the bedside lamp, the desk lamp
     // (which reaches the desk a little further with this), and a little warmth by the switch
@@ -527,6 +533,18 @@
     K.sunCore = noOrb(B.glow([0, 0, 0], 1, '#fff1d0', 0, 'orb'));
   }
   var dreamBleed = [];
+  // Keep a dream thing (radius rho round p) out of the jar (as it turns it reaches 6.4 cm round its
+  // middle; it stands at y0 and its cap ends 13.8 cm up): pushed sideways just as far as it has to be,
+  // which is nothing at the edge of the jar's reach, so the push has no jump in it.
+  function clearJar(p, rho, y0) {
+    var JR = 6.4, r = rho + 0.8;
+    var ve = Math.max(y0 - p[1], 0, p[1] - (y0 + 13.8));
+    if (ve >= r) return p;
+    var hn = JR + Math.sqrt(r * r - ve * ve), dx = p[0] - BOTTLE[0], dz = p[2] - BOTTLE[2];
+    if (dx * dx + dz * dz >= hn * hn) return p;
+    var need = Math.sqrt(hn * hn - dx * dx);
+    return [p[0], p[1], BOTTLE[2] + (dz < 0 ? -need : need)];
+  }
   function moveDream(T, time, cam) {
     if (!K.dream) return;
     var D = K.dream;
@@ -555,7 +573,9 @@
       o.dis = dis;
     };
     // 1. the notifications: they circle the bottle once and come apart into blue ink
-    var th0 = [2.5, -0.5, 3.7, 0.9], dep = [12, -8, 6, 16];
+    // (every one of them a good way in front of the jar or behind it, so none ever cuts through it
+    // as it turns: the jar reaches 6.4 cm round its middle)
+    var th0 = [2.5, -0.5, 3.7, 0.9], dep = [12, -9, 9, 16];
     D.pings.forEach(function (o, i) {
       var a = 0.1 + i * 0.045, sv = loc(a, a + 0.2);
       var th = th0[i] + sv * 1.5, rad = 1 - 0.22 * sv;
@@ -580,7 +600,7 @@
     var drift = ease.inOut(clamp(sv / 0.6, 0, 1));
     var pp = por
       ? W2(lerp(-hw * 1.6, -hw * 0.1, drift), hh * 0.86 + Math.sin(time * 0.9) * 0.4, 10)
-      : W2(lerp(-hw * 1.4, -hw * 0.85, drift), lerp(3, -1, drift) + Math.sin(time * 0.9) * 0.4, lerp(8, 6, drift));
+      : W2(lerp(-hw * 1.4, -hw * 0.85, drift), lerp(3, -1, drift) + Math.sin(time * 0.9) * 0.4, lerp(10, 9, drift));
     var fold = clamp((sv - 0.36) / 0.2, 0, 1);
     D.paper.alpha = 1;
     put(D.paper, sv, pp, face(0.15 - 0.12 * drift), [10.5, 14, 1], fold);
@@ -588,9 +608,12 @@
     var sail = ease.inOut(clamp((sv - 0.6) / 0.4, 0, 1));
     var bp = por
       ? W2(lerp(-hw * 0.1, hw * 0.5, sail), hh * lerp(0.86, 0.95, sail) + Math.sin(time * 1.3) * 0.5, lerp(10, -60, sail))
-      : W2(lerp(-hw * 0.85, -hw * 0.95, sail), lerp(-1, hh * 0.3, sail) + Math.sin(time * 1.3) * 0.5, lerp(6, -60, sail));
+      : W2(lerp(-hw * 0.85, -hw * 0.95, sail), lerp(-1, hh * 0.3, sail) + Math.sin(time * 1.3) * 0.5, lerp(9, -60, sail));
     var bdis = Math.max(1 - clamp((sv - 0.46) / 0.14, 0, 1), clamp((sv - 0.86) / 0.14, 0, 1));
     D.boat.alpha = 1;
+    // (sailing off behind the jar it goes round it, never through it)
+    var jarY = BOTTLE[1] + bottleFloat(T, time);
+    bp = clearJar(bp, 7.3 * sc, jarY);
     put(D.boat, sv > 0.44 ? sv : 0, bp, face(Math.sin(time * 1.1) * 0.06), [12, 8, 1], bdis);
     // 4. the WORK switch tumbles away into the dark, OFF
     var sw = loc(0.64, 0.82);
@@ -600,6 +623,7 @@
       ? W2(lerp(hw * 0.5, -hw * 0.2, k4), lerp(-hh * 0.68, -hh * 0.5, k4), lerp(6, -80, k4))
       : W2(lerp(hw * 0.62, hw * 0.2, k4), lerp(hh * 0.22, hh * 0.3, k4), lerp(6, -80, k4));
     var sdis = ease.in(clamp((sw - 0.5) / 0.5, 0, 1));
+    ps = clearJar(ps, 9.6 * sc, jarY); // (the plate and its rocker, tumbling)
     put(D.plate, sw, ps, Rs, [9, 14, 1.1], sdis);
     put(D.rocker, sw, addv(ps, scl(M.apply3(Rs, [0, 0, 1]), 1.15 * sc)), M.mul3(Rs, M.rotX(12 * DEG)), [4.6, 7.6, 1.2], sdis);
     if (!D.plate.hidden) bleed(D.plate, Math.sin(Math.PI * sdis) * 0.8, 8, [1, 0.35, 0.5]);
@@ -1040,7 +1064,7 @@
     var into = span(T, SG(5, 0.5), SG(5, 0.62));
     var shut = span(T, SG(5, 0.64), SG(5, 0.74));
     var ia = ease.inOut(clamp(into / 0.55, 0, 1)), ib = ease.inOut(clamp((into - 0.45) / 0.55, 0, 1));
-    var pPos = [lerp(PHONE[0], -116, ia), lerp(lerp(PHONE[1], 66, ia), 45.1, ib) + Math.sin(Math.PI * flip) * 6, lerp(PHONE[2], 128, ia) + shut * 30];
+    var pPos = [lerp(PHONE[0], -116, ia), lerp(lerp(PHONE[1], 66, ia), 44.4, ib) + Math.sin(Math.PI * flip) * 6, lerp(PHONE[2], 128, ia) + shut * 30];
     var Rflip = M.axis(K.phoneAxis, Math.PI * flip);
     K.phone.forEach(function (o) {
       o.x = { c: PHONE, R: Rflip, t: subv(pPos, PHONE) };
@@ -1194,6 +1218,12 @@
     });
   }
   function words(T, rm) {
+    // as the torch finds the switch, the notifications near it step out of its way
+    var sw = null;
+    if (rm === 'bed' && Rnd && T > G('bed_search', 0.8) && T < CLICK + 0.05) {
+      sw = Rnd.project([118, 120, 190]);
+      if (sw.behind) sw = null;
+    }
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
       var o = (it.a <= 0.0001 ? 1 : clamp((T - it.a) / FADE, 0, 1)) * (it.b >= TOTAL - 0.0001 ? 1 : clamp((it.b - T) / FADE, 0, 1));
@@ -1213,6 +1243,10 @@
             var w = it.w * sc, h = it.h * sc;
             var x = clamp(pr.x - w / 2, 12, W - w - 12);
             var y = clamp(pr.y - h, HEAD, H - h - 16);
+            if (sw && it.soft) {
+              var ex = Math.max(0, Math.abs(sw.x - (x + w / 2)) - w / 2), ey = Math.max(0, Math.abs(sw.y - (y + h / 2)) - h / 2);
+              o *= clamp((Math.hypot(ex, ey) - 28) / 70, 0, 1);
+            }
             tf = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')';
           }
         } else o = 0;

@@ -14,7 +14,6 @@
   var Ink = ES.Ink, M = Ink.M, PT = ES.inkPaint;
   var DEG = Math.PI / 180;
   var clamp = function (v, a, b) { return v < a ? a : v > b ? b : v; };
-  var rnd = function (a, b) { return a + Math.random() * (b - a); };
   var angDiff = function (a, b) { return ((b - a) % 360 + 540) % 360 - 180; };
   var ease = {
     out: function (t) { return 1 - Math.pow(1 - t, 3); },
@@ -287,9 +286,9 @@
         B.box({ wall: 's', u: 24, v: 52, o: 12, w: 64, h: 14, d: 36, c: '#d8d2c6', border: 0.3, ry: 4 });
         var duv = B.T('duvet', function () { return PT.stripes({ base: '#46557a', a: '#3c4a6c', n: 8, shade: true }); }, true);
         B.box({ wall: 's', u: -10, v: 52, o: 50, w: 152, h: 10, d: 158, c: '#46557a', map: duv, mapFace: 2, rep: [3, 3] });
-        B.box({ wall: 's', u: 6, v: 61, o: 112, w: 66, h: 12, d: 70, c: '#4e5f86', map: duv, mapFace: 2, rep: [1.5, 1.5], ry: -6 });
+        B.box({ wall: 's', u: 6, v: 62, o: 112, w: 66, h: 12, d: 70, c: '#4e5f86', map: duv, mapFace: 2, rep: [1.5, 1.5], ry: -6 });
         // a hoodie thrown on the end of the bed
-        B.box({ wall: 's', u: -52, v: 61, o: 160, w: 40, h: 6, d: 30, c: '#8a3b34', ry: 18 });
+        B.box({ wall: 's', u: -55, v: 62, o: 160, w: 40, h: 6, d: 30, c: '#8a3b34', ry: 18 });
       });
       // bedside table: lamp (off for now), alarm clock, mug, phone charger
       var bt = { wall: 's', u: 112, v: 0, o: 2, w: 46, h: 52, d: 40 };
@@ -315,8 +314,9 @@
       B.cyl({ wall: 's', u: 128, v: 52, o: 4, r: 4, h: 9, c: '#d9583a' });
       B.box({ wall: 's', u: 104, v: 52.2, o: 4, w: 8, h: 1, d: 14, c: '#1b1d22', ry: -10 });
       // slippers
-      B.box({ wall: 's', u: 84, v: 0, o: 64, w: 10, h: 4, d: 26, c: '#6b7a8f', ry: 12 });
-      B.box({ wall: 's', u: 72, v: 0, o: 66, w: 10, h: 4, d: 26, c: '#6b7a8f', ry: -6 });
+      // (apart, and clear of the bed)
+      B.box({ wall: 's', u: 88, v: 0, o: 64, w: 10, h: 4, d: 26, c: '#6b7a8f', ry: 12 });
+      B.box({ wall: 's', u: 73, v: 0, o: 66, w: 10, h: 4, d: 26, c: '#6b7a8f', ry: -6 });
       // fairy lights over the bed: they come on with the evening
       for (var i = 0; i < 9; i++) {
         var fu = -80 + i * 18, fv = 168 - Math.sin((i / 8) * Math.PI) * 14;
@@ -346,7 +346,7 @@
       B.thing('bag', o.bag && o.bag.label, function () {
         B.box({ wall: 'n', u: 30, v: 0, o: 6, w: 40, h: 36, d: 22, c: '#34463a' });
         B.box({ wall: 'n', u: 30, v: 36, o: 12, w: 30, h: 6, d: 10, c: '#2a382f' });
-        B.box({ wall: 'n', u: 30, v: 6, o: 27.5, w: 26, h: 16, d: 1.5, c: '#2a382f' });
+        B.box({ wall: 'n', u: 30, v: 6, o: 28, w: 26, h: 16, d: 1.5, c: '#2a382f' });
       });
       B.box({ wall: 'n', u: 64, v: 158, o: 0, w: 4, h: 3, d: 8, c: '#8f9396' });
       B.box({ wall: 'n', u: 64, v: 92, o: 2, w: 42, h: 66, d: 9, c: '#2b3340', rz: 3 });
@@ -383,7 +383,7 @@
       B.thing('laptop', o.laptop && o.laptop.label, function () {
         var inbox = B.T('inbox', function () { return PT.inbox(340, 230, 12); });
         B.box({ wall: 'e', u: -84, v: 74, o: 18, w: 34, h: 1.6, d: 24, c: '#a6adb4' });
-        B.box({ wall: 'e', u: -84, v: 75.2, o: 16, w: 34, h: 23, d: 1, c: '#a6adb4', map: inbox, mapFace: 4, rx: -14, emit: 0.95, emitDark: 0.1, name: 'lid' });
+        B.box({ wall: 'e', u: -84, v: 75.4, o: 16, w: 34, h: 23, d: 1, c: '#a6adb4', map: inbox, mapFace: 4, rx: -14, emit: 0.95, emitDark: 0.1, name: 'lid' });
       });
       var lt = B.frame('e').at(-84, 30);
       B.light({ p: [lt[0], 96, lt[1]], c: '#9cc0ff', i: 0.4, r: 150, k: 'always', name: 'laptop' });
@@ -394,9 +394,11 @@
       B.thing('chair', o.chair && o.chair.label, function () {
         B.box({ wall: 'e', u: -60, v: 42, o: 64, w: 44, h: 6, d: 42, c: '#2d2f33' });
         B.box({ wall: 'e', u: -60, v: 48, o: 104, w: 44, h: 46, d: 5, c: '#2d2f33' });
-        B.box({ wall: 'e', u: -60, v: 48, o: 70, w: 40, h: 10, d: 30, c: '#6b4f6a', rz: 3 });
+        B.box({ wall: 'e', u: -60, v: 48, o: 70, w: 40, h: 10, d: 30, c: '#6b4f6a' });
         B.box({ wall: 'e', u: -54, v: 58, o: 74, w: 30, h: 7, d: 24, c: '#3e5b7a', ry: 14 });
-        B.box({ wall: 'e', u: -60, v: 70, o: 106, w: 46, h: 30, d: 3, c: '#6b4f6a', rx: 8 });
+        // a cardigan over the back of the chair: over the top, hanging down behind
+        B.box({ wall: 'e', u: -60, v: 94, o: 103.6, w: 46, h: 2.4, d: 8.6, c: '#6b4f6a' });
+        B.box({ wall: 'e', u: -60, v: 66, o: 109.4, w: 46, h: 28, d: 2.6, c: '#6b4f6a' });
         B.cyl({ wall: 'e', u: -60, v: 0, o: 81, r: 2, h: 42, c: '#1b1c1f' });
         B.cyl({ wall: 'e', u: -60, v: 0, o: 70, r: 22, h: 2, c: '#1b1c1f' });
       });
@@ -406,9 +408,10 @@
         var pr = B.T('print', function () { return PT.print(220, 280, prop(api, 'print', ['WORK HARD', 'REST', 'HARDER'])); });
         B.box({ wall: 'e', u: -112, v: 116, o: 0, w: 46, h: 58, d: 2, c: '#f2ead6', map: pr, mapFace: 4 });
       });
-      B.box({ wall: 'e', u: -52, v: 150, o: 0, w: 76, h: 3, d: 22, c: '#8a6a4a' });
+      B.box({ wall: 'e', u: -50, v: 150, o: 0, w: 76, h: 3, d: 22, c: '#8a6a4a' });
+      // (the last one leans on its neighbour, its corner on the shelf)
       ['#b0473a', '#2f5d7c', '#d8c79a', '#3e6b4f', '#8a6aa0', '#c98a3a', '#e4dfd2'].forEach(function (c, i) {
-        B.box({ wall: 'e', u: -82 + i * 7.6 + (i > 4 ? 6 : 0), v: 153, o: 3, w: 6.4, h: 18 + (i % 3) * 3, d: 15, c: c, rz: i === 6 ? 14 : 0, border: 0.2 });
+        B.box({ wall: 'e', u: -82 + i * 7.6 + (i > 4 ? 6 : 0) + (i === 6 ? 1 : 0), v: i === 6 ? 153.55 : 153, o: 3, w: 6.4, h: 18 + (i % 3) * 3, d: 15, c: c, rz: i === 6 ? 14 : 0, border: 0.2 });
       });
       // plant in the corner
       B.shadow(161, 160, 40, 40, 0.5);
@@ -416,11 +419,23 @@
       var leaf = B.T('leaf', function () { return PT.leaf(96, 160, '#3f7a4c'); });
       var leaf2 = B.T('leaf2', function () { return PT.leaf(96, 160, '#4f8f5a'); });
       var lc = B.frame('e').at(160, 20);
+      // the same plant every time, its leaves kept inside the room (a leaf that would reach a wall
+      // stands up straighter until it doesn't)
+      var seed = 11, srnd = function (a, b) { seed = (seed * 16807) % 2147483647; return a + (seed / 2147483647) * (b - a); };
       for (var k = 0; k < 9; k++) {
-        var a = k * 40 + rnd(-8, 8), tilt = rnd(18, 42);
-        var Rl = M.mul3(M.rotY(a * DEG), M.rotX(-tilt * DEG));
-        var up = 34 + rnd(-4, 10);
-        B.add({ geo: 'card', pos: [lc[0] + Math.sin(a * DEG) * 9, 26 + up * 0.55, lc[1] + Math.cos(a * DEG) * 9], R: Rl, s: [18, up, 1], color: '#ffffff', map: k % 2 ? leaf : leaf2, mapAlpha: true, blend: 'alpha', border: 0, hatch: 0.6 });
+        var a = k * 40 + srnd(-8, 8), tilt = srnd(18, 42), up = 34 + srnd(-4, 10), Rl, lp0;
+        for (;;) {
+          Rl = M.mul3(M.rotY(a * DEG), M.rotX(-tilt * DEG));
+          lp0 = [lc[0] + Math.sin(a * DEG) * 9, 26 + up * 0.55, lc[1] + Math.cos(a * DEG) * 9];
+          var ax = M.apply3(Rl, [9, 0, 0]), ay = M.apply3(Rl, [0, up / 2, 0]), inside = true;
+          [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (q) {
+            var x = lp0[0] + q[0] * ax[0] + q[1] * ay[0], z = lp0[2] + q[0] * ax[2] + q[1] * ay[2];
+            if (Math.abs(x) > R.w / 2 - 1.5 || Math.abs(z) > R.d / 2 - 1.5) inside = false;
+          });
+          if (inside || tilt < 4) break;
+          tilt -= 3;
+        }
+        B.add({ geo: 'card', pos: lp0, R: Rl, s: [18, up, 1], color: '#ffffff', map: k % 2 ? leaf : leaf2, mapAlpha: true, blend: 'alpha', border: 0, hatch: 0.6 });
       }
 
       // wardrobe and a holiday photo, west wall
@@ -508,24 +523,24 @@
       B.thing('clock', o.clock && o.clock.label, function () {
         var hm = String(api.data.time || '23:10').split(':');
         var ck = B.T('clock', function () { return PT.clock(200, 200, +hm[0], +hm[1]); });
-        B.cyl({ wall: 'n', u: -170, v: 205, o: 0, r: 17, h: 3, rx: 90, c: '#f4f1e8', map: ck, mapFace: 7 });
+        B.cyl({ wall: 'n', u: -174, v: 205, o: 0, r: 17, h: 3, rx: 90, c: '#f4f1e8', map: ck, mapFace: 7 }); // (clear of the hatch)
       });
       // stove, hood (and the wrong switch), knives, extinguisher: east wall
       var stv = B.T('stove', function () { return PT.stove(380, 180); });
-      var st = { wall: 'e', u: -40, v: 0, o: 0, w: 190, h: 90, d: 82 };
+      var st = { wall: 'e', u: -22, v: 0, o: 0, w: 190, h: 90, d: 82 }; // (its end clear of the pass)
       B.shadowFor(st, 0.5);
       B.thing('stove', o.stove && o.stove.label, function () {
-        B.box({ wall: 'e', u: -40, v: 0, o: 0, w: 190, h: 90, d: 82, c: '#5a6066', map: stv, mapFace: 4 });
-        B.box({ wall: 'e', u: -40, v: 90, o: 0, w: 190, h: 2, d: 82, c: '#2a2d30' });
-        [[-90, 22], [-40, 48], [10, 22], [10, 56]].forEach(function (b) {
+        B.box({ wall: 'e', u: -22, v: 0, o: 0, w: 190, h: 90, d: 82, c: '#5a6066', map: stv, mapFace: 4 });
+        B.box({ wall: 'e', u: -22, v: 90, o: 0, w: 190, h: 2, d: 82, c: '#2a2d30' });
+        [[-72, 22], [-22, 48], [28, 22], [28, 56]].forEach(function (b) {
           B.cyl({ wall: 'e', u: b[0], v: 92, o: b[1], r: 13, h: 1.2, c: '#3a3d40' });
         });
-        B.cyl({ wall: 'e', u: -90, v: 93, o: 10, r: 16, h: 22, c: '#aab2b6' });
-        B.cyl({ wall: 'e', u: -90, v: 115, o: 10, r: 16.5, h: 2, c: '#7d858a' });
-        B.cyl({ wall: 'e', u: 10, v: 93, o: 8, r: 15, h: 7, c: '#2a2d30' });
-        B.box({ wall: 'e', u: 10, v: 96, o: 38, w: 3, h: 3, d: 26, c: '#2a2d30' });
+        B.cyl({ wall: 'e', u: -72, v: 93, o: 10, r: 16, h: 22, c: '#aab2b6' });
+        B.cyl({ wall: 'e', u: -72, v: 115, o: 10, r: 16.5, h: 2, c: '#7d858a' });
+        B.cyl({ wall: 'e', u: 28, v: 93, o: 8, r: 15, h: 7, c: '#2a2d30' });
+        B.box({ wall: 'e', u: 28, v: 96, o: 38, w: 3, h: 3, d: 26, c: '#2a2d30' });
       });
-      B.box({ wall: 'e', u: -40, v: 186, o: 0, w: 212, h: 50, d: 96, c: '#a7b0b4', map: steel, mapFace: 4, rep: [3, 1] });
+      B.box({ wall: 'e', u: -28, v: 186, o: 0, w: 212, h: 50, d: 96, c: '#a7b0b4', map: steel, mapFace: 4, rep: [3, 1] }); // (clear of the heat lamps' bar)
       B.thing('hood', o.hood && o.hood.label, function () {
         B.box({ wall: 'e', u: 40, v: 196, o: 96, w: 9, h: 13, d: 1.4, c: '#26292c' });
         B.box({ wall: 'e', u: 40, v: 199, o: 97.4, w: 4, h: 6, d: 1, c: '#d9443a' });
@@ -554,7 +569,8 @@
         B.box({ wall: 's', u: 40, v: 84, o: 12, w: 70, h: 7.2, d: 44, c: '#5e676c', border: 0.25 });
         B.cyl({ wall: 's', u: 40, v: 91, o: 2, r: 1.5, h: 34, c: '#c8cfd3' });
         B.box({ wall: 's', u: 90, v: 120, o: 0.5, w: 80, h: 4, d: 26, c: '#8d969b' });
-        [62, 70, 78, 86, 94, 102, 110, 118].forEach(function (u) { B.cyl({ wall: 's', u: u, v: 124, o: 4, r: 12, h: 1.4, rx: 90, c: '#f6f4ee', border: 0.2 }); });
+        // plates standing in the rack, each turned the same way (side by side, none through the next)
+        [62, 70, 78, 86, 94, 102, 110, 118].forEach(function (u) { B.cyl({ wall: 's', u: u, v: 124, o: 12.8, r: 12, h: 1.4, rx: 90, ry: 60, c: '#f6f4ee', border: 0.2 }); });
       });
       B.thing('mop', o.mop && o.mop.label, function () {
         B.box({ wall: 's', u: 176, v: 0, o: 12, w: 36, h: 30, d: 30, c: '#e1b229' });
@@ -564,7 +580,7 @@
       B.shadow(-176, 168, 44, 40, 0.45);
       [-2, 18].forEach(function (u, i) {
         B.box({ wall: 's', u: u, v: 150, o: 0, w: 3, h: 3, d: 6, c: '#8f9396' });
-        B.box({ wall: 's', u: u, v: 96, o: 2, w: 30, h: 58, d: 2, c: i ? '#2a2d30' : '#e9e4d8', rz: i ? -3 : 2 });
+        B.box({ wall: 's', u: u, v: 96, o: i ? 4.2 : 2, w: 30, h: 58, d: 2, c: i ? '#2a2d30' : '#e9e4d8', rz: i ? -3 : 2 }); // (the black one over the white)
       });
       // shelves, the rota, a sign: west wall
       B.thing('shelf', o.shelf && o.shelf.label, function () {
@@ -622,11 +638,11 @@
       B.shadowFor(station, 0.5);
       B.box({ wall: 'n', u: 0, v: 0, o: 36, w: 290, h: 102, d: 62, c: '#d4cec2', map: ctr, mapFace: 4 });
       B.box({ wall: 'n', u: 0, v: 102, o: 34, w: 296, h: 4, d: 66, c: '#ece8de' });
-      B.box({ wall: 'n', u: 0, v: 0, o: 96, w: 286, h: 8, d: 2, c: '#3b6c9a' });
+      B.box({ wall: 'n', u: 0, v: 0, o: 98, w: 286, h: 8, d: 2, c: '#3b6c9a' }); // (on the counter's face, not in it)
       B.thing('monitor', o.monitor && o.monitor.label, function () {
         var vt = B.T('vitals', function () { return PT.vitals(320, 200, 0); });
-        B.box({ wall: 'n', u: -70, v: 106, o: 66, w: 8, h: 14, d: 8, c: '#2b2f33' });
-        B.box({ wall: 'n', u: -70, v: 117, o: 62, w: 48, h: 32, d: 5, c: '#1d2023', map: vt, mapFace: 4, emit: 0.95, emitDark: 0, rx: -6 });
+        B.box({ wall: 'n', u: -70, v: 106, o: 60.5, w: 8, h: 14, d: 8, c: '#2b2f33' });
+        B.box({ wall: 'n', u: -70, v: 120.2, o: 62, w: 48, h: 32, d: 5, c: '#1d2023', map: vt, mapFace: 4, emit: 0.95, emitDark: 0, rx: -6 }); // (on its stand)
         B.anims.push({ every: 110, run: function (t) { vt.update(PT.vitals(320, 200, t)); } });
       });
       var mp = B.frame('n').at(-70, 80);
@@ -694,11 +710,12 @@
       });
       var ws = B.T('wardsign', function () { return PT.sign(300, 90, [prop(api, 'ward', 'WARD 4B')], '#1f3e86', '#ffffff'); });
       B.card({ wall: 's', u: 0, v: 232, o: 0.6, w: 60, h: 18, c: '#1f3e86', map: ws, border: 0.3 });
-      var lin = { wall: 's', u: 140, v: 0, o: 4, w: 70, h: 100, d: 46 };
+      // the linen trolley, clear of the medication cart and the sink
+      var lin = { wall: 's', u: 138, v: 0, o: 2.5, w: 70, h: 100, d: 46 };
       B.shadowFor(lin, 0.45);
-      B.box({ wall: 's', u: 140, v: 10, o: 4, w: 70, h: 80, d: 46, c: '#3b6c9a' });
-      B.box({ wall: 's', u: 140, v: 90, o: 6, w: 66, h: 12, d: 40, c: '#f2f0ea' });
-      B.box({ wall: 's', u: 140, v: 102, o: 8, w: 60, h: 8, d: 36, c: '#dfe9f2' });
+      B.box({ wall: 's', u: 138, v: 10, o: 2.5, w: 70, h: 80, d: 46, c: '#3b6c9a' });
+      B.box({ wall: 's', u: 138, v: 90, o: 4.5, w: 66, h: 12, d: 40, c: '#f2f0ea' });
+      B.box({ wall: 's', u: 138, v: 102, o: 6.5, w: 60, h: 8, d: 36, c: '#dfe9f2' });
       // medication cart, patient board, the handover sheet: west wall
       var cart = { wall: 'w', u: -110, v: 0, o: 2, w: 62, h: 104, d: 50 };
       B.shadowFor(cart, 0.5);
@@ -717,12 +734,13 @@
       B.thing('clipboard', o.clipboard && o.clipboard.label, function () {
         var hl = prop(api, 'handover', ['Bed 2: obs due 08:00', 'Bed 4: family at 10', 'Bed 6: stable', '-', 'Pharmacy: call back']);
         var ct = B.T('clip', function () { return PT.sheet(220, 300, { clip: true, title: prop(api, 'handoverTitle', 'HANDOVER'), lines: hl, fs: 0.05, sign: prop(api, 'sign', 'sign:') }); });
-        B.box({ wall: 'w', u: 128, v: 92, o: 1.4, w: 30, h: 41, d: 1.2, c: '#7a5a3a', map: ct, mapFace: 4, border: 0.2, pickPad: 2 });
+        B.box({ wall: 'w', u: 128, v: 92, o: 2.8, w: 30, h: 41, d: 1.2, c: '#7a5a3a', map: ct, mapFace: 4, border: 0.2, pickPad: 2 }); // (in front of the switch, not through it)
       });
       B.box({ wall: 'w', u: 128, v: 134, o: 0, w: 3, h: 3, d: 4, c: '#8f9396' });
       // sink and towels
-      B.box({ wall: 'w', u: -172, v: 76, o: 0, w: 46, h: 14, d: 36, c: '#e9e6df' });
-      B.box({ wall: 'w', u: -172, v: 110, o: 0, w: 26, h: 30, d: 12, c: '#dfe5e4' });
+      // (between the medication cart and the corner)
+      B.box({ wall: 'w', u: -165, v: 76, o: 0, w: 46, h: 14, d: 36, c: '#e9e6df' });
+      B.box({ wall: 'w', u: -165, v: 110, o: 0, w: 26, h: 30, d: 12, c: '#dfe5e4' });
       // a row of chairs by the doors
       [[-70, 0], [-120, 0]].forEach(function (c) {
         var sp = B.frame('s').at(c[0], 30);
@@ -769,13 +787,15 @@
       B.light({ p: [0, 300, 0], c: '#ffb46a', i: 1.2, r: 900, k: 'warm' });
       B.light({ p: [-60, 200, -250], c: '#ffb46a', i: 1.1, r: 500, k: 'warm' });
       // roller door, its frame painted in hazard stripes
+      var DU = 162;
       B.thing('door', o.door && o.door.label, function () {
         var sl = B.T('slats', function () { return PT.slats({ base: '#7b8285' }); }, true);
-        B.box({ wall: 'n', u: 150, v: 0, o: 0, w: 300, h: 340, d: 6, c: '#7b8285', map: sl, mapFace: 4, rep: [3, 4] });
-        B.box({ wall: 'n', u: 150, v: 340, o: 0, w: 320, h: 40, d: 30, c: '#3d4245' });
-        B.box({ wall: 'n', u: 150, v: 20, o: 6, w: 70, h: 6, d: 4, c: '#24282a' });
+        // (DU: its middle, far enough along that the frame and the header clear the pillar)
+        B.box({ wall: 'n', u: DU, v: 0, o: 0, w: 300, h: 340, d: 6, c: '#7b8285', map: sl, mapFace: 4, rep: [3, 4] });
+        B.box({ wall: 'n', u: DU, v: 340, o: 0, w: 320, h: 40, d: 30, c: '#3d4245' });
+        B.box({ wall: 'n', u: DU, v: 20, o: 6, w: 70, h: 6, d: 4, c: '#24282a' });
       });
-      [-8, 308].forEach(function (u) { B.box({ wall: 'n', u: u, v: 0, o: 0, w: 16, h: 340, d: 10, c: '#e1b229', map: hz, mapFace: 4, rep: [0.5, 10] }); });
+      [DU - 158, DU + 158].forEach(function (u) { B.box({ wall: 'n', u: u, v: 0, o: 0, w: 16, h: 340, d: 10, c: '#e1b229', map: hz, mapFace: 4, rep: [0.5, 10] }); });
       // the pillar next to it (the switch is on the wall beside it)
       B.box({ wall: 'n', u: -22, v: 0, o: 0, w: 30, h: R.h, d: 30, c: '#62676a' });
       B.box({ wall: 'n', u: -22, v: 0, o: 0, w: 32, h: 110, d: 32, c: '#e1b229', map: hz, mapFace: -1, rep: [0.6, 2.4] });
@@ -798,9 +818,10 @@
         });
       });
       B.thing('vest', o.vest && o.vest.label, function () {
-        B.box({ wall: 'n', u: -175, v: 70, o: 2, w: 46, h: 70, d: 8, c: '#c8e63c', rz: -3 });
-        B.box({ wall: 'n', u: -175, v: 96, o: 10.2, w: 46, h: 5, d: 0.4, c: '#e6e9e9', rz: -3 });
-        B.box({ wall: 'n', u: -175, v: 114, o: 10.2, w: 46, h: 5, d: 0.4, c: '#e6e9e9', rz: -3 });
+        // (hung below the route board)
+        B.box({ wall: 'n', u: -175, v: 58, o: 2, w: 46, h: 70, d: 8, c: '#c8e63c', rz: -3 });
+        B.box({ wall: 'n', u: -175, v: 84, o: 10.2, w: 46, h: 5, d: 0.4, c: '#e6e9e9', rz: -3 });
+        B.box({ wall: 'n', u: -175, v: 102, o: 10.2, w: 46, h: 5, d: 0.4, c: '#e6e9e9', rz: -3 });
       });
       // the van, parked facing the door
       var vb = B.T('vanback', function () { return PT.vanBack(380, 460, prop(api, 'plate', 'ES 0041')); });
@@ -823,16 +844,23 @@
         [-180, 0, 180].forEach(function (u) { B.box({ wall: 'e', u: u - 88, v: 0, o: 0, w: 8, h: 330, d: 90, c: '#2c5ba0' }); });
         B.box({ wall: 'e', u: 270, v: 0, o: 0, w: 8, h: 330, d: 90, c: '#2c5ba0' });
         [40, 150, 260].forEach(function (v) { B.box({ wall: 'e', u: 0, v: v, o: 0, w: 540, h: 6, d: 90, c: '#e1871f' }); });
-        var R0 = PT.rng(77), n = 0;
+        // parcels bay by bay, between the uprights (turned a little, so measured as turned)
+        var R0 = PT.rng(77), n = 0, BAYS = [[-264, -92], [-84, 88], [96, 266]];
         [46, 156, 266].forEach(function (v) {
-          var u = -260;
-          while (u < 250) {
-            var w = 40 + R0() * 50, h = 30 + R0() * 60, d = 40 + R0() * 40;
-            var tx = B.T('parcel' + (n % 6), (function (k) { return function () { return PT.parcel(200, 160, k); }; })(n % 6));
-            B.box({ wall: 'e', u: u + w / 2, v: v, o: 4 + R0() * 10, w: w, h: Math.min(h, 100), d: d, c: '#b07f4f', map: tx, mapFace: 4, ry: (R0() - 0.5) * 8 });
-            u += w + 4 + R0() * 14;
-            n++;
-          }
+          BAYS.forEach(function (bay) {
+            var u = bay[0] + 3;
+            for (;;) {
+              var w = 40 + R0() * 50, h = 30 + R0() * 60, d = 40 + R0() * 40, po = 4 + R0() * 10, ry = (R0() - 0.5) * 8;
+              var room = bay[1] - 3 - u, cs = Math.cos(ry * DEG), sn = Math.abs(Math.sin(ry * DEG));
+              if (w * cs + d * sn > room) w = (room - d * sn) / cs; // the last one in a bay: a narrower parcel
+              if (w < 30) break;
+              var hu = (w * cs + d * sn) / 2;
+              var tx = B.T('parcel' + (n % 6), (function (k) { return function () { return PT.parcel(200, 160, k); }; })(n % 6));
+              B.box({ wall: 'e', u: u + hu, v: v, o: po, w: w, h: Math.min(h, 100), d: d, c: '#b07f4f', map: tx, mapFace: 4, ry: ry });
+              u += 2 * hu + 4 + R0() * 14;
+              n++;
+            }
+          });
         });
       });
       // bench and scanner, cage trolleys, lockers: west and south walls
@@ -865,7 +893,7 @@
       B.light({ p: [exp[0], 240, exp[1]], c: '#3cd27a', i: 0.3, r: 260, k: 'always' });
       // painted lines on the floor
       [[-40, 'z'], [40, 'z']].forEach(function () {});
-      B.flat({ wall: 'n', u: 150, v: 0, o: 6, w: 320, d: 10, c: '#e1b229', lift: 0.25 });
+      B.flat({ wall: 'n', u: DU, v: 0, o: 6, w: 320, d: 10, c: '#e1b229', lift: 0.25 });
       B.flat({ wall: 'n', u: 30, v: 0, o: 60, w: 10, d: 420, c: '#e1b229', lift: 0.25 });
       B.flat({ wall: 'n', u: 280, v: 0, o: 60, w: 10, d: 420, c: '#e1b229', lift: 0.25 });
     },
@@ -896,10 +924,10 @@
       B.at({ p: [-40, 74, -30], size: [170, 4, 100], c: '#a17a52' });
       [[-115, -70], [35, -70], [-115, 10], [35, 10]].forEach(function (q) { B.at({ p: [q[0], 36, q[1]], size: [5, 72, 5], c: '#7c5e41' }); });
       B.at({ geo: 'cyl', p: [-60, 76.8, 0], size: [30, 1.6, 30], c: '#f3f0e8' });
-      B.at({ geo: 'cyl', p: [-58, 78.4, 2], size: [16, 2, 14], c: '#c8763a' });
-      B.at({ geo: 'cyl', p: [-66, 79, -2], size: [8, 3, 8], c: '#7a9a3a' });
+      B.at({ geo: 'cyl', p: [-58, 78.6, 2], size: [16, 2, 14], c: '#c8763a' });
+      B.at({ geo: 'cyl', p: [-69, 79.1, -6], size: [8, 3, 8], c: '#7a9a3a' });
       B.at({ p: [-36, 76.6, 4], size: [2, 0.6, 20], c: '#c8cfd3' });
-      B.at({ geo: 'cyl', p: [-20, 82, -20], size: [8, 14, 8], c: '#cfe3ee', alpha: 0.75, blend: 'alpha' });
+      B.at({ geo: 'cyl', p: [-20, 83, -20], size: [8, 14, 8], c: '#cfe3ee', alpha: 0.75, blend: 'alpha' });
       // the laptop, closed, with the work badge on it
       B.at({ p: [10, 77.2, -40], size: [38, 2.4, 26], c: '#a6adb4', ry: 12 });
       var badge = B.T('badge', function () { return PT.badge(120, 170, prop(api, 'staff', 'STAFF')); });
@@ -1004,13 +1032,16 @@
       B.at({ p: [74, 44.9, 4], size: [24, 0.6, 32], c: '#f6f3ea', ry: 8 });
       // the sofa you're on (just its arm), a cushion, a blanket
       B.at({ p: [-120, 34, 90], size: [40, 68, 100], c: '#46557a' });
-      B.at({ p: [-90, 50, 60], size: [36, 30, 12], c: '#d9583a', ry: 30 });
-      // bookshelf and plant
-      B.box({ wall: 'e', u: -60, v: 0, o: 0, w: 120, h: 180, d: 32, c: '#5a4636' });
-      [30, 75, 120, 165].forEach(function (v) {
-        B.box({ wall: 'e', u: -60, v: v, o: 0, w: 116, h: 2, d: 30, c: '#7a5e48' });
-        var R0 = PT.rng(v);
-        for (var k = 0; k < 7; k++) B.box({ wall: 'e', u: -110 + k * 14 + R0() * 4, v: v + 2, o: 4, w: 10, h: 22 + R0() * 14, d: 20, c: ['#b0473a', '#2f5d7c', '#d8c79a', '#3e6b4f', '#8a6aa0'][k % 5], border: 0.2 });
+      B.at({ p: [-81, 50, 60], size: [36, 30, 12], c: '#d9583a', ry: 30 }); // (against the arm, not in it)
+      // the bookshelf: open (a back, the sides, a top, the shelves), the books standing on the shelves
+      B.box({ wall: 'e', u: -60, v: 0, o: 0, w: 120, h: 180, d: 2, c: '#4a3a2c' });
+      [-118, -2].forEach(function (u) { B.box({ wall: 'e', u: u, v: 0, o: 0, w: 4, h: 180, d: 32, c: '#5a4636' }); });
+      B.box({ wall: 'e', u: -60, v: 177, o: 0, w: 112, h: 3, d: 32, c: '#5a4636' });
+      B.box({ wall: 'e', u: -60, v: 0, o: 2, w: 112, h: 6, d: 30, c: '#5a4636' });
+      [6, 48, 92, 136].forEach(function (v, i) {
+        if (i) B.box({ wall: 'e', u: -60, v: v - 2, o: 2, w: 112, h: 2, d: 30, c: '#7a5e48' });
+        var R0 = PT.rng(v + 24);
+        for (var k = 0; k < 7; k++) B.box({ wall: 'e', u: -110 + k * 14 + R0() * 4, v: v, o: 4, w: 10, h: 22 + R0() * 14, d: 20, c: ['#b0473a', '#2f5d7c', '#d8c79a', '#3e6b4f', '#8a6aa0'][k % 5], border: 0.2 });
       });
       var city = B.T('city', function () { return PT.city(300, 360); });
       B.box({ wall: 'e', u: 90, v: 90, o: 0, w: 110, h: 130, d: 4, c: '#ddd8cc' });
@@ -1095,30 +1126,35 @@
     var zc = ZW + T / 2, zh = ZW + T; // middle of the wall, its face toward the hall
     var wallC = '#a39684', trim = '#e6dccb';
     var side = (R.w - OW) / 2;
+    // (the wall's own pieces carry no ink: their seams over the opening read as wires; the trim and
+    // the reveals draw the opening)
     [-1, 1].forEach(function (sg) {
       var x = sg * (OW / 2 + side / 2);
-      B.at({ p: [x, R.h / 2, zc], size: [side, R.h, T], c: wallC, border: 0.25 });
+      B.at({ p: [x, R.h / 2, zc], size: [side, R.h, T], c: wallC, border: 0 });
       B.at({ p: [x, 5, zh + 0.6], size: [side, 10, 1.2], c: '#4a4038', border: 0.15 });
       // the trim round the opening, and the reveal inside it
-      B.at({ p: [sg * (OW / 2 + 3.5), OH / 2 + 1.5, zh + 0.8], size: [7, OH + 3, 1.6], c: trim, border: 0.2 });
-      B.at({ p: [sg * (OW / 2 - 0.6), OH / 2, zc], size: [1.2, OH, T], c: '#d9cfbd', border: 0.12 });
+      B.at({ p: [sg * (OW / 2 + 3.5), OH / 2, zh + 0.8], size: [7, OH, 1.6], c: trim, border: 0.2 }); // (up to the head piece, not behind it)
+      B.at({ p: [sg * (OW / 2 - 0.6), OH / 2, zc], size: [1.2, OH, T - 0.2], c: '#d9cfbd', border: 0.12 });
     });
-    B.at({ p: [0, (R.h + OH) / 2, zc], size: [OW, R.h - OH, T], c: wallC, border: 0.25 });
+    B.at({ p: [0, (R.h + OH) / 2, zc], size: [OW, R.h - OH, T], c: wallC, border: 0 });
     B.at({ p: [0, OH + 3.5, zh + 0.8], size: [OW + 14, 7, 1.6], c: trim, border: 0.2 });
-    B.at({ p: [0, OH + 0.5, zc], size: [OW, 1, T], c: '#d9cfbd', border: 0.12 });
-    B.at({ p: [0, 0.6, zc], size: [OW, 1.2, T], c: '#6a4a2e', border: 0.12 });
-    // the door, open into the kitchen against its left wall
-    var leaf = 88, tilt = 6 * DEG, hx = -OW / 2 + 1.8, hz = ZW - 0.5;
-    var along = [-Math.sin(tilt), -Math.cos(tilt)];
-    B.at({ p: [hx + along[0] * leaf / 2, OH / 2 - 1, hz + along[1] * leaf / 2], size: [3.6, OH - 3, leaf], c: '#d8cdb8', ry: 6, border: 0.22 });
-    B.at({ p: [hx + along[0] * 81 + 2.8, 100, hz + along[1] * 81], size: [2.2, 2.2, 6], c: '#b8a27a', ry: 6, border: 0.1 });
+    // (the reveals and the threshold stop just short of the wall's faces, so no two faces share a plane)
+    B.at({ p: [0, OH + 0.1, zc], size: [OW, 1, T - 0.2], c: '#d9cfbd', border: 0.12 });
+    B.at({ p: [0, 0.6, zc], size: [OW - 2.4, 1.2, T - 0.2], c: '#6a4a2e', border: 0.12 });
+    // the door, open into the kitchen, swung back toward the far corner (the kitchen is too shallow
+    // for it to open all the way: it stops clear of the counter and the side wall)
+    var leaf = 86, swing = 45, hx = -OW / 2 + 1.8, hz = ZW - 1.5;
+    var along = [-Math.sin(swing * DEG), -Math.cos(swing * DEG)], nrm = [Math.cos(swing * DEG), -Math.sin(swing * DEG)];
+    B.at({ p: [hx + along[0] * leaf / 2, OH / 2 - 1, hz + along[1] * leaf / 2], size: [3.6, OH - 3, leaf], c: '#d8cdb8', ry: swing, border: 0.22 });
+    B.at({ p: [hx + along[0] * (leaf - 7) + nrm[0] * 2.9, 100, hz + along[1] * (leaf - 7) + nrm[1] * 2.9], size: [2.2, 2.2, 6], c: '#b8a27a', ry: swing, border: 0.1 });
 
     // the kitchen
     var kz0 = -hd, kd = ZW - kz0; // back wall, depth
+    var KX = 57, KW = KX + R.w / 2, KU = KX - KW / 2; // the counter runs from the left wall to the fridge
     var tiles = B.T('kfloor', function () { return PT.tiles({ base: '#d9cfba', n: 2, grout: 'rgba(90,76,60,.45)', jitter: 0.08, seed: 9 }); }, true);
     B.flat({ wall: 'n', u: 0, v: 0, o: 0, w: R.w, d: kd, c: '#d9cfba', map: tiles, rep: [5, 3], border: 0, lift: 0.25 });
     var back = B.T('kback', function () { return PT.tiles({ base: '#ece5d6', n: 8, grout: 'rgba(140,124,100,.5)', gw: 1.5, jitter: 0.05, shine: true, seed: 4 }); }, true);
-    B.card({ wall: 'n', u: 0, v: 90, o: 0.5, w: R.w, h: 58, c: '#ece5d6', map: back, rep: [4, 1], border: 0.2 });
+    B.card({ wall: 'n', u: KU, v: 90, o: 0.5, w: KW, h: 58, c: '#ece5d6', map: back, rep: [3, 1], border: 0.2 });
     var cab = B.T('kcab', function () {
       var c = PT.cv(512, 200), x = c.getContext('2d');
       x.fillStyle = '#62786b'; x.fillRect(0, 0, 512, 200);
@@ -1130,9 +1166,9 @@
       }
       return c;
     });
-    B.box({ wall: 'n', u: 0, v: 0, o: 0, w: R.w, h: 10, d: 56, c: '#2f3a33', border: 0.15 });
-    B.box({ wall: 'n', u: 0, v: 10, o: 0, w: R.w, h: 76, d: 60, c: '#62786b', map: cab, mapFace: 4, border: 0.25 });
-    B.box({ wall: 'n', u: 0, v: 86, o: 0, w: R.w, h: 4, d: 63, c: '#d8d0c0', border: 0.2 });
+    B.box({ wall: 'n', u: KU, v: 0, o: 0, w: KW, h: 10, d: 56, c: '#2f3a33', border: 0.15 });
+    B.box({ wall: 'n', u: KU, v: 10, o: 0, w: KW, h: 76, d: 60, c: '#62786b', map: cab, mapFace: 4, border: 0.25 });
+    B.box({ wall: 'n', u: KU, v: 86, o: 0, w: KW, h: 4, d: 63, c: '#d8d0c0', border: 0.2 });
     var up = B.T('kcabup', function () {
       var c = PT.cv(256, 220), x = c.getContext('2d');
       x.fillStyle = '#6c8274'; x.fillRect(0, 0, 256, 220);
@@ -1142,7 +1178,26 @@
       });
       return c;
     });
-    [-72, 72].forEach(function (u) { B.box({ wall: 'n', u: u, v: 150, o: 0, w: 76, h: 72, d: 34, c: '#6c8274', map: up, mapFace: 4, border: 0.25 }); });
+    B.box({ wall: 'n', u: -72, v: 150, o: 0, w: 76, h: 72, d: 34, c: '#6c8274', map: up, mapFace: 4, border: 0.25 });
+    // right of the window a narrow one, and one over the fridge
+    var up1 = B.T('kcabup1', function () {
+      var c = PT.cv(96, 300), x = c.getContext('2d');
+      x.fillStyle = '#6c8274'; x.fillRect(0, 0, 96, 300);
+      x.strokeStyle = 'rgba(20,28,24,.55)'; x.lineWidth = 3; x.strokeRect(6, 8, 84, 284);
+      x.fillStyle = '#c9c3b8'; x.fillRect(14, 232, 6, 40);
+      return c;
+    });
+    B.box({ wall: 'n', u: 45.5, v: 150, o: 0, w: 23, h: 72, d: 34, c: '#6c8274', map: up1, mapFace: 4, border: 0.25 });
+    var upF = B.T('kcabtop', function () {
+      var c = PT.cv(256, 164), x = c.getContext('2d');
+      x.fillStyle = '#6c8274'; x.fillRect(0, 0, 256, 164);
+      [0, 128].forEach(function (X, i) {
+        x.strokeStyle = 'rgba(20,28,24,.55)'; x.lineWidth = 3; x.strokeRect(X + 6, 8, 116, 148);
+        x.fillStyle = '#c9c3b8'; x.fillRect(X + (i ? 12 : 84), 136, 32, 6);
+      });
+      return c;
+    });
+    B.box({ wall: 'n', u: 83, v: 190, o: 0, w: 50, h: 32, d: 34, c: '#6c8274', map: upF, mapFace: 4, border: 0.25 });
     // the window over the sink: the night outside, a frame, a plant on the sill
     var city = B.T('kcity', function () { return PT.city(256, 256); });
     B.card({ wall: 'n', u: 0, v: 150, o: 0.6, w: 60, h: 66, c: '#1d2b52', map: city, emit: 0.8, emitDark: 0, border: 0.3, hatch: 0 });
@@ -1152,9 +1207,10 @@
     B.box({ wall: 'n', u: 0, v: 146, o: 0, w: 72, h: 3, d: 10, c: '#ece7dc', border: 0.15 });
     var F = B.frame('n');
     var at = function (u, o) { return F.at(u, o); };
-    var pp = at(22, 6);
-    B.at({ geo: 'cyl', p: [pp[0], 154, pp[1]], size: [8, 8, 8], c: '#b5643c', taper: 1.25 });
-    B.at({ geo: 'cyl', p: [pp[0], 163, pp[1]], size: [12, 10, 12], c: '#4f7a4a', taper: 0.4 });
+    // (the pot in front of the window's frame, on the sill)
+    var pp = at(22, 7.2);
+    B.at({ geo: 'cyl', p: [pp[0], 152.5, pp[1]], size: [6, 7, 6], c: '#b5643c', taper: 1.2 });
+    B.at({ geo: 'cyl', p: [pp[0], 161, pp[1]], size: [9, 10, 9], c: '#4f7a4a', taper: 0.4 });
     // the sink, a tap; on the counter a kettle, a board, a bowl of oranges
     var sp = at(0, 30);
     B.at({ p: [sp[0], 89.9, sp[1]], size: [46, 0.6, 34], c: '#9aa3a6', border: 0.2 });
@@ -1164,26 +1220,30 @@
     B.at({ geo: 'cyl', p: [kp[0], 99, kp[1]], size: [15, 18, 15], c: '#c94f3c', taper: 0.8 });
     B.at({ p: [kp[0] + 2, 109, kp[1]], size: [8, 2, 3], c: '#2a2d30' });
     var bp = at(-30, 34);
-    B.at({ p: [bp[0], 91, bp[1]], size: [32, 2, 22], c: '#b8875a', ry: 8, border: 0.2 });
-    var op = at(56, 34);
+    B.at({ p: [bp[0], 91.3, bp[1]], size: [32, 2, 22], c: '#b8875a', ry: 8, border: 0.2 }); // (just over the sink's rim)
+    var op = at(40, 34);
     B.at({ geo: 'cyl', p: [op[0], 93, op[1]], size: [24, 6, 24], c: '#e9e4d8', taper: 1.35 });
-    [[-4, 0], [4, 2], [0, -4], [1, 4]].forEach(function (q, i) {
-      B.at({ geo: 'cyl', p: [op[0] + q[0], 98 + (i === 3 ? 3.5 : 0), op[1] + q[1]], size: [7, 6.5, 7], c: '#f08a2c', border: 0.2 });
+    // three oranges in it, one rolled out onto the counter
+    [-90, 30, 150].forEach(function (a) {
+      B.at({ geo: 'cyl', p: [op[0] + 4.3 * Math.cos(a * DEG), 98, op[1] + 4.3 * Math.sin(a * DEG)], size: [7, 6.5, 7], c: '#f08a2c', border: 0.2 });
     });
-    // the fridge on the right
-    var fp = at(84, 32);
+    var or4 = at(52, 54);
+    B.at({ geo: 'cyl', p: [or4[0], 93.25, or4[1]], size: [7, 6.5, 7], c: '#f08a2c', border: 0.2 });
+    // the fridge on the right, where the counter stops
+    var fp = at(83, 32);
     B.at({ p: [fp[0], 92, fp[1]], size: [50, 184, 62], c: '#e2e4e1', border: 0.3 });
-    B.at({ p: [fp[0] - 18, 120, fp[1] + 31.4], size: [2, 34, 2], c: '#b9c0c2' });
+    B.at({ p: [fp[0] - 18, 120, fp[1] + 32], size: [2, 34, 2], c: '#b9c0c2' });
     B.at({ p: [fp[0] + 6, 150, fp[1] + 31.2], size: [8, 10, 0.4], c: '#f2a84b', rz: 6 });
-    // a chair pulled out from a table we can only just see
-    var cp = at(-34, 96);
-    B.at({ p: [cp[0], 45, cp[1]], size: [40, 4, 40], c: '#8a5f3c', ry: 14, border: 0.2 });
-    B.at({ p: [cp[0] - 4, 72, cp[1] - 18], size: [38, 34, 3.5], c: '#8a5f3c', ry: 14, border: 0.2 });
+    // a chair by the counter, facing the doorway
+    var cp = at(-24, 98), cry = 14;
+    var cat = function (lx, lz) { var c = Math.cos(cry * DEG), s = Math.sin(cry * DEG); return [cp[0] + lx * c + lz * s, cp[1] - lx * s + lz * c]; };
+    B.at({ p: [cp[0], 45, cp[1]], size: [40, 4, 40], c: '#8a5f3c', ry: cry, border: 0.2 });
     [[-16, -16], [16, -16], [-16, 16], [16, 16]].forEach(function (q) {
-      B.at({ p: [cp[0] + q[0], 22, cp[1] + q[1]], size: [3, 44, 3], c: '#6e4a2e', ry: 14 });
+      var lg = cat(q[0], q[1]), tall = q[1] < 0; // the back legs go on up to hold the back
+      B.at({ p: [lg[0], tall ? 44.5 : 22, lg[1]], size: [3, tall ? 89 : 44, 3], c: '#6e4a2e', ry: cry });
     });
-    var tp = at(-92, 70);
-    B.at({ p: [tp[0], 74, tp[1]], size: [70, 4, 80], c: '#a07650', border: 0.2 });
+    var bk = cat(0, -16);
+    B.at({ p: [bk[0], 76, bk[1]], size: [29, 22, 2.5], c: '#8a5f3c', ry: cry, border: 0.2 });
     // the pendant lamp, and the light
     var lp = at(0, 64);
     B.at({ geo: 'cyl', p: [lp[0], 226, lp[1]], size: [0.8, 48, 0.8], c: '#2a2d30', border: 0 });
@@ -1208,9 +1268,12 @@
       B.light({ p: [0, R.h - 30, 40], c: '#f4ecdc', i: 1.2, r: 420, k: 'work' });
       buildKitchenEnd(B, R);
       // coats on hooks, shoes, a runner
+      // (the red one hangs over the other two, from a longer hook)
       B.box({ wall: 'w', u: -110, v: 170, o: 0, w: 90, h: 6, d: 6, c: '#5a4636' });
-      [['#2b3340', -130, 4], ['#8a3b34', -108, -3], ['#3e5b7a', -88, 2]].forEach(function (k) {
-        B.box({ wall: 'w', u: k[1], v: 92, o: 3, w: 30, h: 80, d: 12, c: k[0], rz: k[2] });
+      // (they hang just under the rail, from hooks in their collars)
+      B.box({ wall: 'w', u: -108, v: 164.5, o: 6, w: 2.4, h: 2.4, d: 12, c: '#3a2e24', border: 0.1 });
+      [['#2b3340', -130, 4, 3], ['#8a3b34', -108, -3, 13.5], ['#3e5b7a', -88, 2, 3]].forEach(function (k) {
+        B.box({ wall: 'w', u: k[1], v: 88.5, o: k[3], w: 30, h: 80, d: 10, c: k[0], rz: k[2] });
       });
       [[-150, '#2a2d30'], [-132, '#c9c3b8'], [-165, '#6b7a8f']].forEach(function (k, i) {
         B.box({ wall: 'w', u: k[0], v: 0, o: 6 + (i % 2) * 4, w: 12, h: 9, d: 28, c: k[1], ry: (i - 1) * 8 });
@@ -1220,7 +1283,12 @@
       // the work bag, dropped
       B.shadow(10, 60, 70, 50, 0.5);
       B.at({ p: [10, 22, 60], size: [46, 40, 28], ry: 24, rz: 6, c: '#34463a' });
-      B.at({ p: [26, 44, 64], size: [6, 22, 3], ry: 24, rz: 40, c: '#26322a' });
+      // its handles, flopped flat on top of it (laid on its tilted top, not stuck into it)
+      var bagR = M.mul3(M.rotY(24 * DEG), M.rotZ(6 * DEG));
+      [[2, 4.5, 8], [-1, -4.5, -6]].forEach(function (q) {
+        var hp = M.apply3(bagR, [q[0], 20.6, q[1]]);
+        B.add({ geo: 'box', pos: [10 + hp[0], 22 + hp[1], 60 + hp[2]], R: M.mul3(bagR, M.rotY(q[2] * DEG)), s: [26, 1.2, 3], color: '#26322a', border: 0.2 });
+      });
       // console table: keys in a bowl, the phone face up and lit
       B.box({ wall: 'e', u: 30, v: 78, o: 0, w: 90, h: 4, d: 32, c: '#9a7652' });
       [[-12], [72]].forEach(function (q) { B.box({ wall: 'e', u: q[0], v: 0, o: 2, w: 4, h: 78, d: 28, c: '#7c5e41' }); });
@@ -1252,8 +1320,8 @@
     build: function (B, R, api) {
       var st = B.T('street', function () { return PT.street(640, 300, 41); });
       var st2 = B.T('street2', function () { return PT.street(640, 300, 77); });
-      // windows down both sides, the street going past
-      [-330, -150, 30, 210, 390].forEach(function (u, i) {
+      // windows down both sides, the street going past (all of them short of the ends of the bus)
+      [-360, -180, 0, 180, 360].forEach(function (u, i) {
         ['w', 'e'].forEach(function (wl) {
           B.card({ wall: wl, u: u, v: 100, o: 0.6, w: 160, h: 90, c: '#1a1622', map: (i + (wl === 'w' ? 0 : 1)) % 2 ? st : st2, emit: 0.9, emitDark: 0, border: 0.6, hatch: 0 });
         });
@@ -1270,10 +1338,11 @@
       // seats in pairs, a yellow pole at every other row
       var fab = B.T('seatfab', function () { return PT.stripes({ base: '#2f4a7a', a: '#c0392b', b: '#2f4a7a', n: 16 }); }, true);
       for (var z = -380; z <= 300; z += 85) {
-        [-80, 80].forEach(function (x) {
-          B.at({ p: [x, 46, z], size: [96, 10, 44], c: '#2f4a7a', map: fab, mapFace: -1, rep: [2, 1] });
-          B.at({ p: [x, 80, z + 20], size: [96, 62, 8], c: '#2f4a7a', map: fab, mapFace: -1, rep: [2, 1], rx: -8 });
-          B.at({ p: [x, 22, z], size: [70, 44, 30], c: '#26292c' });
+        // (clear of the walls; the cushion sits on its base, the back just above the cushion)
+        [-77, 77].forEach(function (x) {
+          B.at({ p: [x, 46, z], size: [92, 10, 44], c: '#2f4a7a', map: fab, mapFace: -1, rep: [2, 1] });
+          B.at({ p: [x, 82.5, z + 20], size: [92, 62, 8], c: '#2f4a7a', map: fab, mapFace: -1, rep: [2, 1], rx: -8 });
+          B.at({ p: [x, 20.5, z], size: [70, 41, 30], c: '#26292c' });
         });
         if (Math.round((z + 380) / 85) % 2 === 0) {
           B.at({ geo: 'cyl', p: [-32, R.h / 2, z - 26], size: [3.5, R.h, 3.5], c: '#e1b229' });
@@ -1281,8 +1350,6 @@
         }
       }
       B.at({ geo: 'cyl', p: [0, R.h - 26, 0], size: [3, 900, 3], rx: 90, c: '#e1b229' });
-      // your bag on the seat next to you
-      B.at({ p: [92, 64, 330], size: [38, 30, 20], ry: 10, c: '#34463a' });
     },
   };
 
@@ -1355,7 +1422,7 @@
     var lc = B.frame('e').at(-84, 30);
     B.add({ geo: 'box', pos: [lc[0], 76.4, lc[1]], R: M.rotY(-90 * DEG), s: [34, 1.2, 24], color: '#a6adb4', border: 0.25, name: 'lidClosed', hidden: true });
     // a book open on the bed
-    B.add({ geo: 'box', pos: [-38, 63.6, 112], R: M.rotY(-20 * DEG), s: [30, 2, 22], color: '#f2ead6', border: 0.2, name: 'book' });
+    B.add({ geo: 'box', pos: [-38, 64.1, 112], R: M.rotY(-20 * DEG), s: [30, 2, 22], color: '#f2ead6', border: 0.2, name: 'book' });
     B.add({ geo: 'box', pos: [-38, 62.6, 112], R: M.rotY(-20 * DEG), s: [31, 1, 23], color: '#b0473a', border: 0.2 });
   }
 
