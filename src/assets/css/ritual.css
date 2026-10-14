@@ -48,19 +48,69 @@
   grid-column: 2;
 }
 
-.ritual__setup-grid {
+.ritual__hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--s-8);
-  margin-top: var(--s-8);
+  gap: var(--s-7);
 }
 
+.ritual__hero-main {
+  display: grid;
+  gap: var(--s-6);
+  align-content: start;
+}
+
+/* wide screens: the room you'll be in sits beside the words and Start, not under them */
 @media (min-width: 960px) {
-  .ritual__setup-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--s-9);
+  .ritual__hero {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: var(--s-8);
     align-items: start;
   }
+
+  .ritual__hero-side {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-5));
+    padding-top: var(--s-3);
+  }
+
+  .ritual__hero .ritual__title {
+    font-size: clamp(3.5rem, 6.4vw, 6rem);
+  }
+}
+
+/* What to have within reach */
+.nearby {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.nearby__title {
+  font-weight: 650;
+  color: var(--paper);
+}
+
+.nearby__list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3) var(--s-4);
+}
+
+.nearby__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--paper-2);
+  font-size: var(--fs-small);
+  line-height: 1.3;
+}
+
+.nearby__list .icon {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--tungsten);
 }
 
 .ritual__form {
@@ -223,8 +273,15 @@
   display: none;
 }
 
-.has-door .ritual__setup-grid {
+.has-door .ritual__hero {
+  grid-template-columns: minmax(0, 1fr);
   margin-top: var(--s-6);
+}
+
+/* the door is its own first screen: no room picture, no list of things to fetch */
+.has-door .ritual__hero-side,
+.has-door .nearby {
+  display: none;
 }
 
 /* Sound: ENDSHIFT soundtrack (with moods), your own music, or silence ---------------- */
@@ -707,59 +764,242 @@
   }
 }
 
-.plan {
+/* The 20 minutes: a rail that dims like the room does, then the seven drawn rooms --------------- */
+.ritual__plan {
+  margin-top: var(--section-pad);
+}
+
+.plan__head {
+  max-width: none;
+}
+
+.dimrail {
+  margin-top: var(--s-6);
+}
+
+.dimrail__bar,
+.dimrail__ticks {
+  display: flex;
+}
+
+.dimrail__seg {
+  flex: var(--w) 1 0;
+  min-width: 0;
+  height: 2.75rem;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0.45rem 0.35rem;
+  border-right: 2px solid var(--night);
+  /* the light of each step: ceiling light, lamp, sunset, dark */
+  background: var(--c);
+  color: #17140f;
+  font-family: var(--font-display);
+  font-weight: 780;
+  font-size: 0.95rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.dimrail__seg:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.dimrail__seg:last-child {
+  border-right: 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.dimrail__seg b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  font-weight: inherit;
+}
+
+/* names only where they fit: the one-minute "Phone down" never, the short steps not on phones */
+.dimrail__seg:nth-child(5) b {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .dimrail__seg:nth-child(-n + 5) b {
+    display: none;
+  }
+}
+
+.dimrail__seg:nth-child(1) { --c: #ece6d6; }
+.dimrail__seg:nth-child(2) { --c: #e9d3a6; }
+.dimrail__seg:nth-child(3) { --c: #ebbd78; }
+.dimrail__seg:nth-child(4) { --c: var(--tungsten); }
+.dimrail__seg:nth-child(5) { --c: #c9803f; }
+.dimrail__seg:nth-child(6) { --c: #8c4a2a; color: #f3e2cc; }
+.dimrail__seg:nth-child(7) { --c: #2b2420; color: var(--fog); }
+
+.dimrail__ticks {
+  position: relative;
+  margin-top: 0.4rem;
+  color: var(--fog);
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dimrail__ticks span {
+  flex: var(--w) 1 0;
+  min-width: 0;
+}
+
+.dimrail__ticks .dimrail__end {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.dimrail__note {
+  margin-top: var(--s-3);
+  color: var(--fog);
+  font-size: var(--fs-small);
+}
+
+/* the storyboard: phones get a contact sheet (small frame beside the words), wider screens frames */
+.board {
   list-style: none;
   display: grid;
-  margin-top: var(--s-5);
+  gap: var(--s-5);
+  margin-top: var(--s-7);
+}
+
+.board__step {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: start;
+  align-content: start;
+}
+
+.board__frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  margin: 0;
+  border-radius: 8px;
+  background: #0e1015;
+  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.9);
+}
+
+.board__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.board__min {
+  position: absolute;
+  left: 0.4rem;
+  top: 0.35rem;
+  padding: 0.2rem 0.4rem 0.12rem;
+  border-radius: 4px;
+  background: rgba(10, 11, 13, 0.74);
+  color: var(--tungsten);
+  font-family: var(--font-display);
+  font-weight: 820;
+  font-size: 1.05rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.board__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.board__body {
+  margin-top: 0.4rem;
+  color: var(--paper-2);
+  font-size: 0.975rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 600px) {
+  .board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-7) var(--s-5);
+  }
+
+  .board__step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3);
+  }
+
+  .board__min {
+    left: 0.6rem;
+    top: 0.55rem;
+    font-size: 1.35rem;
+  }
+}
+
+/* wide: four across; the breathing, the longest step, takes two frames */
+@media (min-width: 1000px) {
+  .board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .board__step--breath {
+    grid-column: span 2;
+  }
+
+  .board__step--breath .board__frame {
+    aspect-ratio: 32 / 10;
+  }
+}
+
+.board__step--breath .board__title::after {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  background: var(--tungsten);
+  vertical-align: middle;
+}
+
+.board__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+  margin-top: var(--s-7);
+  padding-top: var(--s-5);
   border-top: 1px solid var(--line-soft);
 }
 
-.plan__item {
-  display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr);
-  gap: var(--s-3);
-  padding: var(--s-4) 0;
-  border-bottom: 1px solid var(--line-soft);
-}
-
-.plan__min {
+.board__over {
   font-family: var(--font-display);
-  font-weight: 820;
-  font-size: 1.75rem;
+  font-weight: 840;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
   line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--tungsten);
 }
 
-.plan__title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: var(--font-display);
-  font-weight: 780;
-  font-size: 1.5rem;
-  line-height: 1.05;
-}
-
-.plan__title .icon {
-  width: 1.25rem;
-  height: 1.25rem;
+.board__over span {
+  margin-right: 0.4rem;
   color: var(--fog);
+  font-variant-numeric: tabular-nums;
 }
 
-.plan__body {
-  margin-top: 0.4rem;
-  color: var(--paper-2);
-  font-size: 1rem;
+.board__first {
+  color: var(--fog);
+  font-size: var(--fs-small);
 }
 
-.plan__item--breath {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--tungsten) 9%, transparent), transparent 70%);
-}
-
-.plan__item--end .plan__min,
-.plan__item--end .plan__title {
-  color: var(--paper);
+.board__end .plan__card {
+  flex-basis: 100%;
+  margin-top: 0;
 }
 
 /* Breathing guide --------------------------------------------------------------- */
@@ -770,12 +1010,21 @@
   max-width: 46rem;
 }
 
+@media (min-width: 960px) {
+  .guide__head {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-8);
+    align-items: end;
+    max-width: none;
+  }
+}
+
 .guide__points {
   list-style: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--s-5) var(--s-7);
-  margin-top: var(--s-7);
+  margin-top: var(--s-8);
 }
 
 @media (min-width: 720px) {
@@ -810,8 +1059,63 @@
 }
 
 .guide__structure {
-  margin-top: var(--s-8);
-  max-width: 52rem;
+  margin-top: var(--s-7);
+}
+
+.breathline {
+  margin: var(--s-5) 0 0;
+}
+
+.breathline__svg {
+  display: block;
+  width: 100%;
+  height: clamp(5.5rem, 14vw, 8.5rem);
+  overflow: visible;
+}
+
+.breathline__path {
+  fill: none;
+  stroke: var(--tungsten);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.breathline__cut {
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.breathline__labels {
+  display: none;
+}
+
+/* the phases written out: a list on phones, four columns under the line on wide screens */
+@media (min-width: 900px) {
+  .breathline__labels {
+    display: flex;
+    margin-top: var(--s-2);
+    color: var(--fog);
+    font-size: var(--fs-small);
+  }
+
+  .breathline__labels span {
+    flex: var(--w) 1 0;
+    min-width: 0;
+    padding-right: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .breathline__labels b {
+    color: var(--fog);
+    font-family: var(--font-display);
+    font-weight: 780;
+    font-size: 1.05rem;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .guide__phases {
@@ -848,8 +1152,98 @@
   color: var(--paper-2);
 }
 
-.why__body {
+@media (min-width: 900px) {
+  .guide__phases {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-5);
+    margin-top: var(--s-6);
+    border-top: 0;
+  }
+
+  .guide__phases li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-2);
+    align-content: start;
+    border-bottom: 0;
+    border-top: 2px solid var(--line);
+  }
+}
+
+.why__grid {
+  display: grid;
+  gap: var(--s-6);
+}
+
+.why__lead {
+  margin-top: var(--s-5);
+}
+
+.why__note {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-soft);
+  color: var(--paper-2);
+  max-width: 40ch;
+}
+
+.findings {
+  list-style: none;
+  display: grid;
+  gap: var(--s-5);
+}
+
+.finding {
+  display: grid;
+  gap: var(--s-2);
+  padding-top: var(--s-4);
+  border-top: 2px solid var(--line);
+}
+
+.finding__tag {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.finding__tag .icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--fog);
+}
+
+.finding__tag span {
+  color: var(--tungsten);
+  font-variant-numeric: tabular-nums;
+}
+
+.finding__text {
+  color: var(--paper-2);
+}
+
+.why__sources {
   margin-top: var(--s-6);
+}
+
+.why__sources summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--paper);
+}
+
+.why__sources .sources {
+  margin-top: var(--s-4);
+}
+
+@media (min-width: 960px) {
+  .why__grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--s-9);
+    align-items: start;
+  }
 }
 
 /* Done ------------------------------------------------------------------------------ */
@@ -2248,7 +2642,7 @@ html.immersive-open body {
 
 /* The room you'll be in: four drawn moments, cross-fading quietly beside Start ------------ */
 .room-peek {
-  margin: 0 0 var(--s-7);
+  margin: 0;
 }
 
 .room-peek__frame {
@@ -2561,7 +2955,6 @@ html.immersive-open body {
 /* the buttons it points at */
 .quickstart__adjust.is-nudged {
   border-color: var(--tungsten);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tungsten) 18%, transparent);
 }
 
 .door__more .text-btn.is-nudged {
@@ -2621,7 +3014,18 @@ html.immersive-open body {
   animation-name: nudge-bob-mirrored;
 }
 
-.motion-ok .quickstart__adjust.is-nudged {
+.quickstart__adjust.is-nudged {
+  position: relative;
+}
+
+.motion-ok .quickstart__adjust.is-nudged::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--tungsten);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
   animation: nudge-ring 2.4s ease-out 1.3s infinite;
 }
 
@@ -2689,10 +3093,12 @@ html.immersive-open body {
 
 @keyframes nudge-ring {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tungsten) 45%, transparent);
+    opacity: 0.7;
+    transform: scale(1);
   }
   70%, 100% {
-    box-shadow: 0 0 0 12px color-mix(in srgb, var(--tungsten) 0%, transparent);
+    opacity: 0;
+    transform: scale(1.12, 1.25);
   }
 }
 

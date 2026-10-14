@@ -293,7 +293,18 @@ export default ({ state }) => ({
     },
   },
   cardLink: 'The ritual on one page, to print and keep by the bed',
+  // what to have within reach before you press start (shown under Start)
+  nearby: {
+    title: 'Have these nearby',
+    items: [
+      { icon: 'notebook', text: 'Paper and a pen' },
+      { icon: 'glass', text: 'A glass of water' },
+      { icon: 'lamp', text: 'A lamp you can switch on' },
+      { icon: 'sound', text: 'Headphones, if you have them' },
+    ],
+  },
   stepsTitle: 'The 20 minutes',
+  railNote: 'The light only goes down: the big light, then the lamp, then dark.',
   steps: withMarkers(STEPS({ state })),
 
   breath: {
@@ -339,6 +350,7 @@ export default ({ state }) => ({
       { time: '1:30', title: 'Slow rhythm', text: 'In for 4, out for 6: about six breaths a minute, the pace most studies on slow breathing use.' },
       { time: '4:30', title: 'Let go', text: 'Stop steering. Notice what changed.' },
     ],
+    lineAria: 'The five minutes as one line: easy breaths, six sighs with two breaths in and one long breath out, slow even breaths, then smaller and smaller breaths as you let go.',
     safety: 'No breath holds in this one. If you feel dizzy or uncomfortable at any point, stop and breathe normally.',
   },
 
@@ -450,6 +462,8 @@ export default ({ state }) => ({
 
   why: {
     title: 'Why these steps',
+    // which step each paragraph backs ('' = said about the whole ritual)
+    about: ['', 'clock-out', 'breathe', 'binaural', ''],
     body: [
       'Researchers who study recovery from work call this <strong>psychological detachment</strong>: not only being away from work, but not thinking about it. People who detach more in their free time tend to report less exhaustion and better wellbeing (Sonnentag, 2012).',
       'Step one comes from a small sleep-lab study. People who spent five minutes at bedtime writing a to-do list for the next few days fell asleep faster than people who wrote about tasks they had already finished (Scullin et al., 2018).',

@@ -4,6 +4,34 @@ import { chip, icon, signupForm, panelPoster } from '../components.js';
 const SERVICES = ['spotify', 'youtube', 'soundcloud', 'apple'];
 // the room in four moments: clock out at the desk, the lamp, the window, the bed
 const PEEK = [['r1', 'clock-out'], ['r4', 'lights'], ['r6', 'breathe'], ['r7', 'quiet']];
+// each step's drawn room (the same rooms as the run and the home film)
+const STEP_VIEW = { 'clock-out': 'r1', change: 'r2', water: 'r3', lights: 'r4', phone: 'r5', breathe: 'r6', quiet: 'r7' };
+
+// The five minutes of breathing as one drawn line (the 20-minute plan at the default 4 in / 6 out):
+// a few easy breaths, six cyclic sighs (two breaths in, one long breath out), slow even breaths,
+// then letting go. x is time (1000 = 300 s), y is how full the lungs are (down = full).
+const BREATH = (() => {
+  const W = 1000, T = 300, X = (t) => +((t / T) * W).toFixed(1);
+  const base = 112, Y = (v) => +(base - v * 96).toFixed(1); // v: 0 empty .. 1 full
+  let t = 0, v = 0.1, d = `M0 ${Y(0.1)}`;
+  const to = (dt, nv) => {
+    const x0 = X(t), x1 = X(t + dt), k = (x1 - x0) * 0.42;
+    d += ` C${(x0 + k).toFixed(1)} ${Y(v)} ${(x1 - k).toFixed(1)} ${Y(nv)} ${x1} ${Y(nv)}`;
+    t += dt; v = nv;
+  };
+  const bounds = [0];
+  for (let i = 0; i < 6; i++) { to(2.2, 0.42); to(2.8, 0.1); } // arrive: 30 s of easy breaths
+  bounds.push(X(t));
+  for (let i = 0; i < 6; i++) { to(2.5, 0.72); to(1, 0.92); to(6, 0.06); to(0.5, 0.06); } // sighs: in, top-up, long out
+  bounds.push(X(t));
+  for (let i = 0; i < 18; i++) { to(4, 0.68); to(6, 0.1); } // slow rhythm, 4 in / 6 out
+  bounds.push(X(t));
+  const amp = [0.38, 0.3, 0.24, 0.18, 0.14, 0.1];
+  for (let i = 0; i < 6; i++) { to(2.1, 0.1 + amp[i]); to(2.9, 0.1); } // letting go: smaller and smaller
+  bounds.push(W);
+  const widths = bounds.slice(1).map((x, k) => +(x - bounds[k]).toFixed(1));
+  return { d, bounds, widths };
+})();
 
 export default function ritual(ctx) {
   const r = ctx.content.ritual;
@@ -55,19 +83,19 @@ export default function ritual(ctx) {
         </div>
         <div class="tonight-slip" data-tonight-slip hidden></div>
       </div>
-      <header class="ritual__intro">
-        <h1 class="display ritual__title" id="ritual-title">${r.intro.title}</h1>
-        <p class="lead ritual__lead">${r.intro.lead}</p>
-        <ul class="ritual__facts">${r.intro.facts.map((f) => `<li>${chip(f)}</li>`)}</ul>
-      </header>
+      <div class="ritual__hero">
+        <div class="ritual__hero-main">
+        <header class="ritual__intro">
+          <h1 class="display ritual__title" id="ritual-title">${r.intro.title}</h1>
+          <p class="lead ritual__lead">${r.intro.lead}</p>
+          <ul class="ritual__facts">${r.intro.facts.map((f) => `<li>${chip(f)}</li>`)}</ul>
+        </header>
+        <div class="ritual__resume" data-resume hidden>
+          ${icon('clock')}
+          <p data-resume-text></p>
+          <div class="cta-row"><button class="btn btn--primary btn--sm" type="button" data-resume-go>${r.setup.resume}</button><button class="btn btn--ghost btn--sm" type="button" data-resume-discard>${r.setup.discard}</button></div>
+        </div>
 
-      <div class="ritual__resume" data-resume hidden>
-        ${icon('clock')}
-        <p data-resume-text></p>
-        <div class="cta-row"><button class="btn btn--primary btn--sm" type="button" data-resume-go>${r.setup.resume}</button><button class="btn btn--ghost btn--sm" type="button" data-resume-discard>${r.setup.discard}</button></div>
-      </div>
-
-      <div class="ritual__setup-grid">
         <form class="ritual__form" data-setup>
           <div class="quickstart" data-quickstart>
             <p class="quickstart__label" data-quick-label>${r.setup.quickReady}</p>
@@ -133,22 +161,44 @@ export default function ritual(ctx) {
           <button class="btn btn--primary btn--xl ritual__start" type="submit">${icon('play')}<span>${r.setup.start}</span></button>
           </div>
         </form>
-
-        <div class="ritual__plan">
+          ${r.nearby ? html`<div class="nearby">
+            <p class="nearby__title">${r.nearby.title}</p>
+            <ul class="nearby__list">${r.nearby.items.map((it) => `<li>${icon(it.icon)}<span>${it.text}</span></li>`)}</ul>
+          </div>` : ''}
+        </div>
+        <div class="ritual__hero-side">
           ${r.peek ? html`<figure class="room-peek" role="img" aria-label="${esc(r.peek.aria)}">
             <div class="room-peek__frame">${PEEK.map(([view, id], k) => {
               const st = r.steps.find((x) => x.id === id);
-              return `<div class="room-peek__shot" style="--k:${k}">${panelPoster(ctx, view, { sizes: '(min-width: 900px) 40vw, 92vw' })}${st ? `<span class="room-peek__cap" aria-hidden="true"><b>${mm(st.minute)}</b> ${st.title}</span>` : ''}</div>`;
+              return `<div class="room-peek__shot" style="--k:${k}">${panelPoster(ctx, view, { sizes: '(min-width: 960px) 46vw, 92vw', eager: k === 0 })}${st ? `<span class="room-peek__cap" aria-hidden="true"><b>${mm(st.minute)}</b> ${st.title}</span>` : ''}</div>`;
             }).join('')}</div>
             <figcaption class="room-peek__note">${r.peek.caption}</figcaption>
           </figure>` : ''}
-          <h2 class="h3">${r.stepsTitle}</h2>
-          <ol class="plan">
-            ${r.steps.map(
-              (s) => html`<li class="plan__item${s.kind === 'breath' ? ' plan__item--breath' : ''}"><span class="plan__min" aria-hidden="true">${mm(s.minute)}</span><div><h3 class="plan__title">${icon(s.icon)}<span><span class="visually-hidden">${mm(s.minute)}: </span>${s.title}</span></h3><p class="plan__body">${s.body}</p></div></li>`,
-            )}
-            <li class="plan__item plan__item--end"><span class="plan__min" aria-hidden="true">${mm(Math.round(totalFull / 60))}</span><div><h3 class="plan__title"><span>${r.done.title}</span></h3></div></li>
-          </ol>
+        </div>
+      </div>
+
+      <div class="ritual__plan">
+        <h2 class="section-title plan__head">${r.stepsTitle}</h2>
+        <div class="dimrail" aria-hidden="true">
+          <div class="dimrail__bar">${r.steps.map((s, k) => `<span class="dimrail__seg" style="--w:${s.seconds.full};--k:${k}"><b>${s.title}</b></span>`).join('')}</div>
+          <div class="dimrail__ticks">${r.steps.map((s) => `<span style="--w:${s.seconds.full}">${mm(s.minute)}</span>`).join('')}<span class="dimrail__end">${mm(Math.round(totalFull / 60))}</span></div>
+          ${r.railNote ? `<p class="dimrail__note">${r.railNote}</p>` : ''}
+        </div>
+        <ol class="board">
+          ${r.steps.map(
+            (s) => html`<li class="board__step${s.kind === 'breath' ? ' board__step--breath' : ''}">
+            <figure class="board__frame">${STEP_VIEW[s.id] ? panelPoster(ctx, STEP_VIEW[s.id], { sizes: s.kind === 'breath' ? '(min-width: 1000px) 48vw, (min-width: 600px) 46vw, 8rem' : '(min-width: 1000px) 24vw, (min-width: 600px) 46vw, 8rem' }) : ''}<span class="board__min" aria-hidden="true">${mm(s.minute)}</span></figure>
+            <div class="board__text">
+              <h3 class="board__title"><span class="visually-hidden">${mm(s.minute)}: </span>${s.title}</h3>
+              <p class="board__body">${s.body}</p>
+            </div>
+          </li>`,
+          )}
+        </ol>
+        <div class="board__end">
+          <p class="board__over"><span aria-hidden="true">${mm(Math.round(totalFull / 60))}</span> ${r.done.title}</p>
+          <button class="btn btn--primary btn--lg board__start" type="button" data-act="door">${icon('play')}<span>${r.setup.start}</span></button>
+          <p class="board__first">${r.setup.door.first}</p>
           ${r.cardLink ? `<p class="plan__card"><a class="link" href="${ctx.url('ritual-card')}" data-track="cta_click" data-track-id="ritual_card">${r.cardLink}</a></p>` : ''}
         </div>
       </div>
@@ -216,25 +266,50 @@ export default function ritual(ctx) {
       <h2 class="section-title" id="guide-title">${r.guide.title}</h2>
       <p class="lead section-lead">${r.guide.lead}</p>
     </div>
-    <ul class="guide__points">
-      ${r.guide.points.map((p) => html`<li class="guide__point"><h3>${p.title}</h3><p>${p.text}</p></li>`)}
-    </ul>
     <div class="guide__structure">
       <h3 class="h3">${r.guide.structureTitle}</h3>
+      <figure class="breathline"${r.guide.lineAria ? ` role="img" aria-label="${esc(r.guide.lineAria)}"` : ''}>
+        <svg class="breathline__svg" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          ${BREATH.bounds.slice(1, -1).map((x) => `<line class="breathline__cut" x1="${x}" x2="${x}" y1="6" y2="124"/>`).join('')}
+          <path class="breathline__path" d="${BREATH.d}"/>
+        </svg>
+        <div class="breathline__labels" aria-hidden="true">${r.guide.structure.map((st, k) => `<span style="--w:${BREATH.widths[k]}"><b>${st.time}</b></span>`).join('')}</div>
+      </figure>
       <ol class="guide__phases">
-        ${r.guide.structure.map((s) => html`<li><span class="guide__time">${s.time}</span><div><p class="guide__phase">${s.title}</p><p>${s.text}</p></div></li>`)}
+        ${r.guide.structure.map((st) => html`<li><span class="guide__time">${st.time}</span><div><p class="guide__phase">${st.title}</p><p>${st.text}</p></div></li>`)}
       </ol>
       <p class="care-note">${icon('info')}<span>${r.guide.safety}</span></p>
     </div>
+    <ul class="guide__points">
+      ${r.guide.points.map((pt) => html`<li class="guide__point"><h3>${pt.title}</h3><p>${pt.text}</p></li>`)}
+    </ul>
   </div>
 </section>
 
 <section class="section why" aria-labelledby="why-title" data-hide-sticky>
-  <div class="wrap">
-    <h2 class="section-title" id="why-title">${r.why.title}</h2>
-    <div class="prose why__body">${r.why.body.map((p) => `<p>${p}</p>`)}
-      <h3>${r.why.sourcesTitle}</h3>
-      <ol class="sources">${r.why.sources.map((s) => `<li>${s.text} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url.replace('https://', ''))}</a></li>`)}</ol>
+  <div class="wrap why__grid">
+    <div class="why__head">
+      <h2 class="section-title" id="why-title">${r.why.title}</h2>
+      ${r.why.body
+        .map((p, k) => ({ p, about: (r.why.about || [])[k] }))
+        .filter((x) => !x.about)
+        .map((x, k) => `<p class="${k === 0 ? 'lead why__lead' : 'why__note'}">${x.p}</p>`)
+        .join('')}
+    </div>
+    <div class="why__body">
+      <ul class="findings">${r.why.body
+        .map((p, k) => ({ p, about: (r.why.about || [])[k] }))
+        .filter((x) => x.about)
+        .map((x) => {
+          const st = r.steps.find((s) => s.id === x.about);
+          const tag = st ? `${icon(st.icon)}<span>${mm(st.minute)}</span> ${st.title}` : x.about === 'binaural' ? `${icon('sound')} ${r.setup.settings.binaural.title}` : '';
+          return `<li class="finding"><p class="finding__tag">${tag}</p><p class="finding__text">${x.p}</p></li>`;
+        })
+        .join('')}</ul>
+      <details class="why__sources">
+        <summary>${r.why.sourcesTitle} <span class="muted">(${r.why.sources.length})</span></summary>
+        <ol class="sources">${r.why.sources.map((src) => `<li>${src.text} <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url.replace('https://', ''))}</a></li>`)}</ol>
+      </details>
     </div>
   </div>
 </section>
