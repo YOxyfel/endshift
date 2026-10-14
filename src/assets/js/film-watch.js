@@ -100,9 +100,10 @@
 
   /* ------------------------------------------------------------------ pace
      Screens of film per second between lines, a little slower where there is something to watch
-     (the walk in, the crack, eyes closing, the sunset) and a little quicker through the zoom. */
+     (the walk in, the crack, the three breaths, eyes closing, the sunset) and a little quicker
+     through the zoom. */
   var V = 0.3, TS = 1; // (TS: a faster clock, for testing)
-  var PACE = { hall_in: 0.7, cal_in: 0.85, cal_zoom: 1.15, bed_click: 0.8, crack: 0.75, reveal: 0.9, rit_done: 0.85, out: 0.85, sleep: 0.6, finale: 1.05, sun: 0.8, end: 0.7 };
+  var PACE = { hall_in: 0.7, cal_in: 0.85, cal_zoom: 1.15, bed_click: 0.8, crack: 0.75, reveal: 0.9, s6: 0.6, rit_done: 0.85, out: 0.85, sleep: 0.6, finale: 1.05, sun: 0.8, end: 0.7, coda: 0.8 };
   function cruise(T) { return V * (PACE[beatAt(T)] || 1); }
   function readTime(c) { return clamp(0.9 + c.text.split(/\s+/).length * 0.28, 1.4, 9); }
   function speakTime(c) { return c.text.length / (c.soft ? 12 : 13.5) + 0.4; }
@@ -297,7 +298,8 @@
   }
 
   /* ------------------------------------------------------------------ the soundtrack */
-  var ac = null, master = null, bedBus = null, sfxBus = null, voiceBus = null, noise = null, L = {}, lastLv = 0;
+  var ac = null, master = null, bedBus = null, sfxBus = null, voiceBus = null, noise = null, white = null, L = {}, lastLv = 0;
+  var SFX_LV = 1.3; // the small sounds, a little forward of the music
   function audio() {
     if (ac) {
       if (ac.state === 'suspended' && ac.resume) ac.resume();
@@ -317,7 +319,7 @@
     bedBus.gain.value = 1;
     bedBus.connect(master);
     sfxBus = ac.createGain();
-    sfxBus.gain.value = 1;
+    sfxBus.gain.value = SFX_LV;
     sfxBus.connect(master);
     voiceBus = ac.createGain();
     voiceBus.gain.value = 1;
@@ -342,6 +344,10 @@
       last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
       nd[k] = last * 3.2;
     }
+    // and white noise, a second: the bright small sounds (paper, glass, a pen, breath)
+    white = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+    var wd = white.getChannelData(0);
+    for (var w = 0; w < wd.length; w++) wd[w] = Math.random() * 2 - 1;
     layers();
     return ac;
   }
@@ -393,6 +399,25 @@
       osc('sine', f, g, i * 3);
       osc('sine', 0.07 + i * 0.05, gain(0.22, g.gain));
     });
+    // two small sounds that last as long as the picture does: the water poured, and breathing
+    L.pour = noiseLayer(1000, 0.7);
+    L.breath = noiseLayer(900, 0.55);
+  }
+  function noiseLayer(f, q) {
+    var g = gain(0, sfxBus), bp = ac.createBiquadFilter(), lp = ac.createBiquadFilter(), s = ac.createBufferSource();
+    bp.type = 'bandpass';
+    bp.frequency.value = f;
+    bp.Q.value = q;
+    lp.type = 'lowpass';
+    lp.frequency.value = 3200;
+    s.buffer = white;
+    s.loop = true;
+    s.connect(bp);
+    bp.connect(lp);
+    lp.connect(g);
+    s.start();
+    g.f = bp.frequency;
+    return g;
   }
   // the levels of the soundtrack at film time T
   function levels(T) {
@@ -408,7 +433,18 @@
       return keys[keys.length - 1][1];
     };
     var click = G('bed_click', 0.4);
+    // breathing: three breaths, in (brighter) and out (lower, longer), as the circle grows and shrinks
+    var b0 = G('s6', 0.24), b1 = G('s6', 0.86), br = 0, brF = 900;
+    if (T > b0 && T < b1) {
+      var ph = (((T - b0) / (b1 - b0)) * 3) % 1;
+      if (ph < 0.5) { br = 0.075 * Math.sin(2 * Math.PI * ph); brF = 1350; }
+      else { br = 0.09 * Math.sin(2 * Math.PI * (ph - 0.5)); brF = 700; }
+    }
     return {
+      pour: k([[G('s3', 0.318), 0], [G('s3', 0.335), 0.11], [G('s3', 0.405), 0.09], [G('s3', 0.422), 0]]),
+      pourF: k([[G('s3', 0.32), 850], [G('s3', 0.42), 1600]]),
+      breath: br,
+      breathF: brF,
       room: k([[0, 0.05], [click, 0.06], [click + 0.05, 0.03], [G('out', 0.4), 0.025], [G('sleep', 0.6), 0], [F.TOTAL, 0]]),
       drone: k([[0, 0], [G('hall_in', 0.6), 0.05], [G('cal_fill', 0), 0.035], [G('bed_wake', 0.3), 0.06], [G('bed_search', 0.9), 0.075], [click, 0.075], [click + 0.04, 0]]),
       pad: k([[0, 0], [G('crack', 0.25), 0], [G('reveal', 0.3), 0.06], [G('s6', 0), 0.06], [G('s6', 0.5), 0.045], [G('out', 0.3), 0.04], [G('sleep', 0.6), 0.025], [G('finale', 0.3), 0.04], [G('sun', 0.5), 0.06], [G('end', 0.7), 0.05], [F.TOTAL, 0.04]]),
@@ -419,7 +455,7 @@
   function soundTo(T, speaking, force) {
     if (!ac || !L.room) return;
     var now = performance.now();
-    if (!force && now - lastLv < 90) return;
+    if (!force && now - lastLv < 50) return;
     lastLv = now;
     var t = ac.currentTime, lv = levels(T);
     L.room.gain.setTargetAtTime(lv.room, t, 0.4);
@@ -427,6 +463,13 @@
     L.pad.gain.setTargetAtTime(lv.pad, t, 0.6);
     L.padF.frequency.setTargetAtTime(lv.padF, t, 0.8);
     L.dream.gain.setTargetAtTime(lv.dream, t, 0.8);
+    // (these two only while the picture moves: held on a line, the water and the breath wait too)
+    var mv = st.playing ? clamp(st.v / (0.1 * TS), 0, 1) : 0;
+    L.pour.gain.setTargetAtTime(lv.pour * mv, t, 0.04);
+    L.pour.f.setTargetAtTime(lv.pourF, t, 0.08);
+    L.breath.gain.setTargetAtTime(lv.breath * mv, t, 0.09);
+    L.breath.f.setTargetAtTime(lv.breathF, t, 0.12);
+    sfxBus.gain.setTargetAtTime(speaking ? SFX_LV * 0.8 : SFX_LV, t, 0.25);
     var on = st.on && (st.playing || st.waiting) && pref.sound;
     master.gain.setTargetAtTime(on ? 1 : 0, t, on ? 0.35 : 0.12);
     // the music steps back while a line is said
@@ -439,6 +482,15 @@
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(peak, t + a);
     g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  }
+  // into the sound bus, a little to one side if asked
+  function out(node, pan) {
+    if (pan && ac.createStereoPanner) {
+      var p = ac.createStereoPanner();
+      p.pan.value = pan;
+      node.connect(p);
+      p.connect(sfxBus);
+    } else node.connect(sfxBus);
   }
   function tick(t, f, peak, dur, q) {
     var s = ac.createBufferSource();
@@ -455,7 +507,25 @@
     s.start(t, Math.random() * 1.5);
     s.stop(t + dur + 0.05);
   }
-  function tone(t, type, f0, f1, peak, a, dur, to) {
+  // a burst of filtered noise: o = { w: white, f, f1 (glide to), q, type, peak, a (attack), dur, pan }
+  function hit(t, o) {
+    var s = ac.createBufferSource();
+    s.buffer = o.w ? white : noise;
+    s.loop = true;
+    var f = ac.createBiquadFilter();
+    f.type = o.type || 'bandpass';
+    f.frequency.setValueAtTime(o.f, t);
+    if (o.f1) f.frequency.exponentialRampToValueAtTime(o.f1, t + o.dur);
+    f.Q.value = o.q || 1;
+    var g = ac.createGain();
+    env(g, t, o.peak, o.a || 0.002, o.dur);
+    s.connect(f);
+    f.connect(g);
+    out(g, o.pan);
+    s.start(t, Math.random() * 0.9);
+    s.stop(t + o.dur + 0.05);
+  }
+  function tone(t, type, f0, f1, peak, a, dur, to, pan) {
     var o = ac.createOscillator();
     o.type = type;
     o.frequency.setValueAtTime(f0, t);
@@ -463,7 +533,8 @@
     var g = ac.createGain();
     env(g, t, peak, a, dur);
     o.connect(g);
-    g.connect(to || sfxBus);
+    if (to) g.connect(to);
+    else out(g, pan);
     o.start(t);
     o.stop(t + dur + 0.05);
   }
@@ -486,6 +557,13 @@
     s.start(t);
     s.stop(t + dur + 0.05);
   }
+  // a struck glass or bell: a few partials, each dying away
+  function ting(t, f, peak, dur, parts, pan) {
+    (parts || [[1, 1, 1], [2.76, 0.4, 0.6], [5.4, 0.15, 0.35]]).forEach(function (p) {
+      tone(t, 'sine', f * p[0], f * p[0], peak * p[1], 0.002, dur * p[2], null, pan);
+    });
+  }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
   var SFX = {
     // a phone buzzing on a table
     buzz: function (t) {
@@ -494,11 +572,44 @@
         tick(t + d, 240, 0.05, 0.17, 3);
       });
     },
+    // a footstep, in socks, on a wooden floor (left, right)
+    step: function (t, i) {
+      var p = i % 2 ? -0.22 : 0.22;
+      hit(t, { f: 150, type: 'lowpass', q: 0.8, peak: 0.19, a: 0.006, dur: 0.17, pan: p });
+      tone(t, 'sine', 84, 50, 0.04, 0.005, 0.12, null, p);
+      hit(t + 0.03, { w: true, f: 1300, q: 0.9, peak: 0.03, a: 0.012, dur: 0.1, pan: p });
+    },
+    // a marker crossing a day out: two strokes
+    mark: function (t) {
+      [0, 0.17].forEach(function (d, i) {
+        hit(t + d, { w: true, f: 2300 + i * 300, f1: 3100 - i * 200, q: 3.2, peak: 0.17, a: 0.03, dur: 0.15 });
+      });
+    },
+    // and a ring round tonight
+    ring: function (t) {
+      hit(t, { w: true, f: 2100, f1: 3000, q: 3, peak: 0.14, a: 0.09, dur: 0.32 });
+      hit(t + 0.28, { w: true, f: 3000, f1: 2300, q: 3, peak: 0.13, a: 0.05, dur: 0.3 });
+    },
+    // into tonight's square
+    whoosh: function (t) {
+      hit(t, { w: true, f: 260, f1: 2600, q: 0.9, peak: 0.075, a: 0.75, dur: 1.05 });
+      tone(t + 0.15, 'sine', 90, 180, 0.05, 0.6, 0.95);
+    },
     // one more notification
     ping: function (t, i) {
       var f = 880 + (i || 0) * 55;
       tone(t, 'sine', f, f, 0.035, 0.004, 0.14);
       tone(t + 0.08, 'sine', f * 1.5, f * 1.5, 0.026, 0.004, 0.2);
+    },
+    // out from under the covers
+    covers: function (t) {
+      hit(t, { w: true, f: 1100, f1: 650, q: 0.6, peak: 0.05, a: 0.3, dur: 1.1 });
+      for (var i = 0; i < 9; i++) hit(t + rnd(0.1, 0.9), { w: true, f: rnd(1800, 3600), q: 2, peak: rnd(0.015, 0.03), a: 0.004, dur: rnd(0.03, 0.07), pan: rnd(-0.3, 0.3) });
+    },
+    // the phone's torch comes on
+    torch: function (t) {
+      hit(t, { w: true, f: 4200, q: 2, peak: 0.1, a: 0.001, dur: 0.012 });
+      hit(t + 0.02, { w: true, f: 2600, q: 2, peak: 0.13, a: 0.001, dur: 0.026 });
     },
     // the WORK switch: the rocker snaps over and the work hum dies
     click: function (t) {
@@ -524,20 +635,73 @@
         o.stop(t + 1.3);
       });
     },
-    // the work-lit picture cracks and falls away
+    // the work-lit picture cracks...
     crack: function (t) {
       tick(t, 4200, 0.2, 0.02, 0.8);
       tick(t + 0.05, 3000, 0.16, 0.03, 0.8);
       tick(t + 0.13, 5200, 0.12, 0.02, 0.8);
+      hit(t, { w: true, f: 3400, q: 1.4, peak: 0.16, a: 0.001, dur: 0.05 });
+      hit(t + 0.07, { w: true, f: 5200, q: 2.5, peak: 0.1, a: 0.001, dur: 0.04, pan: 0.3 });
+      hit(t + 0.16, { w: true, f: 4400, q: 2.5, peak: 0.08, a: 0.001, dur: 0.04, pan: -0.3 });
       sweep(t + 0.1, 1600, 160, 0.13, 2.2);
       tone(t + 0.1, 'sine', 70, 38, 0.18, 0.3, 2);
+    },
+    // ...and falls away in pieces
+    shards: function (t) {
+      for (var i = 0; i < 18; i++) {
+        var d = Math.pow(Math.random(), 1.5) * 1.4, f = rnd(2400, 6800), p = rnd(-0.6, 0.6);
+        hit(t + d, { w: true, f: f, q: 7, peak: rnd(0.07, 0.15), a: 0.001, dur: 0.03, pan: p });
+        tone(t + d, 'sine', f, f * 0.996, rnd(0.006, 0.015), 0.002, rnd(0.08, 0.3), null, p);
+      }
+      [0.55, 0.85, 1.2].forEach(function (d) { hit(t + d, { w: true, f: 1500, q: 1.4, peak: 0.05, a: 0.002, dur: 0.06, pan: rnd(-0.4, 0.4) }); });
+    },
+    // 1. the laptop shuts
+    lid: function (t) {
+      tone(t, 'sine', 120, 58, 0.13, 0.003, 0.13);
+      hit(t, { f: 320, type: 'lowpass', q: 0.7, peak: 0.3, a: 0.003, dur: 0.09 });
+      hit(t + 0.006, { w: true, f: 3300, q: 2, peak: 0.05, a: 0.001, dur: 0.016 });
+    },
+    // the pen: one scratch of many
+    scrib: function (t) {
+      var f = rnd(2600, 4600);
+      hit(t, { w: true, f: f, f1: f * rnd(0.82, 1.15), q: 2.4, peak: rnd(0.06, 0.13), a: 0.006, dur: rnd(0.035, 0.09), pan: 0.12 });
+    },
+    // 2. the curtains: the rings run along the rail, the cloth swings over
+    curtain: function (t) {
+      for (var i = 0; i < 7; i++) hit(t + i * 0.05 + rnd(0, 0.02), { w: true, f: rnd(5000, 6600), q: 9, peak: 0.1, a: 0.001, dur: 0.05, pan: 0.35 - i * 0.07 });
+      hit(t + 0.05, { w: true, f: 650, f1: 1400, q: 0.5, peak: 0.075, a: 0.4, dur: 1.3 });
+    },
+    rings: function (t) {
+      for (var i = 0; i < 4; i++) hit(t + i * 0.045 + rnd(0, 0.015), { w: true, f: rnd(5000, 6400), q: 9, peak: 0.09, a: 0.001, dur: 0.05, pan: -0.15 });
+    },
+    // 3. the carafe's lip on the glass
+    clink: function (t) { ting(t, 1950, 0.03, 0.7); },
+    // a bubble in the glass, higher as it fills (k)
+    bubble: function (t, k) {
+      var f = 420 + (k || 0) * 650 + rnd(0, 260);
+      tone(t, 'sine', f, f * 1.7, rnd(0.012, 0.03), 0.003, rnd(0.035, 0.07), null, -0.2);
+    },
+    // the glass back on the tray
+    set: function (t) {
+      tone(t, 'sine', 170, 95, 0.07, 0.002, 0.07);
+      hit(t, { w: true, f: 1900, q: 3, peak: 0.09, a: 0.001, dur: 0.03 });
+      ting(t, 2300, 0.01, 0.35);
+    },
+    // the cap: a little ratchet (n clicks)
+    cap: function (t, n) {
+      for (var i = 0; i < (n || 6); i++) hit(t + i * 0.055 + rnd(0, 0.012), { w: true, f: rnd(2900, 3700), q: 5, peak: 0.15, a: 0.001, dur: 0.018, pan: -0.25 });
+    },
+    // one capsule lands, and bounces
+    pill: function (t) {
+      hit(t, { w: true, f: 4200, q: 3, peak: 0.11, a: 0.001, dur: 0.014, pan: -0.2 });
+      hit(t + 0.07, { w: true, f: 3600, q: 3, peak: 0.055, a: 0.001, dur: 0.012, pan: -0.2 });
     },
     // a step done: a soft stamp
     stamp: function (t) {
       tone(t, 'sine', 190, 95, 0.09, 0.002, 0.12);
       tick(t, 1100, 0.09, 0.03, 0.9);
     },
-    // a wall switch (the big light off)
+    // 4. a wall switch (the big light off)
     wall: function (t) {
       tick(t, 2300, 0.2, 0.012);
       tick(t + 0.02, 1600, 0.4, 0.03);
@@ -548,24 +712,113 @@
       tick(t, 3400, 0.16, 0.01);
       tick(t + 0.03, 2200, 0.24, 0.02);
     },
-    // the bell: done
+    // the lamp's warm light filling the room: a soft note now and then (i: which)
+    mote: function (t, i) {
+      var f = [587.33, 739.99, 880, 659.25, 987.77][i % 5];
+      tone(t, 'sine', f, f, 0.014, 0.02, 2.2, null, (i % 2 ? -0.3 : 0.3));
+      tone(t, 'sine', f * 2, f * 2, 0.004, 0.02, 1.1);
+    },
+    // 5. the phone, face down
+    flip: function (t) {
+      tone(t, 'sine', 190, 115, 0.09, 0.002, 0.07);
+      hit(t, { w: true, f: 1100, q: 1.5, peak: 0.06, a: 0.001, dur: 0.04 });
+    },
+    // a drawer, out (1) or in (0)
+    drawer: function (t, outw) {
+      hit(t, { w: true, f: outw ? 520 : 700, f1: outw ? 820 : 480, q: 0.8, peak: 0.1, a: 0.08, dur: 0.38 });
+      for (var i = 0; i < 3; i++) hit(t + rnd(0.05, 0.3), { w: true, f: rnd(1300, 1900), q: 3, peak: 0.045, a: 0.001, dur: 0.02 });
+    },
+    // the phone into the drawer
+    drop: function (t) {
+      tone(t, 'sine', 150, 100, 0.06, 0.002, 0.06);
+      hit(t, { w: true, f: 900, q: 1.2, peak: 0.045, a: 0.001, dur: 0.035 });
+    },
+    // the drawer shut
+    thud: function (t) {
+      tone(t, 'sine', 110, 55, 0.11, 0.003, 0.16);
+      hit(t, { f: 260, type: 'lowpass', q: 0.7, peak: 0.22, a: 0.003, dur: 0.11 });
+      hit(t, { w: true, f: 1200, q: 1.5, peak: 0.045, a: 0.001, dur: 0.03 });
+    },
+    // 7. the book: the cover opens...
+    book: function (t) {
+      hit(t, { w: true, f: 900, f1: 600, q: 0.7, peak: 0.07, a: 0.12, dur: 0.45 });
+      hit(t + 0.36, { w: true, f: 1700, q: 2, peak: 0.065, a: 0.002, dur: 0.035 });
+    },
+    // ...and a page turns
+    page: function (t) {
+      hit(t, { w: true, f: 2400, f1: 4300, q: 0.9, peak: 0.08, a: 0.07, dur: 0.24, pan: rnd(-0.2, 0.2) });
+      hit(t + 0.21, { w: true, f: 1800, q: 1.2, peak: 0.065, a: 0.002, dur: 0.03 });
+    },
+    // eyes closing (heavier each time: w)
+    blink: function (t, w) {
+      tone(t, 'sine', 72, 44, 0.05 * (w || 1), 0.04, 0.42);
+      hit(t, { f: 210, type: 'lowpass', q: 0.7, peak: 0.17 * (w || 1), a: 0.04, dur: 0.38 });
+    },
+    // falling into the dream
+    swell: function (t) {
+      hit(t, { w: true, f: 280, f1: 3400, q: 0.8, peak: 0.045, a: 2.1, dur: 2.7 });
+      [587.33, 880, 1174.66].forEach(function (f, i) { tone(t + 0.6 + i * 0.35, 'sine', f, f, 0.01, 1.2, 2.6); });
+    },
+    // the sun on the jar catches the light
+    glint: function (t) {
+      [1760, 2349.3, 2960].forEach(function (f, i) { tone(t + i * 0.07, 'sine', f, f, 0.012, 0.004, 1.3, null, 0.15 * (i - 1)); });
+    },
+    // the reset: the sun comes back up to the line
+    reset: function (t) {
+      [587.33, 739.99, 880, 1174.66].forEach(function (f, i) { ting(t + i * 0.17, f, 0.026, 1.8, [[1, 1, 1], [2, 0.25, 0.6]]); });
+    },
+    // the bell: shift over
     bell: function (t) {
       [[784, 0.05, 3.2], [1568.6, 0.018, 2.2], [2352, 0.01, 1.4]].forEach(function (p) { tone(t, 'sine', p[0], p[0], p[1], 0.006, p[2]); });
+      tone(t + 0.04, 'sine', 196, 196, 0.03, 0.08, 3.4);
     },
   };
-  var EV = null;
+  // Each sound at its moment in the film [T, name, arg]; and a few sounds made of many small ones,
+  // as many as the film moves through [from, to, name, per screen of film]
+  var EV = null, GR = null;
   function buildEvents() {
-    var G = F.G;
+    var G = F.G, i, n;
     EV = [[G('hall_in', 0.62), 'buzz'], [G('hall_walk', 0.24), 'buzz']];
-    for (var i = 0; i < 7; i++) EV.push([G('bed_wake', 0.32 + i * 0.05), 'ping', i]);
-    EV.push([G('bed_click', 0.39), 'click'], [G('crack', 0.08), 'crack']);
-    for (var n = 1; n <= 7; n++) EV.push([G('s' + n, 0.78), 'stamp']);
-    EV.push([G('s4', 0.15), 'wall'], [G('s4', 0.235), 'lamp'], [G('rit_done', 0.08), 'bell'], [G('out', 0.18), 'lamp']);
+    // the calendar: five days crossed out, then a ring round tonight
+    for (i = 0; i < 5; i++) EV.push([G('cal_fill', 0.122 + i * 0.15), 'mark']);
+    EV.push([G('cal_fill', 0.865), 'ring'], [G('cal_zoom', 0.08), 'whoosh']);
+    EV.push([G('bed_wake', 0.03), 'covers'], [G('bed_wake', 0.63), 'torch']);
+    for (i = 0; i < 7; i++) EV.push([G('bed_wake', 0.32 + i * 0.05), 'ping', i]);
+    EV.push([G('bed_click', 0.39), 'click'], [G('crack', 0.04), 'crack'], [G('crack', 0.3), 'shards']);
+    for (n = 1; n <= 7; n++) EV.push([G('s' + n, 0.78), 'stamp']);
+    EV.push([G('s1', 0.425), 'lid']);
+    EV.push([G('s2', 0.27), 'curtain'], [G('s2', 0.69), 'rings']);
+    EV.push([G('s3', 0.31), 'clink'], [G('s3', 0.665), 'set'], [G('s3', 0.685), 'cap', 6], [G('s3', 0.815), 'pill'], [G('s3', 0.85), 'cap', 4]);
+    EV.push([G('s4', 0.15), 'wall'], [G('s4', 0.235), 'lamp']);
+    for (i = 0; i < 5; i++) EV.push([G('s4', 0.34 + i * 0.1), 'mote', i]);
+    EV.push([G('s5', 0.37), 'flip'], [G('s5', 0.4), 'drawer', 1], [G('s5', 0.6), 'drop'], [G('s5', 0.64), 'drawer', 0], [G('s5', 0.735), 'thud']);
+    EV.push([G('s7', 0.23), 'book']);
+    for (i = 0; i < 3; i++) EV.push([G('s7', 0.45 + i * 0.12), 'page']);
+    EV.push([G('out', 0.18), 'lamp'], [G('out', 0.78), 'blink', 0.8], [G('sleep', 0.08), 'blink', 1], [G('sleep', 0.28), 'blink', 0.9], [G('sleep', 0.5), 'swell']);
+    EV.push([G('sun', 0.28), 'glint'], [G('end', 0.13), 'reset'], [G('coda', 0.22), 'bell']);
+    GR = [
+      { a: G('s1', 0.48), b: G('s1', 0.76), sfx: 'scrib', per: 140, acc: 0 },
+      { a: G('s3', 0.33), b: G('s3', 0.415), sfx: 'bubble', per: 170, acc: 0 },
+    ];
   }
   function events(a, b) {
     if (!ac || !pref.sound || b <= a || b - a > 0.25) return;
-    var t = ac.currentTime + 0.02;
+    var t = ac.currentTime + 0.04;
     EV.forEach(function (e) { if (e[0] > a && e[0] <= b) SFX[e[1]](t, e[2]); });
+    GR.forEach(function (g) {
+      var ov = Math.min(b, g.b) - Math.max(a, g.a);
+      if (ov <= 0) return;
+      g.acc += ov * g.per;
+      while (g.acc >= 1) {
+        g.acc -= 1;
+        SFX[g.sfx](t + Math.random() * 0.03, (b - g.a) / (g.b - g.a));
+      }
+    });
+    // footsteps
+    if (F.stride) {
+      var sa = F.stride(a), sb = F.stride(b);
+      if (sb && sb.n > 0 && (!sa || sa.k !== sb.k || sb.n > sa.n)) SFX.step(t, sb.n);
+    }
     // the dream's bells: now and then, a note
     if (a > F.G('finale', 0.05) && a < F.G('sun', 0.35) && performance.now() > nextBell) {
       nextBell = performance.now() + 1100 + Math.random() * 1700;
@@ -781,7 +1034,8 @@
     soundUi();
     ui();
     try { playBtn.focus({ preventScroll: true }); } catch (e) { playBtn.focus(); }
-    track('film_watch', { action: 'start', from: from, voice: pref.voice ? voiceKind() : 'off', sound: pref.sound });
+    track('film_watch', { action: 'start', from: from, via: trigger && trigger.hasAttribute('data-watch-nudge') ? 'nudge' : 'button', voice: pref.voice ? voiceKind() : 'off', sound: pref.sound });
+    nudgeDone();
     glide(Math.round(F.y(st.T)), function () {
       if (!st.on) return;
       F.build();
@@ -802,6 +1056,7 @@
     st.raf = 0;
     if (ac && master) master.gain.setTargetAtTime(0, ac.currentTime, 0.15);
     root.classList.remove('is-watching', 'watch-idle');
+    setTimeout(nudgeUi, 0);
     clearTimeout(idleT);
     bar.hidden = true;
     track('film_watch', { action: 'close', how: how || 'button', beat: beatAt(st.T), percent: Math.round((st.T / F.TOTAL) * 100) });
@@ -809,6 +1064,90 @@
       var back = st.trigger && st.trigger.offsetParent ? st.trigger : filmBtn && filmBtn.offsetParent ? filmBtn : null;
       if (back) { try { back.focus({ preventScroll: true }); } catch (e) {} }
     }
+  }
+
+  /* ------------------------------------------------------------------ "much better with narration"
+     A hand-drawn note points at the play buttons while the narration is new: on the first six
+     visits, until the film has been watched once. The one in the film only at its start. */
+  var nudges = Array.prototype.slice.call(document.querySelectorAll('[data-watch-nudge]'));
+  var NKEY = 'es:nudge-watch', nudgeOn = false;
+  if (nudges.length) {
+    var seenN = null;
+    try { seenN = localStorage.getItem(NKEY); } catch (e) {}
+    if (seenN === 'done' || (parseInt(seenN, 10) || 0) >= 6) nudges.forEach(function (n) { n.parentNode.removeChild(n); });
+    else {
+      nudgeOn = true;
+      try { localStorage.setItem(NKEY, String((parseInt(seenN, 10) || 0) + 1)); } catch (e) {}
+    }
+  }
+  function nudgeUi() {
+    if (!nudges.length) return;
+    var live = nudgeOn && F.live() && !st.on, t = F.t(scrollNow());
+    nudges.forEach(function (n) {
+      var film = n.classList.contains('nudge--film');
+      var ring = live && (!film || (t > -0.6 && t < 0.45));
+      var on = ring && !(film && clashes(n));
+      if (n.hidden === on) n.hidden = !on;
+      var target = n.previousElementSibling;
+      if (target && target.hasAttribute('data-watch-start')) target.classList.toggle('is-nudged', ring);
+    });
+  }
+  // The film's note hangs under its button in the top corner. On some screens the hall's title
+  // reaches that far: then the note stays away (the button still glows, and the In short note
+  // still points the way). Measured once per screen size, against the title's letters.
+  var titleEl = film.querySelector('#film-title'), clashAt = '', clash = false, capCx = null;
+  // where an element's capitals sit inside its line box: [top, bottom], from the top of the box
+  function capBand(el) {
+    try {
+      var cs = getComputedStyle(el);
+      capCx = capCx || document.createElement('canvas').getContext('2d');
+      capCx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      var m = capCx.measureText('H');
+      if (!m.fontBoundingBoxAscent || !m.actualBoundingBoxAscent) return null;
+      return [m.fontBoundingBoxAscent - m.actualBoundingBoxAscent, m.fontBoundingBoxAscent];
+    } catch (e) { return null; }
+  }
+  function clashes(n) {
+    var key = window.innerWidth + 'x' + window.innerHeight;
+    if (key === clashAt) return clash;
+    clashAt = key;
+    clash = false;
+    if (!titleEl || !document.createTreeWalker) return clash;
+    var was = n.hidden;
+    n.hidden = false;
+    n.style.animation = 'none';
+    var a = n.getBoundingClientRect();
+    if (a.width) {
+      var tw = document.createTreeWalker(titleEl, 4, null), rg = document.createRange(), tn, rs, r, i, band;
+      while (!clash && (tn = tw.nextNode())) {
+        rg.selectNodeContents(tn);
+        rs = rg.getClientRects();
+        band = capBand(tn.parentNode);
+        for (i = 0; i < rs.length; i++) {
+          r = rs[i];
+          // (a line's box is much taller than its capitals: only the capitals count)
+          var top = band ? r.top + band[0] : r.top, bot = band ? r.top + band[1] : r.bottom;
+          if (r.width > 1 && r.right > a.left - 8 && r.left < a.right + 8 && bot > a.top - 4 && top < a.bottom + 4) { clash = true; break; }
+        }
+      }
+    }
+    n.style.animation = '';
+    n.hidden = was;
+    return clash;
+  }
+  function nudgeDone() {
+    if (!nudgeOn) return;
+    nudgeOn = false;
+    try { localStorage.setItem(NKEY, 'done'); } catch (e) {}
+    nudgeUi();
+  }
+  if (nudges.length && nudgeOn) {
+    window.addEventListener('scroll', nudgeUi, { passive: true });
+    window.addEventListener('es:calm', function () { setTimeout(nudgeUi, 0); });
+    // (the film decides whether it runs a moment after load)
+    setTimeout(nudgeUi, 0);
+    window.addEventListener('load', function () { clashAt = ''; nudgeUi(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { clashAt = ''; nudgeUi(); });
   }
 
   /* ------------------------------------------------------------------ the bar
@@ -991,5 +1330,7 @@
     estimate: function () { if (!cues) { cues = buildCues(); buildEvents(); } estimate(); return EST[EST.length - 1]; },
     // (for testing: a faster film)
     speed: function (x) { TS = x || 1; V = 0.3 * TS; },
+    // (for testing: the sounds, their moments, and where they go)
+    sounds: function () { if (!cues) { cues = buildCues(); buildEvents(); } return { sfx: SFX, ev: EV, ac: audio(), bus: sfxBus }; },
   };
 })();

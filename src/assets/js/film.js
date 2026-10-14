@@ -20,8 +20,9 @@
      → the dream: the day's things drift through and come apart (notifications, the calendar's
        crosses, tomorrow's list folding into a paper boat, the WORK switch), then it settles
      → the little sun printed on the label lights up, the bottle melts into the dream, the swirl
-       lays down into a sky and that sun sets over an ink horizon; night, one line, and the
-       RESET section below starts on the same dark ground.
+       lays down into a sky and that sun sets over an ink horizon; night, one line, the sun back
+       on the line (the reset), and only then "Shift over." with the ritual's button, the way the
+       ritual itself ends; the RESET section below starts on the same dark ground.
 
    Without WebGL, with reduced motion or in low-stimulation mode none of this runs: the beats
    are plain comic panels (film.css), drawn by story.js. */
@@ -65,8 +66,8 @@
     ['cal_in', 0.5], ['cal_fill', 1.8], ['cal_zoom', 0.8],
     ['bed_wake', 1.2], ['bed_search', 2.3], ['bed_walk', 0.9], ['bed_click', 0.6],
     ['crack', 1.1], ['reveal', 1.3],
-    ['rit_in', 1.0], ['s1', 1.35], ['s2', 1.15], ['s3', 1.9], ['s4', 2.6], ['s5', 1.35], ['s6', 1.4], ['s7', 1.25], ['rit_done', 0.9],
-    ['out', 1.3], ['sleep', 1.4], ['finale', 3.6], ['sun', 2.2], ['end', 1.3],
+    ['rit_in', 1.0], ['s1', 1.35], ['s2', 1.15], ['s3', 1.9], ['s4', 2.6], ['s5', 1.35], ['s6', 1.4], ['s7', 1.25], ['rit_done', 0.6],
+    ['out', 1.3], ['sleep', 1.4], ['finale', 3.6], ['sun', 2.2], ['end', 1.3], ['coda', 1.1],
   ];
   var TL = {}, TOTAL = 0;
   BEATS.forEach(function (b) {
@@ -722,6 +723,21 @@
       yaw += Math.sin(ph / 2) * 0.35 * env;
     }
     return { pos: p, yaw: yaw, pitch: pitch, roll: roll, fovy: lerp(fovy(a), fovy(b), e) };
+  }
+  // footsteps, for the soundtrack: on a walk at film time T, which walk it is (k) and how many
+  // steps have been taken (n: one when the first foot comes down, then one every 64 cm)
+  function stride(T) {
+    var list = T < G('cal_in', 0) ? KH : KB, n = list.length, i = 0;
+    if (T <= list[0].T || T >= list[n - 1].T) return null;
+    while (i < n - 2 && T >= list[i + 1].T) i++;
+    if (!list[i].walk) return null;
+    var j = i, dist = 0, k;
+    while (j > 0 && list[j - 1].walk) j--;
+    for (k = j; k < i; k++) dist += Math.hypot(list[k].p[0] - list[k + 1].p[0], list[k].p[2] - list[k + 1].p[2]);
+    var a = list[i], b = list[i + 1];
+    var u = clamp((T - a.T) / Math.max(1e-6, b.T - a.T), 0, 1);
+    dist += Math.hypot(a.p[0] - b.p[0], a.p[2] - b.p[2]) * ease[a.e || 'inOut'](u);
+    return { k: (list === KH ? 0 : 100) + j, n: Math.floor((dist + 44) / 64) };
   }
 
   // The calendar fills the frame below the site header at this vertical field of view.
@@ -2069,6 +2085,7 @@
     // ask for the rooms now (the film builds them as you come near; the player can't wait for that)
     build: function () { if (on && !built && !buildQueued) { nearby = true; scroll(); } return on && built; },
     project: function (p) { return Rnd ? Rnd.project(p) : null; },
+    stride: stride,
     debug: function () { return { R: R, K: K }; },
   };
 })();

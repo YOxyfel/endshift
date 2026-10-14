@@ -343,7 +343,8 @@
   bottom: 13%;
   width: min(32rem, 86vw);
   margin: 0;
-  transform: translateX(-50%);
+  /* (translate, not transform: the fade moves it with a transform of its own) */
+  translate: -50% 0;
   color: #f6dfb8;
   font-family: var(--font-display);
   font-weight: 760;
@@ -440,6 +441,53 @@
 .is-film .film__watch:focus-visible {
   border-color: var(--tungsten);
   background: rgba(11, 13, 16, 0.95);
+}
+
+/* "Much better with narration" under "Watch with sound", the arrow coming up at it from below.
+   Over the lit hallway, so the words carry a dark halo. Not on phones (it would sit on the title). */
+.film__watch-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.nudge--film {
+  position: absolute;
+  top: calc(100% + 0.15rem);
+  right: calc(50% - 2.2rem);
+  width: max-content;
+  max-width: none;
+  filter: drop-shadow(0 2px 6px rgba(8, 9, 12, 0.85)) drop-shadow(0 0 1px rgba(8, 9, 12, 0.9));
+}
+
+.nudge--film .nudge__big {
+  font-size: 1.45rem;
+  text-shadow: 0 0 14px rgba(8, 9, 12, 0.7);
+}
+
+.nudge--film .nudge__small {
+  font-size: 1.05rem;
+}
+
+@media (max-width: 699px) {
+  .nudge--film {
+    display: none;
+  }
+}
+
+.is-film .film__watch.is-nudged {
+  position: relative;
+  border-color: var(--tungsten);
+}
+
+.motion-ok .is-film .film__watch.is-nudged::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--tungsten);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  animation: nudge-ring 2.4s ease-out 1.3s infinite;
 }
 
 /* while it plays by itself, the player takes over */
@@ -918,6 +966,47 @@
   margin: 0;
   font-size: clamp(3rem, 12vw, 7rem);
   color: var(--tungsten);
+}
+
+/* the film's last frame: "Shift over." in the night sky, over the sun back on the line */
+.is-film .beat--finale .rdone {
+  /* in the sky, between the header and the top of the sun (the horizon is 42% up, the sun's
+     half-disc about 10vmin over it); if it doesn't fit, it starts under the header */
+  top: calc(var(--header-h) + 0.75rem);
+  bottom: calc(42% + 10vmin + 0.5rem);
+  align-content: safe center;
+  justify-items: center;
+  gap: 0.8rem;
+  text-align: center;
+}
+
+.is-film .beat--finale .rdone__title {
+  font-size: clamp(2.6rem, 7.5vw, 4.8rem);
+  line-height: 0.95;
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.45);
+}
+
+.is-film .beat--finale .rdone__copy {
+  justify-items: center;
+  max-width: 54ch;
+}
+
+/* short screens: a smaller card, so it still fits over the sun */
+@media (max-height: 720px) {
+  .is-film .beat--finale .rdone {
+    gap: 0.5rem;
+  }
+  .is-film .beat--finale .rdone__title {
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+  }
+  .is-film .beat--finale .rdone__copy p {
+    font-size: 0.92rem;
+    line-height: 1.35;
+  }
+}
+
+.is-film .beat--finale .rdone__copy p {
+  text-shadow: 0 1px 3px var(--ink), 0 0 16px rgba(0, 0, 0, 0.55);
 }
 
 .rdone__copy {
@@ -1754,4 +1843,9 @@
 @media (forced-colors: active) {
   .is-film .watch:not([hidden]) { border-color: CanvasText; }
   .watch__play { forced-color-adjust: none; background: ButtonText; color: ButtonFace; }
+}
+
+/* without the film (reduced motion, no WebGL): a breath between the last line and the card */
+.film:not(.is-film) .beat--finale .rdone {
+  margin-top: 1.75rem;
 }

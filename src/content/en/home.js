@@ -299,6 +299,8 @@ export default ({ cfg, state, fmt, t, formula }) => {
           noVoice: 'No English voice on this device. The words stay on screen.',
           // shown with the recorded voice (free-plan ElevenLabs audio must credit it)
           credit: 'AI voice, made with ElevenLabs (elevenlabs.io).',
+          // the hand-drawn note pointing at the play buttons while the narration is new
+          nudge: { big: ['MUCH BETTER', 'WITH NARRATION'], small: 'turn your sound on!', aria: 'Much better with narration: watch the evening with sound.' },
         },
       },
       // words on things in the drawn rooms

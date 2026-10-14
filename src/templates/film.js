@@ -30,6 +30,13 @@ const spoken = (s, loc) =>
 const sentence = (s) => (/[.!?…:]$/.test(s) ? s : `${s}.`);
 const said = (loc, parts) => (Array.isArray(parts) ? parts : [parts]).map((p) => sentence(spoken(p, loc))).join(' ');
 
+// "Much better with narration": a hand-drawn note pointing at a play button (film-watch.js shows
+// it while the narration is new, and only where the film runs). Same look as the ritual's note.
+export const watchNudge = (W, where, from) =>
+  W && W.nudge
+    ? `<button class="nudge nudge--watch nudge--${where}" type="button" data-watch-nudge data-watch-start data-watch-from="${from}" hidden aria-label="${esc(W.nudge.aria)}"><svg class="nudge__arrow" viewBox="0 0 64 72" aria-hidden="true" focusable="false"><path class="nudge__spark" d="M30 9 25 3M38 6V0M46 9l5-6"/><path class="nudge__line" pathLength="1" d="M8 64C23 67 39 52 38 17"/><path class="nudge__head" pathLength="1" d="M29 27 38 14l8 12"/></svg><span class="nudge__text" aria-hidden="true"><span class="nudge__big">${[].concat(W.nudge.big).map((l) => `<span class="nudge__ln">${l}</span>`).join(' ')}</span><span class="nudge__small">${W.nudge.small}</span><span class="nudge__stars"><i></i><i></i><i></i></span></span></button>`
+    : '';
+
 // the player: shown while the film plays by itself
 const watchBar = (W) => `<div class="watch" data-watch role="group" aria-label="${esc(W.label)}" hidden>
       <button class="watch__btn watch__play" type="button" data-watch-play aria-label="${esc(W.pause)}" data-play="${esc(W.play)}" data-pause="${esc(W.pause)}" data-replay="${esc(W.replay)}">${icon('pause', 'watch__i-pause')}${icon('play', 'watch__i-play')}${icon('restart', 'watch__i-replay')}</button>
@@ -64,6 +71,8 @@ export function film(ctx) {
   const say = (n, parts, opt = {}) =>
     `data-say="f${n2(n)}" data-say-text="${esc(said(ctx.locale, parts))}"${opt.soft ? ' data-say-soft' : ''}${opt.at ? ` data-say-at="${opt.at}"` : ''}`;
   const W = F.watch || {};
+  // the note only makes sense with a recorded voice (the build passes the clips it found)
+  const hasVoice = !!(ctx.filmVoice && W.nudge);
   // the calendar's days are lit one after another (film.js calendar(): day i over .04 + .15i … +.15)
   const dayAt = (i) => (i < 5 ? `cal_fill ${(0.07 + i * 0.15).toFixed(2)}|cal_fill ${(0.16 + i * 0.15).toFixed(2)}` : 'cal_fill .82|cal_zoom .04');
 
@@ -172,11 +181,6 @@ export function film(ctx) {
             </li>`,
           )
           .join('')}</ol>
-        <div class="rdone fi" ${show('rit_done .06', 'out .2')} ${say(34, [r.done.title, ...c.ritual.copy])}>
-          <p class="lettering rdone__title">${r.done.title}</p>
-          <div class="rdone__copy">${c.ritual.copy.map((l) => `<p>${l}</p>`).join('')}</div>
-          <div class="rdone__cta">${btn({ href: ctx.url('ritual'), label: ui.cta.ritualLong, size: 'xl', trackId: 'home_ritual' })}</div>
-        </div>
       </div>
     </article>
 
@@ -191,8 +195,14 @@ export function film(ctx) {
     <article class="beat beat--finale">
       <figure class="panel beat__panel" data-panel>${shot(ctx, 'jar')}</figure>
       <div class="beat__text">
-        <p class="fi fi--endline" ${show('sun .64', 'end 1')} ${say(37, F.end, { soft: true })}><span class="lettering">${F.end}</span></p>
-        <p class="fi fi--zero" ${show('end .5', 'end 1')} ${say(38, F.zero)}>${F.zero}</p>
+        <p class="fi fi--endline" ${show('sun .64', 'coda .12')} ${say(37, F.end, { soft: true })}><span class="lettering">${F.end}</span></p>
+        <p class="fi fi--zero" ${show('end .5', 'coda .12')} ${say(38, F.zero)}>${F.zero}</p>
+        <!-- after the evening, not in the middle of falling asleep: the ritual ends this way too -->
+        <div class="rdone fi" ${show('coda .2', 'coda 1')} ${say(34, [r.done.title, ...c.ritual.copy])}>
+          <p class="lettering rdone__title">${r.done.title}</p>
+          <div class="rdone__copy">${c.ritual.copy.map((l) => `<p>${l}</p>`).join('')}</div>
+          <div class="rdone__cta">${btn({ href: ctx.url('ritual'), label: ui.cta.ritualLong, size: 'xl', trackId: 'home_ritual' })}</div>
+        </div>
         <p class="fi fi--chip" ${show('finale .1', 'sun .3')}>${chip(state.packagingFinal ? ui.product.renderCaption : ui.product.renderCaptionConcept, state.packagingFinal ? '' : 'warm')}</p>
       </div>
     </article>
@@ -202,7 +212,7 @@ export function film(ctx) {
     </div>
     <p class="film__hint" aria-hidden="true" data-film-hint>${F.hint}</p>
     <div class="film__corner">
-      ${W.start ? `<button class="film__watch" type="button" data-watch-start aria-label="${esc(W.start)}">${icon('play')}<span class="film__watch-l">${W.start}</span><span class="film__watch-s">${W.startShort}</span></button>` : ''}
+      ${W.start ? `<span class="film__watch-wrap"><button class="film__watch" type="button" data-watch-start aria-label="${esc(W.start)}">${icon('play')}<span class="film__watch-l">${W.start}</span><span class="film__watch-s">${W.startShort}</span></button>${hasVoice ? watchNudge(W, 'film', 'here') : ''}</span>` : ''}
       <a class="film__skip" href="#after-film" data-film-skip data-track="cta_click" data-track-id="film_skip"${F.skipShort ? ` aria-label="${esc(F.skip)}"><span class="film__skip-l">${F.skip}</span><span class="film__skip-s">${F.skipShort}</span>` : `>${F.skip}`}</a>
     </div>
     ${W.start ? watchBar(W) : ''}

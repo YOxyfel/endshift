@@ -1,7 +1,7 @@
 import { readdirSync, existsSync } from 'node:fs';
 import { html, esc } from '../../lib/html.js';
 import { gameHero, gameClient, welcomeRow } from '../game.js';
-import { film } from '../film.js';
+import { film, watchNudge } from '../film.js';
 import PANELS from '../../config/panels.js';
 import { btn, chip, icon, dial, meter, signupForm, productRender, faqList, specs, isnt, slips, timelineList, batchAction, wallSwitch, shiftLabel, shot, jarPhoto, founderFace } from '../components.js';
 
@@ -108,6 +108,9 @@ export default function home(ctx) {
   const founders = Math.min(state.founderCount, goal);
 
   const Q = c.inShort;
+  // George's recorded lines for the film, if this language has them
+  const hasVoice = Object.keys(filmClips(ctx)).length > 0;
+  ctx.filmVoice = hasVoice;
   const pageId = (to) => to.replace(/-/g, '_');
   // "Skip the walkthrough": every page as a bubble on a sphere. Positions are in % of the sphere's
   // width (cqw), so the layout works without JS; site.js only adds the lean towards the pointer.
@@ -156,7 +159,8 @@ ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
       <div class="in-short__film-row">
         <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
         ${Q.watch && S.film.watch ? `<button class="in-short__watch" type="button" data-watch-start data-watch-from="top">${icon('play')}<span>${Q.watch}</span></button>` : ''}
-        ${Q.watch && S.film.watch?.credit && Object.keys(filmClips(ctx)).length ? `<p class="in-short__credit">${S.film.watch.credit}</p>` : ''}
+        ${Q.watch && hasVoice ? watchNudge(S.film.watch, 'inshort', 'top') : ''}
+        ${Q.watch && S.film.watch?.credit && hasVoice ? `<p class="in-short__credit">${S.film.watch.credit}</p>` : ''}
       </div>
     </div>
   </div>

@@ -2780,116 +2780,9 @@ html.immersive-open body {
 /* "Now with narration": a hand-drawn arrow and note pointing at Adjust ------------------------
    Shown by the script while the recorded voice is new; gone once read aloud is on. Under the
    buttons in the quick start (arrow from the right when Adjust is at the end of the row, from the
-   left when the buttons stack), and under the door's Adjust link. */
-.nudge {
-  --nudge-ink: var(--tungsten);
-  display: flex;
-  align-items: flex-end;
-  gap: 0.2rem;
-  width: fit-content;
-  max-width: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--paper);
-  font: inherit;
-  text-align: right;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
+   left when the buttons stack), and under the door's Adjust link. How the note looks and moves
+   is in components.css; this is where it sits on this page. */
 
-.nudge[hidden] {
-  display: none;
-}
-
-.nudge:focus-visible {
-  outline: 2px solid var(--paper);
-  outline-offset: 4px;
-  border-radius: 6px;
-}
-
-.nudge__arrow {
-  flex: none;
-  order: 2;
-  width: 3.25rem;
-  height: 3.65rem;
-  overflow: visible;
-}
-
-.nudge__arrow path {
-  fill: none;
-  stroke: var(--nudge-ink);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.nudge__arrow .nudge__spark {
-  stroke-width: 2.4;
-}
-
-.nudge__text {
-  position: relative;
-  min-width: 0;
-  display: grid;
-  justify-items: end;
-  gap: 0.2rem;
-  padding-bottom: 0.15rem;
-  transform: rotate(-2.5deg);
-  transform-origin: right bottom;
-}
-
-.nudge__big {
-  font-family: var(--font-display);
-  font-weight: 860;
-  font-size: clamp(1.4rem, 5.6vw, 1.7rem);
-  line-height: 0.95;
-  letter-spacing: 0.04em;
-  max-width: 10.5em;
-  text-transform: uppercase;
-  color: var(--nudge-ink);
-  text-shadow: 0 0 18px color-mix(in srgb, var(--tungsten) 35%, transparent);
-}
-
-.nudge__small {
-  font-family: var(--font-display);
-  font-weight: 720;
-  font-size: 1.15rem;
-  letter-spacing: 0.03em;
-  color: var(--paper);
-  text-decoration: underline wavy var(--nudge-ink);
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.32em;
-}
-
-/* three little comic sparkles around the words */
-.nudge__stars i {
-  position: absolute;
-  width: 0.8rem;
-  height: 0.8rem;
-  background: var(--nudge-ink);
-  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
-}
-
-.nudge__stars i:nth-child(1) {
-  top: -0.85rem;
-  left: -0.2rem;
-}
-
-.nudge__stars i:nth-child(2) {
-  top: -0.3rem;
-  right: -0.95rem;
-  width: 0.55rem;
-  height: 0.55rem;
-  background: var(--paper);
-}
-
-.nudge__stars i:nth-child(3) {
-  bottom: 0.1rem;
-  left: -0.95rem;
-  width: 0.6rem;
-  height: 0.6rem;
-}
 
 .quickstart.is-stacked .nudge--qs .nudge__stars i:nth-child(1) {
   top: -0.7rem;
@@ -2901,10 +2794,6 @@ html.immersive-open body {
   left: auto;
   right: 0.2rem;
   bottom: 0.2rem;
-}
-
-.nudge:hover .nudge__small {
-  color: var(--nudge-ink);
 }
 
 /* quick start: Adjust at the end of the row → the note under it, the arrow coming up on its right */
@@ -2972,45 +2861,6 @@ html.immersive-open body {
   outline-offset: 0.6rem;
 }
 
-/* the motion: the arrow draws itself, its head lands, sparks flick, then it keeps nudging */
-.motion-ok .nudge:not([hidden]) .nudge__text {
-  animation: nudge-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) 0.15s both;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__line {
-  stroke-dasharray: 1;
-  animation: nudge-draw 0.7s ease-out 0.45s both;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__head {
-  stroke-dasharray: 1;
-  animation: nudge-draw 0.25s ease-out 1.1s both;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__spark {
-  animation: nudge-spark 2.4s ease-in-out 1.3s infinite both;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__arrow {
-  animation: nudge-bob 2.4s ease-in-out 1.3s infinite;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__stars i {
-  animation: nudge-twinkle 2.4s ease-in-out infinite both;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__stars i:nth-child(1) {
-  animation-delay: 0.6s;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__stars i:nth-child(2) {
-  animation-delay: 1.1s;
-}
-
-.motion-ok .nudge:not([hidden]) .nudge__stars i:nth-child(3) {
-  animation-delay: 1.7s;
-}
-
 .motion-ok .quickstart.is-stacked .nudge:not([hidden]) .nudge__arrow {
   animation-name: nudge-bob-mirrored;
 }
@@ -3032,75 +2882,6 @@ html.immersive-open body {
 
 .motion-ok .switch.is-spotlit {
   animation: nudge-spot 3s ease-out both;
-}
-
-@keyframes nudge-pop {
-  from {
-    opacity: 0;
-    transform: rotate(-7deg) scale(0.85);
-  }
-}
-
-@keyframes nudge-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-@keyframes nudge-spark {
-  0%, 55%, 100% {
-    opacity: 0;
-  }
-  12%, 34% {
-    opacity: 1;
-  }
-}
-
-@keyframes nudge-twinkle {
-  0%, 100% {
-    opacity: 0.25;
-    transform: scale(0.55) rotate(0deg);
-  }
-  30% {
-    opacity: 1;
-    transform: scale(1.1) rotate(45deg);
-  }
-  55% {
-    opacity: 0.6;
-    transform: scale(0.8) rotate(60deg);
-  }
-}
-
-@keyframes nudge-bob {
-  0%, 60%, 100% {
-    transform: translate(0, 0);
-  }
-  25% {
-    transform: translate(1px, -5px);
-  }
-}
-
-@keyframes nudge-bob-mirrored {
-  0%, 60%, 100% {
-    transform: scaleX(-1) translate(0, 0);
-  }
-  25% {
-    transform: scaleX(-1) translate(1px, -5px);
-  }
-}
-
-@keyframes nudge-ring {
-  0% {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-  70%, 100% {
-    opacity: 0;
-    transform: scale(1.12, 1.25);
-  }
 }
 
 @keyframes nudge-spot {

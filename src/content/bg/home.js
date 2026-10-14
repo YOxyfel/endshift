@@ -279,6 +279,7 @@ export default ({ cfg, state, fmt, url, t, formula }) => {
           deviceVoice: 'Глас: чете устройството ти',
           noVoice: 'На това устройство няма български глас. Думите остават на екрана.',
           credit: 'AI глас, направен с ElevenLabs (elevenlabs.io).',
+          nudge: null, // no recorded Bulgarian voice yet
         },
       },
       ad: ['НАПРАВИ СИ', 'СВОЙ ПРОДУКТ', 'Поискай оферта', '*Минимална поръчка: 500 бройки'],

@@ -3254,6 +3254,66 @@ code {
   background: color-mix(in srgb, var(--tungsten) 10%, transparent);
 }
 
+/* "Much better with narration": under the play button, the arrow coming up at it from the left */
+.nudge--inshort {
+  flex-basis: 100%;
+  margin: -0.55rem 0 0 0.9rem;
+  text-align: left;
+}
+
+.nudge--inshort .nudge__arrow {
+  order: 0;
+  transform: scaleX(-1);
+}
+
+.nudge--inshort .nudge__text {
+  justify-items: start;
+  transform: rotate(2deg);
+  transform-origin: left bottom;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(1) {
+  top: -0.7rem;
+  left: auto;
+  right: 1.2rem;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(3) {
+  left: auto;
+  right: 0.2rem;
+  bottom: 0.2rem;
+}
+
+.motion-ok .nudge--inshort:not([hidden]) .nudge__arrow {
+  animation-name: nudge-bob-mirrored;
+}
+
+.nudge--watch .nudge__ln {
+  display: block;
+  white-space: nowrap;
+}
+
+html:not(.has-film) .nudge--watch {
+  display: none;
+}
+
+/* the button it points at */
+.in-short__watch.is-nudged {
+  position: relative;
+  border-color: var(--tungsten);
+}
+
+.motion-ok .in-short__watch.is-nudged::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--tungsten);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  animation: nudge-ring 2.4s ease-out 1.3s infinite;
+}
+
 .in-short__credit {
   display: none;
   flex-basis: 100%;
@@ -3262,7 +3322,67 @@ code {
   font-size: var(--fs-small);
 }
 
-.has-film .in-short__credit {
+.has-film /* "Much better with narration": under the play button, the arrow coming up at it from the left */
+.nudge--inshort {
+  flex-basis: 100%;
+  margin: -0.55rem 0 0 0.9rem;
+  text-align: left;
+}
+
+.nudge--inshort .nudge__arrow {
+  order: 0;
+  transform: scaleX(-1);
+}
+
+.nudge--inshort .nudge__text {
+  justify-items: start;
+  transform: rotate(2deg);
+  transform-origin: left bottom;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(1) {
+  top: -0.7rem;
+  left: auto;
+  right: 1.2rem;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(3) {
+  left: auto;
+  right: 0.2rem;
+  bottom: 0.2rem;
+}
+
+.motion-ok .nudge--inshort:not([hidden]) .nudge__arrow {
+  animation-name: nudge-bob-mirrored;
+}
+
+.nudge--watch .nudge__ln {
+  display: block;
+  white-space: nowrap;
+}
+
+html:not(.has-film) .nudge--watch {
+  display: none;
+}
+
+/* the button it points at */
+.in-short__watch.is-nudged {
+  position: relative;
+  border-color: var(--tungsten);
+}
+
+.motion-ok .in-short__watch.is-nudged::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--tungsten);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  animation: nudge-ring 2.4s ease-out 1.3s infinite;
+}
+
+.in-short__credit {
   display: block;
 }
 
