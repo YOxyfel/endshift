@@ -30,7 +30,7 @@ export default ({ cfg, state, fmt, formula }) => ({
       ['Цена', state.hasPrice ? fmt.price(cfg.product.price) : cfg.product.targetPriceRange ? `Цел: ${cfg.product.targetPriceRange}` : 'Не е определена', state.hasPrice],
       ['Опаковка', state.packagingFinal ? 'Окончателна' : 'Избрана е концепцията: бурканът с ключа. Графиката не е окончателна.', state.packagingFinal],
       ['Производител', cfg.manufacturer.name ? cfg.manufacturer.name : 'В разговори с производител под чужда марка. Ще го посочим тук, след като има подписан договор.', !!cfg.manufacturer.name],
-      ['Старт', `Когато се включат ${cfg.batch.founderGoal} основатели`, false],
+      ['Старт', `Предварителните поръчки отварят при ${cfg.batch.founderGoal} записани`, false],
     ],
   },
   board: { from: 'Производителят', line: '„Минимум 500 бройки.“', note: 'Естествено…' },

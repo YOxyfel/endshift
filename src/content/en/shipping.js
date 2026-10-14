@@ -20,7 +20,7 @@ export default ({ cfg, fmt, url, t }) => {
       {
         id: 'when',
         title: 'When it ships',
-        body: `<p>Batch #001 is a preorder. It’s produced once ${b.founderGoal} founders are in, then shipped founders-first.</p><ul><li>Production time: ${t(b.productionLeadTime) || 'confirmed by the manufacturer when the run is booked'}.</li><li>Estimated dispatch: ${t(b.estimatedDispatch) || 'published when production is booked'}.</li></ul><p>Once RESET is in stock normally, orders ship within a few working days.</p>`,
+        body: `<p>Batch #001 is a preorder. When ${b.founderGoal} people are on the founding list, everyone on it gets an email to pay; the run is made for the founders who pay, then shipped founders-first.</p><ul><li>Production time: ${t(b.productionLeadTime) || 'confirmed by the manufacturer when the run is booked'}.</li><li>Estimated dispatch: ${t(b.estimatedDispatch) || 'published when production is booked'}.</li></ul><p>Once RESET is in stock normally, orders ship within a few working days.</p>`,
       },
       {
         id: 'delays',
@@ -40,7 +40,7 @@ export default ({ cfg, fmt, url, t }) => {
       {
         id: 'founding',
         title: 'Founding batch refunds',
-        body: `<p>If Batch #001 doesn’t reach ${b.founderGoal} founders by the deadline, every preorder is refunded in full, automatically.${b.refund.cancelBeforeDispatch ? ' Until your order ships, you can also cancel for a full refund at any time.' : ''} More on the <a href="${url('batch')}">founding batch page</a>.</p>`,
+        body: `<p>If Batch #001 doesn’t go ahead after the email to pay, every preorder is refunded in full, automatically.${b.refund.cancelBeforeDispatch ? ' Until your order ships, you can also cancel for a full refund at any time.' : ''} More on the <a href="${url('batch')}">founding batch page</a>.</p>`,
       },
     ],
   };

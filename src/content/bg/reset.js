@@ -60,11 +60,11 @@ export default ({ cfg, state, fmt, t }) => ({
   },
   batch: {
     title: 'Докъде е Партида №001',
-    text: `Първото производство от ${cfg.batch.manufacturingMOQ} броя започва, когато се включат ${cfg.batch.founderGoal} основатели.`,
+    text: `При ${cfg.batch.founderGoal} записани всеки в списъка на основателите получава имейл за плащане. Първото производство от ${cfg.batch.manufacturingMOQ} броя се прави за тях.`,
     more: 'Как работи първата партида',
   },
   ship: {
-    line: `Доставка до ${cfg.shipping.regions.map((r) => REGIONS[r] || r).join(', ')}. Ако Партида №001 не постигне целта си, всяка предварителна поръчка се възстановява изцяло.`,
+    line: `Доставка до ${cfg.shipping.regions.map((r) => REGIONS[r] || r).join(', ')}. Ако не се стигне до производство на Партида №001, всяка предварителна поръчка се възстановява изцяло.`,
     more: 'Доставка и връщане',
   },
   faqIds: ['when-take', 'melatonin', 'meds'],

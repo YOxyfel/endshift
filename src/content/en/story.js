@@ -30,7 +30,7 @@ export default ({ cfg, state, fmt, formula }) => ({
       ['Price', state.hasPrice ? fmt.price(cfg.product.price) : cfg.product.targetPriceRange ? `Target ${cfg.product.targetPriceRange}` : 'Not set', state.hasPrice],
       ['Packaging', state.packagingFinal ? 'Final' : 'Concept chosen: the off-switch jar. Artwork not final.', state.packagingFinal],
       ['Manufacturer', cfg.manufacturer.name ? cfg.manufacturer.name : 'In talks with a white-label manufacturer. Named here once a contract is signed.', !!cfg.manufacturer.name],
-      ['Launch', `When ${cfg.batch.founderGoal} founders are in`, false],
+      ['Launch', `Preorders open at ${cfg.batch.founderGoal} sign-ups`, false],
     ],
   },
   board: { from: 'The manufacturer', line: '“Minimum 500 units.”', note: 'So naturally…' },

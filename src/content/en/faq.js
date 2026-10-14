@@ -9,7 +9,7 @@ export default ({ cfg, state, fmt, formula, url, t }) => {
 
   const refund = state.statusIndex >= 1
     ? `<p>If Batch #001 doesn’t reach ${b.founderGoal} founders${b.goalDeadline ? ` by ${fmt.date(b.goalDeadline)}` : ' by the deadline'}, every preorder is refunded in full, automatically.${b.refund.cancelBeforeDispatch ? ' You can also cancel any time before your order ships, for a full refund.' : ''}</p><p>Once it has shipped, your statutory rights apply. Details are on <a href="${url('shipping')}">Shipping &amp; returns</a>.</p>`
-    : `<p>Right now there’s nothing to refund: joining the founding list is free and you haven’t paid anything.</p><p>When preorders open, the plan is simple. If Batch #001 doesn’t reach ${b.founderGoal} founders by the deadline, every preorder is refunded in full, automatically.${b.refund.cancelBeforeDispatch ? ' You can also cancel any time before your order ships.' : ''} The final terms are published before anyone pays.</p>`;
+    : `<p>Right now there’s nothing to refund: joining the founding list is free and you haven’t paid anything.</p><p>When ${b.founderGoal} people are on the list, everyone on it gets an email to pay. If Batch #001 then doesn’t go ahead, every payment is refunded in full, automatically.${b.refund.cancelBeforeDispatch ? ' You can also cancel any time before your order ships.' : ''} The final terms are published before anyone pays.</p>`;
 
   const melatoninAnswer = state.formulaConfirmed
     ? melatonin && melatonin.status === 'included'
@@ -111,7 +111,7 @@ export default ({ cfg, state, fmt, formula, url, t }) => {
           {
             id: 'founding',
             q: 'What is a Founding Batch?',
-            a: `<p>Batch #001 is the first production run. The manufacturer’s minimum is ${b.manufacturingMOQ} units, so we only order once ${b.founderGoal} founders have committed.</p>${benefits ? `<p>Founders get ${benefits}.</p>` : ''}<p><a href="${url('batch')}">How the founding batch works</a></p>`,
+            a: `<p>Batch #001 is the first production run. The manufacturer’s minimum is ${b.manufacturingMOQ} units. Joining the founding list is free; when ${b.founderGoal} people are on it, everyone gets an email to pay, and the run is made for the founders who do.</p>${benefits ? `<p>Founders get ${benefits}.</p>` : ''}<p><a href="${url('batch')}">How the founding batch works</a></p>`,
           },
           {
             id: 'ship',

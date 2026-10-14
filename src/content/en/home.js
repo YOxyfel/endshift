@@ -23,7 +23,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
       items: [
         { k: 'Tonight', v: 'A free 20-minute ritual that walks you from work mode to sleep. In your browser, no account.' },
         { k: 'Later', v: 'RESET, an evening capsule for one step of it. Still in development; nothing is for sale.' },
-        { k: 'Now', v: 'The founding list. When 150 people are on it, the first batch gets made.' },
+        { k: 'Now', v: 'The founding list, free. At 150 sign-ups, everyone on it gets an email to pay, and the first batch is made for them.' },
       ],
       // Every page as a bubble, for people who'd rather not scroll the film. `to` is a page id
       // (`hash` an anchor on it), `slot` where it sits: 'c' is the middle, 0–7 go round clockwise
@@ -41,7 +41,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
             name: 'Formula',
             text: state.formulaConfirmed ? `In it: ${and(named('included').map(mid).map(keep))}.` : `Shortlist: ${named('candidate').map(mid).map(keep).join(', ')}.`,
           },
-          { to: 'batch', slot: 2, name: 'Batch #001', text: `${cfg.batch.founderGoal} founders, then the first run.${state.status === 'concept' ? ' Joining is free.' : ''}` },
+          { to: 'batch', slot: 2, name: 'Batch #001', text: `Free to join. At ${cfg.batch.founderGoal} sign-ups, an email to pay, then the first run.` },
           { to: 'story', slot: 3, name: 'Story', text: 'The idea, and every decision since.' },
           { to: 'faq', slot: 4, name: 'FAQ', text: 'Shipping, refunds, safety.' },
           { to: 'journal', slot: 5, name: 'Journal', text: 'Guides for switching off after work.' },
@@ -169,7 +169,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
       how:
         state.statusIndex >= 1
           ? [
-              { title: 'Preorder as a founder.', text: `${state.hasPrice ? `${fmt.price(cfg.product.price)}, charged when you preorder.` : 'Charged when you preorder.'} Refunded in full if the goal isn’t reached.` },
+              { title: 'Preorder as a founder.', text: `${state.hasPrice ? `${fmt.price(cfg.product.price)}, charged when you preorder.` : 'Charged when you preorder.'} Refunded in full if the batch doesn’t go ahead.` },
               {
                 title: `At ${cfg.batch.founderGoal} founders, we make ${cfg.batch.manufacturingMOQ} units.`,
                 text: `The manufacturer’s minimum run is ${cfg.batch.manufacturingMOQ}.${cfg.batch.productionLeadTime ? ` Production takes ${t(cfg.batch.productionLeadTime)}.` : ''}`,
@@ -179,12 +179,12 @@ export default ({ cfg, state, fmt, t, formula }) => {
           : [
               { title: 'Join the founding list.', text: 'Free. No card, no commitment.' },
               {
-                title: 'Preorders open when the details are final.',
-                text: 'Formula, price, dispatch date and refund terms are published before anyone pays.',
+                title: `At ${cfg.batch.founderGoal} sign-ups, an email to pay.`,
+                text: 'Everyone on the list gets it. Formula, price, dispatch date and refund terms are published before anyone pays.',
               },
               {
-                title: `At ${cfg.batch.founderGoal} founders, we make ${cfg.batch.manufacturingMOQ} units.`,
-                text: `The manufacturer’s minimum run is ${cfg.batch.manufacturingMOQ}. If the goal isn’t reached, every preorder is refunded in full.`,
+                title: 'The first batch is made for the founders who pay.',
+                text: `The manufacturer’s minimum run is ${cfg.batch.manufacturingMOQ}. If it doesn’t go ahead, every payment is refunded in full.`,
               },
             ],
       formTitle: 'Get Batch #001 updates',

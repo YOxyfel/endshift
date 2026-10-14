@@ -58,11 +58,11 @@ export default ({ cfg, state, fmt, t }) => ({
   },
   batch: {
     title: 'Batch #001 status',
-    text: `The first run of ${cfg.batch.manufacturingMOQ} is made when ${cfg.batch.founderGoal} founders are in.`,
+    text: `At ${cfg.batch.founderGoal} sign-ups, everyone on the founding list gets an email to pay. The first run of ${cfg.batch.manufacturingMOQ} is made for them.`,
     more: 'How the founding batch works',
   },
   ship: {
-    line: `Ships to ${cfg.shipping.regions.join(', ')}. If Batch #001 misses its goal, every preorder is refunded in full.`,
+    line: `Ships to ${cfg.shipping.regions.join(', ')}. If Batch #001 doesn’t go ahead, every preorder is refunded in full.`,
     more: 'Shipping & returns',
   },
   faqIds: ['when-take', 'melatonin', 'meds'],

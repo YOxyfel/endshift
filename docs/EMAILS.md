@@ -54,7 +54,7 @@ Sent automatically by the signup function before anyone is added.
 >
 > What happens next:
 >
-> - We email you when preorders for Batch #001 open. The batch is made once {{goal}} founders join; the minimum production run is 500.
+> - When {{goal}} people are on this list, everyone on it gets one email to pay for their jar, if they still want it. Batch #001 is then made for the founders who pay (the manufacturer's minimum run is 500). Nothing can be bought before that email.
 > - Now and then, a short build update: what we decided, what went wrong, what's next. No more than a couple a month.
 >
 > *[only if REWARD = switch-15]* Your 15% from the switch game is saved to this address. The code comes by email the day preorders open. It's for one RESET order from Batch #001.
@@ -76,7 +76,7 @@ Sent automatically by the signup function before anyone is added.
 >
 > Какво следва:
 >
-> - Ще ти пишем, когато отворят предварителните поръчки за Партида №001. Партидата се прави, когато се включат {{goal}} основатели; минималното производство е 500 броя.
+> - Когато в този списък има {{goal}} души, всеки в него получава един имейл да плати своя буркан, ако още го иска. После Партида №001 се прави за основателите, които платят (минималното производство на производителя е 500 броя). Преди този имейл нищо не може да се купи.
 > - От време на време кратка новина по работата: какво решихме, какво се обърка, какво следва. Не повече от два пъти в месеца.
 >
 > *[само ако REWARD = switch-15]* Твоите 15% от играта с ключа са запазени за този имейл. Кодът идва по имейл в деня, в който отворят поръчките. Важи за една поръчка на RESET от Партида №001.
@@ -145,7 +145,7 @@ Sent automatically by the signup function before anyone is added.
 > **Known**
 > - The ritual is free and finished. It works without buying anything.
 > - RESET is planned as an evening capsule: one optional step inside the ritual.
-> - Batch #001 is made when {{goal}} founders join. Right now: {{founders}}.
+> - At {{goal}} people on the list, everyone gets an email to pay, and Batch #001 is made for the founders who do. Right now: {{founders}}.
 > - Every ingredient and dose will be published before anyone pays.
 >
 > **Not decided yet**
@@ -169,7 +169,7 @@ Sent automatically by the signup function before anyone is added.
 > **Ясно е**
 > - Ритуалът е безплатен и готов. Работи и без да купуваш нищо.
 > - RESET е замислен като вечерна капсула: една незадължителна стъпка в ритуала.
-> - Партида №001 се прави, когато се включат {{goal}} основатели. В момента: {{founders}}.
+> - При {{goal}} души в списъка всеки получава имейл за плащане и Партида №001 се прави за основателите, които платят. В момента: {{founders}}.
 > - Всяка съставка и доза ще бъдат публикувани, преди някой да плати.
 >
 > **Още не е решено**
@@ -183,6 +183,54 @@ Sent automatically by the signup function before anyone is added.
 > Два начина да помогнеш, ако искаш: отговори какво би искал(а) да бъде една вечерна капсула (или какво да не бъде), и прати ритуала на един човек, който още отговаря на работни съобщения в 23:00.
 >
 > {{founder_name}}
+
+---
+
+## P. Preorders are open (once, when the list reaches {{goal}})
+
+Sent once, by hand, to everyone on the founding list on the day it reaches {{goal}}, after the formula, price, dispatch window and refund terms are published on the site and preorders are switched on (`product.status: 'preorder'`, `payments`). Extra placeholders: `{{price}}` (the founder price), `{{dispatch}}` (the estimated dispatch window), `{{pay_by}}` (the last day to pay) and `{{preorder_url}}` (the checkout link).
+
+**EN**
+- Subject: {{goal}} of you. Batch #001 can be made.
+- Preview: How to pay for your jar, if you still want it.
+
+> The founding list just reached {{goal}}. That was the plan from the start: at {{goal}}, everyone on the list gets this email, and Batch #001 is made for the founders who pay.
+>
+> **What's final now**
+> - The formula, with every dose: {{site_url}}/formula/
+> - The founder price: {{price}}, shipping shown before you pay.
+> - Estimated dispatch: {{dispatch}}. If it moves, you hear it from us first.
+>
+> **Pay for yours by {{pay_by}}** → {{preorder_url}}
+>
+> If you'd rather not, do nothing. You stay on the list for build updates, or leave it in one click.
+>
+> If Batch #001 doesn't go ahead, every payment is refunded in full, automatically. You don't have to ask.
+>
+> *[only if REWARD = switch-15]* Your 15% from the switch game: use the code {{reward_code}} at checkout.
+>
+> {{founder_name}}, ENDSHIFT
+
+**BG**
+- Тема: Вече сте {{goal}}. Партида №001 може да се направи.
+- Преглед: Как да платиш своя буркан, ако още го искаш.
+
+> Списъкът на основателите току-що стигна {{goal}}. Такъв беше планът от самото начало: при {{goal}} всеки в списъка получава този имейл и Партида №001 се прави за основателите, които платят.
+>
+> **Какво вече е окончателно**
+> - Формулата, с всяка доза: {{site_url}}/bg/formula/
+> - Цената за основатели: {{price}}, а доставката виждаш преди плащането.
+> - Очакван срок за изпращане: {{dispatch}}. Ако се промени, научаваш първо от нас.
+>
+> **Плати своя до {{pay_by}}** → {{preorder_url}}
+>
+> Ако не искаш, просто не прави нищо. Оставаш в списъка за новините по работата или излизаш от него с един клик.
+>
+> Ако не се стигне до производство на Партида №001, всяко плащане се връща изцяло, автоматично. Не е нужно да питаш.
+>
+> *[само ако REWARD = switch-15]* Твоите 15% от играта с ключа: използвай кода {{reward_code}} при плащането.
+>
+> {{founder_name}}, ENDSHIFT
 
 ---
 

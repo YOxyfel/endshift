@@ -3568,6 +3568,18 @@ code {
   justify-self: start;
 }
 
+/* small phones: name and status on one line, the guide link under them */
+@media (max-width: 479px) {
+  .shortlist {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  .shortlist__guide {
+    grid-column: 1 / -1;
+    min-height: 32px;
+    margin-top: -0.35rem;
+  }
+}
+
 .shortlist__guide {
   display: inline-flex;
   align-items: center;

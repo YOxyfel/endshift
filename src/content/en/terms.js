@@ -25,8 +25,8 @@ export default ({ cfg, url, fmt, state }) => {
         body: `${state.statusIndex < 1 ? '<p><strong>Preorders aren’t open yet.</strong> This section describes how they will work; the final version is published here before any payment is possible.</p>' : ''}
 <ul>
 <li>The price shown at checkout includes VAT where it applies. Shipping is shown before you pay.</li>
-<li>Production of the first run (${b.manufacturingMOQ} units) starts when ${b.founderGoal} founders have preordered${b.goalDeadline ? `, by ${fmt.date(b.goalDeadline)}` : ' by the published deadline'}.</li>
-<li>If that goal isn’t reached by the deadline, every preorder is refunded in full, automatically, to the original payment method.</li>
+<li>Joining the founding list is free. When ${b.founderGoal} people are on it, everyone on it gets an email to preorder and pay${b.goalDeadline ? `, by ${fmt.date(b.goalDeadline)}` : ', with the deadline in that email'}. Nothing is charged before that email.</li>
+<li>The first run (${b.manufacturingMOQ} units) is made for the founders who pay. If it doesn’t go ahead, every preorder is refunded in full, automatically, to the original payment method.</li>
 ${b.refund.cancelBeforeDispatch ? '<li>You can cancel your preorder for a full refund at any time before it ships.</li>' : ''}
 <li>Dispatch dates are estimates. If one moves, we email you with the new date and the reason${b.refund.cancelBeforeDispatch ? ', and you can still cancel for a full refund' : ''}.</li>
 </ul>`,
