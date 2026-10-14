@@ -4,10 +4,11 @@
 // unless they start with an abbreviation (L-theanine).
 const mid = (s) => (/^\p{Lu}\p{Ll}/u.test(s) ? s[0].toLowerCase() + s.slice(1) : s);
 const and = (a) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a.at(-1)}`);
+// …and a hyphenated name (L-theanine) is never split at its hyphen
+const keep = (s) => (s.includes('-') ? `<span class="nowrap">${s}</span>` : s);
 
 export default ({ cfg, state, fmt, t, formula }) => {
   const named = (status) => formula.ingredients.filter((i) => i.status === status).map((i) => t(i.name));
-  const undecided = named('undecided');
   return {
     meta: {
       title: 'ENDSHIFT: an after-work ritual for when your shift ends but your brain doesn’t',
@@ -19,77 +20,31 @@ export default ({ cfg, state, fmt, t, formula }) => {
     inShort: {
       kicker: 'In short',
       title: 'What ENDSHIFT is, in three lines',
-      // each line opens to a few facts and the pages that go deeper (`to` is a page id, `hash` an anchor on it)
       items: [
-        {
-          id: 'tonight',
-          k: 'Tonight',
-          v: 'A free 20-minute ritual that walks you from work mode to sleep. In your browser, no account.',
-          more: {
-            label: 'More about the ritual',
-            facts: [
-              'Seven steps: clock out on paper, change the room, water, lower the lights, phone down, breathe, lie down.',
-              'Pick 20, 10 or 5 minutes, and whether you’re home in the evening, home after a night shift, or still on the way home.',
-              'Optional: music that slows down with you, breath sounds, and a voice that reads each step aloud.',
-            ],
-            links: [
-              { to: 'ritual', hash: 'plan', label: 'The 20 minutes, step by step' },
-              { to: 'ritual-card', label: 'Print it on one page' },
-            ],
-          },
-        },
-        {
-          id: 'later',
-          k: 'Later',
-          v: 'RESET, an evening capsule for one step of it. Still in development; nothing is for sale.',
-          more: {
-            label: 'What’s in it',
-            facts: state.formulaConfirmed
-              ? [`In it: ${and(named('included').map(mid))}.`, 'Every dose, what it can and can’t do, and the safety notes are on the formula page.', 'You take it at the water step, with a full glass, sitting down. The ritual works without it.']
-              : [
-                  `On the shortlist: ${and(named('candidate').map(mid))}.${undecided.length ? ` ${and(undecided)} ${undecided.length > 1 ? 'are' : 'is'} undecided.` : ''}`,
-                  'No doses yet. They come when the manufacturer signs the formula off.',
-                  'You’d take it at the water step, with a full glass, sitting down. The ritual works without it.',
-                ],
-            links: [
-              { to: 'reset', label: 'What RESET is' },
-              { to: 'formula', label: state.formulaConfirmed ? 'The formula' : 'The ingredient shortlist' },
-            ],
-          },
-        },
-        {
-          id: 'now',
-          k: 'Now',
-          v: 'The founding list. When 150 people are on it, the first batch gets made.',
-          more: {
-            label: 'How the list works',
-            facts:
-              state.status === 'concept'
-                ? [
-                    'Joining is free and commits you to nothing. You get one email when preorders open.',
-                    'Preorders open later, with the final price, the dispatch window and the refund terms.',
-                    'Every decision, delay and mistake goes on the story page as it happens.',
-                  ]
-                : ['Founders hear first at every milestone: production booked, samples approved, dispatch.', 'Every decision, delay and mistake goes on the story page as it happens.'],
-            links: [
-              { to: 'batch', label: 'How Batch #001 works' },
-              { to: 'story', label: 'The idea, and how it started' },
-            ],
-          },
-        },
+        { k: 'Tonight', v: 'A free 20-minute ritual that walks you from work mode to sleep. In your browser, no account.' },
+        { k: 'Later', v: 'RESET, an evening capsule for one step of it. Still in development; nothing is for sale.' },
+        { k: 'Now', v: 'The founding list. When 150 people are on it, the first batch gets made.' },
       ],
-      // the whole site in one list, for people who'd rather not scroll the film
+      // Every page as a bubble, for people who'd rather not scroll the film. `to` is a page id
+      // (`hash` an anchor on it), `slot` where it sits: 'c' is the middle, 0–7 go round clockwise
+      // from the top. The list order is the keyboard order. `text` shows when a bubble is enlarged.
       go: {
         title: 'Skip the walkthrough',
         items: [
-          { to: 'ritual', name: 'Free ritual', text: 'Start now, or set it up first.' },
-          { to: 'ritual-card', name: 'Ritual card', text: 'The seven steps on one page, to print.' },
-          { to: 'reset', name: 'RESET', text: 'The evening capsule, and when you’d take it.' },
-          { to: 'formula', name: 'Formula', text: state.formulaConfirmed ? 'Every ingredient and dose.' : 'The ingredient shortlist, and what we won’t claim.' },
-          { to: 'batch', name: 'Batch #001', text: 'How the first run works, and where it is now.' },
-          { to: 'story', name: 'Story', text: 'The idea, and every decision since.' },
-          { to: 'faq', name: 'FAQ', text: 'Shipping, refunds, safety, the ritual.' },
-          { to: 'journal', name: 'Journal', text: 'Sourced guides for switching off after work.' },
+          { to: 'ritual', slot: 'c', name: 'Free ritual', text: '20, 10 or 5 minutes. Start tonight.' },
+          { to: 'ritual', hash: 'plan', slot: 6, name: 'The 20 minutes', text: 'Seven steps, minute by minute.' },
+          { to: 'ritual-card', slot: 7, name: 'Ritual card', text: 'The steps on one page, to print.' },
+          { to: 'reset', slot: 0, name: 'RESET', text: 'An evening capsule for the water step. In development.' },
+          {
+            to: 'formula',
+            slot: 1,
+            name: 'Formula',
+            text: state.formulaConfirmed ? `In it: ${and(named('included').map(mid).map(keep))}.` : `Shortlist: ${named('candidate').map(mid).map(keep).join(', ')}.`,
+          },
+          { to: 'batch', slot: 2, name: 'Batch #001', text: `${cfg.batch.founderGoal} founders, then the first run.${state.status === 'concept' ? ' Joining is free.' : ''}` },
+          { to: 'story', slot: 3, name: 'Story', text: 'The idea, and every decision since.' },
+          { to: 'faq', slot: 4, name: 'FAQ', text: 'Shipping, refunds, safety.' },
+          { to: 'journal', slot: 5, name: 'Journal', text: 'Guides for switching off after work.' },
         ],
       },
       film: 'Or scroll on: the evening, drawn. About two minutes.',

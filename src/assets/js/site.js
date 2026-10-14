@@ -1165,6 +1165,162 @@
     });
   })();
 
+  /* "Skip the walkthrough": the page bubbles on the home page.
+     - Outside the sphere, the bubbles lean towards the pointer (the middle one most, as if the
+       sphere turned to look), and the light and the wireframe turn with them.
+     - Inside the sphere nothing moves, so a bubble stays where you aim. Enlarging is CSS
+       (:hover / :focus-visible).
+     - With no pointer nearby it breathes a little. Off with reduced motion, low-stim, or no mouse
+       (touch only gets the breathing). It runs only while the sphere is on screen. ----------------- */
+  (function orbit() {
+    var box = qs('[data-orbit]');
+    if (!box) return;
+    var items = qsa('[data-orbit-item]', box).map(function (li) {
+      return { el: li, z: +li.getAttribute('data-z') || 0, ux: +li.getAttribute('data-ux') || 0, uy: +li.getAttribute('data-uy') || 0 };
+    });
+    var lat = qs('[data-lat]', box);
+    var mers = qsa('[data-mer]', box);
+    var MER = [0, 0.6, 1.15]; // the meridians' longitudes (radians)
+    var LEAN = 0.07; // how far the middle bubble moves, in sphere widths
+    var mq = window.matchMedia ? matchMedia('(hover: hover) and (pointer: fine)') : null;
+    var mouse = function () { return !!(mq && mq.matches); };
+    var moving = function () { return root.classList.contains('motion-ok'); };
+    var lean = { x: 0, y: 0 };
+    var target = { x: 0, y: 0 };
+    var mode = 'idle'; // idle: breathing · steer: leaning to the pointer · hold: pointer inside, still
+    var visible = false;
+    var raf = 0;
+    var last = 0;
+    var size = box.offsetWidth;
+    var ptr = null; // the last mouse position
+    var focused = false;
+
+    function render() {
+      var px = LEAN * size;
+      items.forEach(function (it) {
+        var near = Math.max(0, it.ux * lean.x + it.uy * lean.y); // the side the pointer is on grows a touch
+        it.el.style.transform = 'translate3d(' + (lean.x * px * it.z).toFixed(2) + 'px,' + (lean.y * px * it.z).toFixed(2) + 'px,0) scale(' + (1 + 0.07 * near).toFixed(3) + ')';
+      });
+      box.style.setProperty('--lx', lean.x.toFixed(3));
+      box.style.setProperty('--ly', lean.y.toFixed(3));
+      mers.forEach(function (m, i) { m.setAttribute('rx', Math.max(0.1, 48 * Math.abs(Math.sin(MER[i] + lean.x * 0.42))).toFixed(2)); });
+      if (lat) lat.setAttribute('ry', (48 * Math.abs(Math.sin(0.28 + lean.y * 0.24))).toFixed(2));
+    }
+
+    function frame(t) {
+      raf = 0;
+      var dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016;
+      last = t;
+      if (mode === 'idle') {
+        var w = (t / 1000) * ((Math.PI * 2) / 18);
+        target.x = 0.14 * Math.cos(w);
+        target.y = 0.1 * Math.sin(w * 1.4);
+      }
+      var k = 1 - Math.exp(-dt * (mode === 'steer' ? 5 : 1.6));
+      lean.x += (target.x - lean.x) * k;
+      lean.y += (target.y - lean.y) * k;
+      render();
+      var settled = Math.abs(target.x - lean.x) < 0.0008 && Math.abs(target.y - lean.y) < 0.0008;
+      if (visible && moving() && (mode === 'idle' || !settled)) raf = requestAnimationFrame(frame);
+      else last = 0;
+    }
+    function run() {
+      if (!raf && visible && moving()) raf = requestAnimationFrame(frame);
+    }
+
+    // where the pointer is, relative to the sphere: inside (hold), nearby (steer) or far (idle)
+    function aim() {
+      if (!ptr || !mouse() || !moving()) { mode = 'idle'; run(); return; }
+      if (focused) return;
+      var r = box.getBoundingClientRect();
+      size = r.width;
+      var R = r.width * 0.48;
+      var dx = ptr.x - (r.left + r.width / 2);
+      var dy = ptr.y - (r.top + r.height / 2);
+      var d = Math.sqrt(dx * dx + dy * dy) || 1;
+      var rho = d / R;
+      if (rho <= 1 || ptr.onBubble) {
+        if (mode !== 'hold') { mode = 'hold'; target.x = lean.x; target.y = lean.y; }
+        return;
+      }
+      if (rho > 3.8) { mode = 'idle'; run(); return; }
+      // strongest just outside the sphere, fading out far away
+      var m = Math.min(1, 0.45 + (0.55 * (rho - 1)) / 1.2) * Math.min(1, Math.max(0, (3.8 - rho) / 1.2));
+      mode = 'steer';
+      target.x = (dx / d) * m;
+      target.y = (dy / d) * m;
+      run();
+    }
+
+    document.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch') return;
+      ptr = { x: e.clientX, y: e.clientY, onBubble: !!(e.target && e.target.closest && e.target.closest('[data-orbit] .orb')) };
+      if (visible) aim();
+    }, { passive: true });
+    // the page scrolls under a still pointer: aim again
+    window.addEventListener('scroll', function () {
+      if (!ptr || !visible) return;
+      var under = document.elementFromPoint(ptr.x, ptr.y);
+      ptr.onBubble = !!(under && under.closest && under.closest('[data-orbit] .orb'));
+      aim();
+    }, { passive: true });
+    // the pointer left the window
+    root.addEventListener('mouseleave', function () { ptr = null; aim(); });
+    // keyboard: a focused bubble stays where it is (a mouse click focuses too, but doesn't count)
+    box.addEventListener('focusin', function (e) {
+      var kb = false;
+      try { kb = e.target.matches(':focus-visible'); } catch (err) {}
+      if (!kb) return;
+      focused = true;
+      mode = 'hold';
+      target.x = lean.x;
+      target.y = lean.y;
+    });
+    box.addEventListener('focusout', function () { focused = false; aim(); });
+    window.addEventListener('resize', function () { size = box.offsetWidth; if (!raf) render(); }, { passive: true });
+    window.addEventListener('es:calm', function () {
+      if (moving()) { run(); return; }
+      lean.x = lean.y = target.x = target.y = 0;
+      render();
+    });
+
+    // coming out of the middle, once, the first time the sphere is on screen
+    var revealed = false;
+    function reveal() {
+      if (revealed) return;
+      revealed = true;
+      box.classList.remove('is-waiting');
+      if (!moving() || typeof Element.prototype.animate !== 'function') return;
+      qsa('.orb', box).forEach(function (a, i) {
+        var li = a.parentNode;
+        var off = size * 0.2;
+        var ux = +li.getAttribute('data-ux') || 0;
+        var uy = +li.getAttribute('data-uy') || 0;
+        a.animate(
+          [
+            { opacity: 0, transform: 'translate(-50%,-50%) translate(' + (-ux * off).toFixed(1) + 'px,' + (-uy * off).toFixed(1) + 'px) scale(0.3)' },
+            { opacity: 1, transform: 'translate(-50%,-50%) translate(0px,0px) scale(1)' },
+          ],
+          { duration: 820, delay: 80 + i * 60, easing: 'cubic-bezier(0.2, 1.15, 0.3, 1)', fill: 'backwards' },
+        );
+      });
+    }
+
+    if ('IntersectionObserver' in window) {
+      if (moving()) box.classList.add('is-waiting');
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          visible = en.isIntersecting;
+          if (visible && en.intersectionRatio >= 0.3) reveal();
+          if (visible) { size = box.offsetWidth; aim(); }
+        });
+      }, { threshold: [0, 0.3] }).observe(box);
+    } else {
+      visible = true;
+      run();
+    }
+  })();
+
   /* A Bulgarian browser on the English site: offer the Bulgarian page, once ---------------------- */
   (function langHint() {
     if (CFG.locale !== 'en' || store.get('es:lang-hint')) return;

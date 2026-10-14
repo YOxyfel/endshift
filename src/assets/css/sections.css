@@ -2838,94 +2838,23 @@ code {
 }
 
 .in-short__v {
-  min-width: 0;
-}
-
-.in-short__v > p {
   color: var(--paper-2);
   font-size: var(--fs-lead);
   line-height: 1.45;
   max-width: 46ch;
 }
 
-/* "More about the ritual": a few facts and the pages that go deeper, under each line */
-.in-short__more > summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 44px;
-  color: var(--tungsten);
-  font-weight: 600;
-  font-size: var(--fs-small);
-  cursor: pointer;
-  list-style: none;
-}
-
-.in-short__more > summary::-webkit-details-marker {
-  display: none;
-}
-
-.in-short__more > summary span {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
-  text-decoration-color: color-mix(in srgb, var(--tungsten) 45%, transparent);
-}
-
-.in-short__more > summary:hover span {
-  text-decoration-color: currentColor;
-}
-
-.in-short__more > summary .icon {
-  width: 1.05rem;
-  height: 1.05rem;
-  transition: transform var(--dur-2) ease;
-}
-
-.in-short__more[open] > summary .icon {
-  transform: rotate(180deg);
-}
-
-.in-short__more-body {
-  display: grid;
-  gap: var(--s-4);
-  margin: var(--s-1) 0 var(--s-2);
-  padding-left: var(--s-4);
-  border-left: 2px solid color-mix(in srgb, var(--tungsten) 40%, transparent);
-  max-width: 46ch;
-}
-
-.motion-ok .in-short__more[open] .in-short__more-body {
-  animation: in-short-open var(--dur-2) ease-out;
-}
-
-@keyframes in-short-open {
-  from {
-    opacity: 0;
-    transform: translateY(-0.35rem);
-  }
-}
-
-.in-short__facts {
-  display: grid;
-  gap: var(--s-2);
-  list-style: none;
-  color: var(--paper-2);
-  font-size: var(--fs-body);
-  line-height: 1.5;
-}
-
-.in-short__links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-5);
-  font-weight: 600;
-}
-
-/* "Skip the walkthrough": every page in one list, name then what's on it */
+/* "Skip the walkthrough": every page as a bubble on a sphere.
+   - Positions and sizes are in % of the sphere's width (cqw), set per bubble in the template,
+     so the layout holds without JS.
+   - Pointing at a bubble (or focusing it) enlarges it in place and shows its line; the others
+     step back. Nothing else moves while the pointer is inside the sphere.
+   - site.js leans the bubbles towards the pointer while it's outside the sphere, and turns the
+     light and the wireframe with them (only with motion-ok and a mouse). */
 .in-short__go {
   display: grid;
   gap: var(--s-3);
+  justify-items: start;
 }
 
 .in-short__go-title {
@@ -2935,56 +2864,218 @@ code {
   color: var(--paper);
 }
 
-.in-short__index {
-  display: grid;
-  grid-template-columns: fit-content(10.5rem) 1fr;
-  column-gap: var(--s-5);
+.orbit {
+  --lx: 0;
+  --ly: 0;
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  aspect-ratio: 1;
+  container-type: inline-size;
+}
+
+.orbit__glow {
+  position: absolute;
+  inset: 2cqw;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at calc(40% + var(--lx) * 16%) calc(34% + var(--ly) * 16%), rgba(242, 168, 75, 0.11), rgba(242, 168, 75, 0.035) 36%, transparent 64%),
+    radial-gradient(circle at 50% 50%, rgba(243, 240, 232, 0.025) 55%, rgba(0, 0, 0, 0.3));
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    0 0 9cqw rgba(242, 168, 75, 0.05);
+}
+
+.orbit__wire {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.orbit__wire ellipse {
+  fill: none;
+  stroke: rgba(243, 240, 232, 0.075);
+  stroke-width: 0.22;
+}
+
+.orbit__list {
+  position: absolute;
+  inset: 0;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-bottom: 1px solid var(--line);
 }
 
-/* each row shares the list's two columns, so the names line up whatever their length */
-.in-short__index li,
-.in-short__index a {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 8rem 1fr;
-  grid-template-columns: subgrid;
-  column-gap: inherit;
+/* the item is a point; site.js moves it (lean) and scales it a touch as the pointer nears */
+.orbit__item {
+  position: absolute;
+  left: calc(var(--x) * 1cqw);
+  top: calc(var(--y) * 1cqw);
+  width: 0;
+  height: 0;
 }
 
-.in-short__index a {
-  align-items: baseline;
-  padding: 0.8rem 0;
-  border-top: 1px solid var(--line);
-  color: var(--paper);
+.orbit__item:has(.orb:hover),
+.orbit__item:has(.orb:focus-visible) {
+  z-index: 2;
+}
+
+.orb {
+  --push: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--d) * 1cqw);
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 calc(var(--d) * 0.12cqw);
+  border-radius: 50%;
+  text-align: center;
   text-decoration: none;
+  color: var(--paper);
+  background:
+    radial-gradient(circle at calc(36% + var(--lx) * 18%) calc(28% + var(--ly) * 18%), rgba(243, 240, 232, 0.17), rgba(243, 240, 232, 0.035) 40%, transparent 62%),
+    var(--graphite-2);
+  box-shadow:
+    inset 0 0 0 1px rgba(243, 240, 232, 0.1),
+    inset 0 -1.2cqw 2.6cqw rgba(0, 0, 0, 0.45),
+    0 1.4cqw 3.4cqw rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -50%) translate(calc(var(--ix) * var(--push) * 1cqw), calc(var(--iy) * var(--push) * 1cqw));
+  -webkit-tap-highlight-color: transparent;
 }
 
-.in-short__name {
+.orb__name {
   font-family: var(--font-display);
-  font-weight: 760;
-  font-size: 1.125rem;
-  line-height: 1.15;
-  transition: color var(--dur-1) ease;
+  font-weight: 780;
+  font-size: clamp(0.875rem, 3.6cqw, 1.125rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
 }
 
-.in-short__what {
-  color: var(--fog);
-  font-size: var(--fs-small);
-  line-height: 1.4;
-  transition: color var(--dur-1) ease;
-}
-
-.in-short__index a:hover .in-short__name,
-.in-short__index a:focus-visible .in-short__name {
-  color: var(--tungsten);
-}
-
-.in-short__index a:hover .in-short__what {
+/* the line under the name: there for screen readers, shown when the bubble is enlarged */
+.orb__text {
+  max-height: 0;
+  max-width: calc(var(--dd) * 0.7cqw);
+  overflow: hidden;
+  opacity: 0;
   color: var(--paper-2);
+  font-size: clamp(0.75rem, 2.7cqw, 0.875rem);
+  line-height: 1.3;
+  text-wrap: balance;
+}
+
+.orb--main {
+  color: var(--night);
+  background:
+    radial-gradient(circle at calc(36% + var(--lx) * 18%) calc(28% + var(--ly) * 18%), rgba(255, 246, 228, 0.55), rgba(255, 246, 228, 0.1) 38%, transparent 62%),
+    var(--tungsten);
+  box-shadow:
+    inset 0 -1.6cqw 3cqw rgba(120, 62, 10, 0.4),
+    0 1.4cqw 5cqw rgba(242, 168, 75, 0.22);
+}
+
+.orb--main .orb__name {
+  font-size: clamp(1.0625rem, 4.8cqw, 1.5rem);
+}
+
+.orb--main .orb__text {
+  color: rgba(15, 17, 18, 0.8);
+}
+
+/* enlarged: pointed at with a mouse, or focused from the keyboard */
+.orb:focus-visible {
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .orb:hover {
+    --push: 1;
+    width: calc(var(--dd) * 1cqw);
+    box-shadow:
+      inset 0 0 0 1.5px var(--tungsten),
+      inset 0 -1.2cqw 2.6cqw rgba(0, 0, 0, 0.4),
+      0 2cqw 5cqw rgba(0, 0, 0, 0.5);
+  }
+  .orb--main:hover {
+    background:
+      radial-gradient(circle at calc(36% + var(--lx) * 18%) calc(28% + var(--ly) * 18%), rgba(255, 246, 228, 0.6), rgba(255, 246, 228, 0.12) 38%, transparent 62%),
+      var(--tungsten-hi);
+    box-shadow:
+      inset 0 -1.6cqw 3cqw rgba(120, 62, 10, 0.35),
+      0 2cqw 6cqw rgba(242, 168, 75, 0.32);
+  }
+  .orb:hover .orb__name {
+    font-size: clamp(1rem, 4.4cqw, 1.375rem);
+  }
+  .orb--main:hover .orb__name {
+    font-size: clamp(1.1875rem, 5.4cqw, 1.75rem);
+  }
+  .orb:hover .orb__text {
+    max-height: 7.5em;
+    margin-top: 0.4em;
+    opacity: 1;
+  }
+  .orbit:has(.orb:hover) .orb:not(:hover) {
+    opacity: 0.5;
+  }
+}
+
+.orb:focus-visible {
+  --push: 1;
+  width: calc(var(--dd) * 1cqw);
+}
+
+.orb:focus-visible .orb__name {
+  font-size: clamp(1rem, 4.4cqw, 1.375rem);
+}
+
+.orb--main:focus-visible .orb__name {
+  font-size: clamp(1.1875rem, 5.4cqw, 1.75rem);
+}
+
+.orb:focus-visible .orb__text {
+  max-height: 7.5em;
+  margin-top: 0.4em;
+  opacity: 1;
+}
+
+.orbit:has(.orb:focus-visible) .orb:not(:focus-visible) {
+  opacity: 0.5;
+}
+
+.motion-ok .orb {
+  transition:
+    width 320ms cubic-bezier(0.2, 0.9, 0.25, 1.08),
+    transform 320ms cubic-bezier(0.2, 0.9, 0.25, 1.08),
+    opacity 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.motion-ok .orb__text {
+  transition: max-height 280ms ease, opacity 200ms ease 90ms, margin-top 280ms ease;
+}
+
+/* touch: no hover to enlarge, so the bubbles are a little bigger and a tap goes straight there */
+@media (hover: none), (pointer: coarse) {
+  .orb {
+    width: calc(var(--d) * 1.08cqw);
+  }
+  .orb:active {
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+}
+
+/* until the sphere scrolls into view (with motion only): the bubbles wait to come out */
+.orbit.is-waiting .orb {
+  opacity: 0;
 }
 
 .in-short__ctas {

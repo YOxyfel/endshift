@@ -96,20 +96,30 @@ export default function home(ctx) {
 
   const Q = c.inShort;
   const pageId = (to) => to.replace(/-/g, '_');
-  // a line of the summary; "more" opens a few facts and the pages that go deeper
-  const shortLine = (it) => html`<li class="in-short__row">
-        <span class="in-short__k">${it.k}</span>
-        <div class="in-short__v">
-          <p>${it.v}</p>
-          ${it.more ? html`<details class="in-short__more">
-            <summary data-track="in_short_more" data-track-id="${it.id}"><span>${it.more.label}</span>${icon('chevron')}</summary>
-            <div class="in-short__more-body">
-              <ul class="in-short__facts">${it.more.facts.map((f) => `<li>${f}</li>`)}</ul>
-              <p class="in-short__links">${it.more.links.map((l) => `<a class="link" href="${ctx.url(l.to, { hash: l.hash })}" data-track="cta_click" data-track-id="in_short_${it.id}_${pageId(l.to)}">${l.label}</a>`)}</p>
-            </div>
-          </details>` : ''}
+  // "Skip the walkthrough": every page as a bubble on a sphere. Positions are in % of the sphere's
+  // width (cqw), so the layout works without JS; site.js only adds the lean towards the pointer.
+  // d = diameter, dd = diameter when enlarged, (ix, iy) = the nudge towards the middle when
+  // enlarged (so edge bubbles don't grow off the sphere), z = how much it leans (depth).
+  const slot = (s) => {
+    if (s === 'c') return { x: 50, y: 50, d: 29, dd: 39, ux: 0, uy: 0, ix: 0, iy: 0, z: 1 };
+    const a = (-90 + s * 45) * (Math.PI / 180);
+    const even = s % 2 === 0;
+    const r = even ? 34 : 36.5;
+    const ux = Math.cos(a), uy = Math.sin(a);
+    const f = (n) => +n.toFixed(2);
+    return { x: f(50 + r * ux), y: f(50 + r * uy), d: even ? 21.5 : 19.5, dd: even ? 36 : 35, ux: f(ux), uy: f(uy), ix: f(-ux * 4), iy: f(-uy * 4), z: even ? 0.72 : 0.58 };
+  };
+  const orbit = (go) => html`<nav class="in-short__go" aria-labelledby="in-short-go">
+        <h3 class="in-short__go-title" id="in-short-go">${go.title}</h3>
+        <div class="orbit" data-orbit>
+          <div class="orbit__glow" aria-hidden="true"></div>
+          <svg class="orbit__wire" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><ellipse data-lat cx="50" cy="50" rx="48" ry="13"/><ellipse data-mer="0" cx="50" cy="50" rx="0.1" ry="48"/><ellipse data-mer="1" cx="50" cy="50" rx="27" ry="48"/><ellipse data-mer="2" cx="50" cy="50" rx="44" ry="48"/></svg>
+          <ul class="orbit__list">${go.items.map((g) => {
+            const p = slot(g.slot);
+            return `<li class="orbit__item" data-orbit-item data-z="${p.z}" data-ux="${p.ux}" data-uy="${p.uy}" style="--x:${p.x};--y:${p.y}"><a class="orb${g.slot === 'c' ? ' orb--main' : ''}" style="--d:${p.d};--dd:${p.dd};--ix:${p.ix};--iy:${p.iy}" href="${ctx.url(g.to, { hash: g.hash })}" data-track="cta_click" data-track-id="in_short_go_${pageId(g.to)}${g.hash ? `_${g.hash}` : ''}"><span class="orb__name">${g.name}</span><span class="orb__text">${g.text}</span></a></li>`;
+          })}</ul>
         </div>
-      </li>`;
+      </nav>`;
   const body = html`
 ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
 <section class="in-short" id="in-short" aria-labelledby="in-short-title">
@@ -117,13 +127,10 @@ ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
     <div class="in-short__head">
       <p class="in-short__kicker">${Q.kicker}</p>
       <h2 class="in-short__title" id="in-short-title">${Q.title}</h2>
-      ${Q.go ? html`<nav class="in-short__go" aria-labelledby="in-short-go">
-        <h3 class="in-short__go-title" id="in-short-go">${Q.go.title}</h3>
-        <ul class="in-short__index">${Q.go.items.map((g) => `<li><a href="${ctx.url(g.to)}" data-track="cta_click" data-track-id="in_short_go_${pageId(g.to)}"><span class="in-short__name">${g.name}</span><span class="in-short__what">${g.text}</span></a></li>`)}</ul>
-      </nav>` : ''}
+      ${Q.go ? orbit(Q.go) : ''}
     </div>
     <div class="in-short__body">
-      <ol class="in-short__list">${Q.items.map(shortLine)}</ol>
+      <ol class="in-short__list">${Q.items.map((it) => html`<li class="in-short__row"><span class="in-short__k">${it.k}</span><span class="in-short__v">${it.v}</span></li>`)}</ol>
       <div class="cta-row in-short__ctas">
         ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'lg', trackId: 'in_short_ritual' })}
         ${state.checkoutLive ? batchAction(ctx, { location: 'in_short', variant: 'ghost', size: 'lg' }) : btn({ href: ctx.url('batch', { hash: 'join' }), label: ui.cta.batchConcept, variant: 'ghost', size: 'lg', trackId: 'in_short_batch' })}
