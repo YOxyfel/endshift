@@ -112,7 +112,11 @@
     comp.knee.value = 18;
     comp.ratio.value = 3;
     master.connect(comp);
-    comp.connect(ctx.destination);
+    // the music dips under the narrator's voice (duck), separate from the master level
+    var duckGain = (this.duckGain = ctx.createGain());
+    duckGain.gain.value = 1;
+    comp.connect(duckGain);
+    duckGain.connect(ctx.destination);
 
     // Reverb send
     var verb = ctx.createConvolver();
@@ -545,6 +549,12 @@
     this.lastVol = t;
     this.level = Math.max(0, Math.min(1, v));
     this.target(this.master.gain, this.muted ? 0.0001 : Math.max(0.0001, MASTER * this.level), 0.4);
+  };
+
+  // the narrator is speaking: bring the music down to about a third, then back up after
+  RitualAudio.prototype.duck = function (on) {
+    if (!this.ctx || !this.duckGain) return;
+    this.target(this.duckGain.gain, on ? 0.35 : 1, on ? 0.08 : 0.5);
   };
 
   RitualAudio.prototype.setMuted = function (m) {

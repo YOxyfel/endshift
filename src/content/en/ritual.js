@@ -231,7 +231,11 @@ export default ({ state }) => ({
         hint: 'Headphones only. A slow beat between your ears that drifts from 10 to 6 beats a second. Some people find it calming; the research is mixed.',
       },
       haptics: { title: 'Vibrate on each breath', hint: 'On phones that support it, so you can follow with your eyes closed.' },
-      speak: { title: 'Read each step aloud', hint: 'Your device’s voice reads every step, so you can close your eyes or keep the phone in your pocket. Turns on by itself for “On the way home”.' },
+      speak: {
+        title: 'Read each step aloud',
+        hint: 'A calm voice reads every step and guides the breathing, so you can close your eyes or keep the phone in your pocket. Turns on by itself for “On the way home”.',
+        credit: 'AI voice, made with ElevenLabs (elevenlabs.io). The night-shift and way-home versions use your device’s voice for now.',
+      },
       wake: { title: 'Keep the screen on', hint: 'So the visuals don’t go dark. The timer keeps going either way.' },
     },
     start: 'Start the ritual',
@@ -251,6 +255,40 @@ export default ({ state }) => ({
   peek: {
     caption: 'What you’ll see: this room, full screen, one step at a time. Sound if you want it.',
     aria: 'The ritual’s room: the desk, the lamp, the window, the bed',
+  },
+  // The recorded voice (files in src/assets/audio/narration/en/). Recorded for the evening
+  // version; any line without a clip (other versions, the herbal-tea line) uses the device's voice.
+  // Script, takes and costs: claude/ENDSHIFT_NARRATION_SCRIPTS.md in the project.
+  voice: {
+    dir: 'en',
+    versions: ['evening'],
+    skipChoices: ['tea'],
+    rhythmCues: 6, // In / Out on the first slow breaths only; then the sound leads
+    steps: {
+      'clock-out': 'r01_clock_out.mp3',
+      change: 'r02_change.mp3',
+      water: 'r03_water.mp3',
+      lights: 'r04_lights.mp3',
+      phone: 'r05_phone.mp3',
+      breathe: 'r06_breathe.mp3',
+      quiet: 'r07_lie_down.mp3',
+    },
+    cues: {
+      headphones: 'r00_headphones.mp3',
+      autoNote: 'r05b_auto.mp3',
+      arrive: 'b01_arrive.mp3',
+      tips: ['b02_tip_shoulders.mp3', 'b03_tip_sun.mp3', 'b04_tip_jaw.mp3', 'b05_tip_nose.mp3'], // same order as breath.arriveTips
+      sighHow: 'b06_sigh_how.mp3',
+      sighIn: 'b07_in.mp3',
+      top: 'b08_top.mp3',
+      sighOut: 'b09_out_slow.mp3',
+      rhythmHow: 'b10_rhythm_how.mp3',
+      rhythmIn: 'b07_in.mp3',
+      rhythmOut: 'b11_out.mp3',
+      settle: 'b12_settle.mp3',
+      lightsOut: 'r08_lights_out.mp3',
+      shiftOver: 'r09_shift_over.mp3',
+    },
   },
   cardLink: 'The ritual on one page, to print and keep by the bed',
   stepsTitle: 'The 20 minutes',

@@ -299,7 +299,7 @@
     syncDone();
     if (announce) {
       setText(el.live, fill(CFG.tpl.announce, { i: S.i + 1, n: n, t: st.title }));
-      say(st.title + '. ' + actOf(st));
+      sayStep(st, 'now');
     }
   }
 
@@ -341,7 +341,109 @@
     overlay.classList.toggle('is-auto', isAuto());
   }
 
-  // Read aloud: the device's own voice, in the page's language
+  /* Read aloud. Where the page has a recorded voice (CFG.voice: English, one clip per step and
+     per breathing cue, recorded for the evening version) it plays those clips and the music dips
+     under them. Anything without a clip (the night-shift and way-home versions, the herbal-tea
+     line, other languages) uses the device's own voice, as before. */
+  var VO = CFG.voice || null;
+  var voice = { el: null, queue: [], cur: null, id: 0, blobs: {}, loading: false, phase: '', tip: -1, breaths: 0 };
+  function canSpeak() { return !!VO || 'speechSynthesis' in window; }
+  // only for the versions the clips were recorded for, so one evening doesn't switch voices
+  function recorded() {
+    return !!(VO && S.opts.speak && (VO.versions || ['evening']).indexOf(S.version || 'evening') >= 0);
+  }
+  function clip(key) { return (VO && VO.cues && VO.cues[key]) || null; }
+  function stepClip(st) {
+    if (!VO || !VO.steps || !st) return null;
+    var c = S.choice[st.id];
+    if (c && VO.skipChoices && VO.skipChoices.indexOf(c) >= 0) return null;
+    return VO.steps[st.id] || null;
+  }
+  function voiceEl() {
+    if (!voice.el) {
+      voice.el = new Audio();
+      voice.el.preload = 'auto';
+      voice.el.volume = VO && VO.volume ? VO.volume : 1;
+    }
+    return voice.el;
+  }
+  // the clips are small: fetch them all once a run starts, so they're instant and keep working
+  // if the connection drops halfway through the evening
+  function voicePreload() {
+    if (!VO || voice.loading || !window.fetch || !window.URL || !URL.createObjectURL) return;
+    voice.loading = true;
+    var urls = [];
+    Object.keys(VO.steps || {}).forEach(function (k) { urls.push(VO.steps[k]); });
+    Object.keys(VO.cues || {}).forEach(function (k) { urls = urls.concat(VO.cues[k]); });
+    urls.forEach(function (u) {
+      if (!u || voice.blobs[u]) return;
+      fetch(u).then(function (r) { return r.ok ? r.blob() : null; }).then(function (b) {
+        if (b) voice.blobs[u] = URL.createObjectURL(b);
+      }).catch(function () {});
+    });
+  }
+  function duck(on) {
+    if (audio && audio.duck) audio.duck(on);
+  }
+  // a phone only lets a page play sound it started from a tap: play the quiet track, muted, once
+  function unlockVoice() {
+    if (voice.unlocked) return;
+    voice.unlocked = true;
+    var a = voiceEl();
+    var q = CFG.media && CFG.media.quiet;
+    if (!q || voice.cur) return;
+    var done = function () {
+      if (!voice.cur) { try { a.pause(); } catch (e) {} }
+      a.muted = false;
+    };
+    try {
+      a.muted = true;
+      a.src = q;
+      var p = a.play();
+      if (p && p.then) p.then(done, done);
+      else done();
+    } catch (e) { done(); }
+  }
+  function deviceSpeaking() {
+    try { return 'speechSynthesis' in window && window.speechSynthesis.speaking; } catch (e) { return false; }
+  }
+  function voiceNext() {
+    var item = voice.queue.shift();
+    // a phase's words that come too late (the phase is already over) are skipped
+    while (item && item.phase && item.phase !== voice.phase) item = voice.queue.shift();
+    var id = ++voice.id;
+    voice.cur = item || null;
+    if (!item) { duck(false); return; }
+    var url = item.url;
+    duck(true);
+    voice.unlocked = true;
+    var a = voiceEl();
+    a.muted = false;
+    a.onended = a.onerror = function () { if (id === voice.id) voiceNext(); };
+    a.src = voice.blobs[url] || url;
+    var p;
+    try { p = a.play(); } catch (e) { p = null; if (id === voice.id) voiceNext(); return; }
+    if (p && p.catch) p.catch(function () { if (id === voice.id) voiceNext(); });
+  }
+  // 'now' stops whatever is playing; 'queue' plays after it; 'cue' (a breathing cue) waits only
+  // for another short cue to finish, and is skipped if longer words are playing: a cue that comes
+  // seconds late is worse than none. `phase`: only play it while the breathing is in that phase.
+  function play(url, mode, phase) {
+    if (!url || !S.opts.speak) return;
+    var cue = mode === 'cue';
+    if (cue && (deviceSpeaking() || voice.queue.length || (voice.cur && !voice.cur.cue))) return;
+    if (mode === 'now') stopVoice();
+    voice.queue.push({ url: url, cue: cue, phase: phase || '' });
+    if (!voice.cur) voiceNext();
+  }
+  function stopVoice() {
+    voice.queue = [];
+    voice.id++;
+    voice.cur = null;
+    if (voice.el) { try { voice.el.pause(); } catch (e) {} }
+    duck(false);
+  }
+  // the device's own voice, in the page's language
   function say(text, short) {
     if (!S.opts.speak || !('speechSynthesis' in window) || !text) return;
     try {
@@ -354,7 +456,58 @@
       window.speechSynthesis.speak(u);
     } catch (e) {}
   }
+  // a step's words: the recorded clip, or the device reading the same text
+  function sayStep(st, mode) {
+    if (!st || !S.opts.speak) return;
+    voice.phase = '';
+    voice.tip = -1;
+    voice.breaths = 0;
+    var url = recorded() ? stepClip(st) : null;
+    if (url) {
+      try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+      play(url, mode);
+      // "From here it plays by itself" is on the card unless Guide me is on
+      if (st.id === 'phone' && !S.opts.guide) play(clip('autoNote'), 'queue');
+    } else {
+      stopVoice();
+      say(st.title + '. ' + actOf(st));
+    }
+  }
+  // breathing: how each phase works as it starts, then In / Out on the breaths (the slow
+  // rhythm's first few only: after that the sound leads), and the arrive tips as they change
+  function breathVoice(b, ph) {
+    if (!S.opts.speak) return;
+    if (!recorded()) {
+      if (b.part !== lastPart && (b.phase === 'sigh' || b.phase === 'rhythm') && (b.part === 'in' || b.part === 'out')) say(b.part === 'in' ? ph.in : ph.out, true);
+      return;
+    }
+    if (b.phase !== voice.phase) {
+      voice.phase = b.phase;
+      voice.breaths = 0;
+      var intro = { arrive: 'arrive', sigh: 'sighHow', rhythm: 'rhythmHow', settle: 'settle' }[b.phase];
+      if (intro) play(clip(intro), 'queue', b.phase);
+    }
+    if (b.phase === 'arrive') {
+      var tips = (VO.cues && VO.cues.tips) || [];
+      var ti = tips.length ? Math.floor((S.elapsed / 1000) / 8) % tips.length : -1;
+      if (ti !== voice.tip) {
+        if (voice.tip !== -1 || ti > 0) play(tips[ti], 'cue', 'arrive');
+        voice.tip = ti;
+      }
+      return;
+    }
+    if (b.part === lastPart) return;
+    var cueKey = null;
+    if (b.phase === 'sigh') {
+      cueKey = { in: 'sighIn', top: 'top', out: 'sighOut' }[b.part] || null;
+    } else if (b.phase === 'rhythm') {
+      if (b.part === 'in') voice.breaths++;
+      if (voice.breaths <= (VO.rhythmCues == null ? 6 : VO.rhythmCues)) cueKey = { in: 'rhythmIn', out: 'rhythmOut' }[b.part] || null;
+    }
+    if (cueKey) play(clip(cueKey), 'cue', b.phase);
+  }
   function hush() {
+    stopVoice();
     try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
   }
 
@@ -383,9 +536,7 @@
       sub = b.left === 1 ? B.left[key + '1'] : fill(B.left[key], { n: b.left });
     }
     setCue(cue, sub);
-    if (b.part !== lastPart && S.opts.speak && (b.phase === 'sigh' || b.phase === 'rhythm') && (b.part === 'in' || b.part === 'out')) {
-      say(b.part === 'in' ? ph.in : ph.out, true);
-    }
+    breathVoice(b, ph);
     if (b.part !== lastPart) {
       if (lastPart && S.opts.haptics && navigator.vibrate && document.visibilityState === 'visible' && (b.part === 'in' || b.part === 'top' || b.part === 'out')) {
         try { navigator.vibrate(b.part === 'in' ? 40 : b.part === 'top' ? 15 : [12, 70, 12]); } catch (e) {}
@@ -882,6 +1033,7 @@
     var fromBreath = S.steps[S.i] && S.steps[S.i].kind === 'breath';
     setCue(fromBreath ? '' : RUN.lightsOut || '', '');
     setText(el.live, RUN.lightsOut || '');
+    if (!fromBreath && recorded()) play(clip('lightsOut'), 'queue');
     if (audio) audio.volume(0.6);
   }
 
@@ -1032,7 +1184,7 @@
       guide: S.version === 'commute' || !!stats.prefs.guide,
     };
     S.speakPref = S.opts.speak;
-    if (S.opts.guide && 'speechSynthesis' in window) S.opts.speak = true;
+    if (S.opts.guide && canSpeak()) S.opts.speak = true;
     S.opts.layer = S.opts.music === 'endshift' ? S.opts.variant : S.opts.music === 'own' && S.opts.bells ? 'bells' : S.opts.binaural ? 'silent' : null;
     S.opts.sound = S.opts.music !== 'none';
     if (!overrides.length) stats.prefs = Object.assign(stats.prefs, { context: S.context, length: S.length, pace: S.pace, version: S.version, music: mp, binaural: S.opts.binaural, speak: S.opts.speak, haptics: S.opts.haptics, wake: S.opts.wake });
@@ -1102,6 +1254,13 @@
     setText(el.introTime, clock(!saved && switchedAt ? switchedAt : new Date()));
     var regular = (stats.count || 0) >= 2;
     if (el.introNote) el.introNote.hidden = regular;
+    // the recorded voice: fetch the clips, and start it inside this tap so phones let it play
+    // later on ("Headphones on" while that note is showing)
+    if (recorded()) {
+      voicePreload();
+      if (!saved && !regular) play(clip('headphones'), 'now');
+      else unlockVoice();
+    }
     overlay.classList.add('is-intro');
     S.intro = performance.now();
     S.running = false;
@@ -1117,7 +1276,7 @@
       S.intro = 0;
       setRunning(true);
       setText(el.live, fill(CFG.tpl.announce, { i: S.i + 1, n: S.steps.length, t: S.steps[S.i].title }));
-      say(S.steps[S.i].title + '. ' + actOf(S.steps[S.i]));
+      sayStep(S.steps[S.i], 'queue');
       el.title.focus({ preventScroll: true });
     }, introMs);
     track(saved ? 'ritual_resume' : 'ritual_start', {
@@ -1160,6 +1319,7 @@
     S.running = false;
     S.finished = performance.now();
     hush();
+    if (completed && recorded()) play(clip('shiftOver'), 'now');
     releaseWake();
     clearRun();
     clearTimeout(idleT);
@@ -1854,7 +2014,7 @@
       showMode();
     }
     if (!navigator.vibrate) { var h = qs('#set-haptics'); h.checked = false; h.disabled = true; }
-    if (!('speechSynthesis' in window)) { var sp = qs('#set-speak'); if (sp) { sp.checked = false; sp.disabled = true; } }
+    if (!canSpeak()) { var sp = qs('#set-speak'); if (sp) { sp.checked = false; sp.disabled = true; } }
     if (!navigator.wakeLock) { var w = qs('#set-wake'); w.checked = false; w.disabled = true; }
   })();
 
@@ -1947,13 +2107,13 @@
 
   function setGuide(on) {
     S.opts.guide = on;
-    S.opts.speak = on ? 'speechSynthesis' in window : S.speakPref;
+    S.opts.speak = on ? canSpeak() : S.speakPref;
     stats.prefs.guide = on;
     saveStats();
     if (el.guide) el.guide.checked = on;
     S.asked = false;
     syncDone();
-    if (on) say(S.steps[S.i].title + '. ' + actOf(S.steps[S.i]));
+    if (on) sayStep(S.steps[S.i], 'now');
     else hush();
     track('ritual_guide', { on: on });
   }

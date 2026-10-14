@@ -20,6 +20,7 @@ const kind = (v) => (Array.isArray(v) ? 'array' : v === null ? 'null' : typeof v
 function compare(a, b, at) {
   const ka = kind(a), kb = kind(b);
   if (ka !== kb && !(ka === 'null' || kb === 'null')) return [`${at}: ${ka} in English, ${kb} here`];
+  if (ka === 'null' || kb === 'null') return []; // left empty on purpose (e.g. no recorded voice yet)
   const out = [];
   if (ka === 'array') {
     if (a.length !== b.length) out.push(`${at}: ${a.length} items in English, ${b.length} here`);

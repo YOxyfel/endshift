@@ -2372,3 +2372,12 @@ html.immersive-open body {
   margin-top: 0.2rem;
   accent-color: var(--tungsten);
 }
+
+/* who the recorded voice is (under "Read each step aloud") */
+.switch__credit {
+  color: var(--fog);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  opacity: 0.8;
+  margin-top: 0.2rem;
+}

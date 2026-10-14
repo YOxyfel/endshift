@@ -28,7 +28,7 @@ export default function ritual(ctx) {
   };
 
   const sw = (id, s, checked = false) =>
-    html`<label class="switch" for="set-${id}"><span class="switch__text"><span class="switch__title">${s.title}</span><span class="switch__hint">${s.hint}</span></span><input type="checkbox" id="set-${id}" name="${id}"${checked ? ' checked' : ''}></label>`;
+    html`<label class="switch" for="set-${id}"><span class="switch__text"><span class="switch__title">${s.title}</span><span class="switch__hint">${s.hint}</span>${s.credit ? html`<span class="switch__credit">${s.credit}</span>` : ''}</span><input type="checkbox" id="set-${id}" name="${id}"${checked ? ' checked' : ''}></label>`;
 
   const body = html`
 <section class="ritual" data-ritual aria-labelledby="ritual-title">
@@ -368,6 +368,18 @@ export default function ritual(ctx) {
               },
             }
           : {}),
+        // the recorded voice (content → voice): clip names become asset URLs
+        voice: r.voice
+          ? {
+              versions: r.voice.versions,
+              skipChoices: r.voice.skipChoices,
+              rhythmCues: r.voice.rhythmCues,
+              steps: Object.fromEntries(Object.entries(r.voice.steps).map(([k, f]) => [k, ctx.asset(`assets/audio/narration/${r.voice.dir}/${f}`)])),
+              cues: Object.fromEntries(
+                Object.entries(r.voice.cues).map(([k, f]) => [k, Array.isArray(f) ? f.map((x) => ctx.asset(`assets/audio/narration/${r.voice.dir}/${x}`)) : ctx.asset(`assets/audio/narration/${r.voice.dir}/${f}`)]),
+              ),
+            }
+          : null,
         // lock-screen controls: a quiet track to hang them on, the room as the artwork
         media: {
           quiet: ctx.asset('assets/audio/quiet.mp3'),
