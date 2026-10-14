@@ -1946,7 +1946,8 @@
     } else if (mode === 'own' && music && music.link) parts.push((music.meta && music.meta.title) || labelOf('music'));
     else parts.push(labelOf('music'));
     parts.push(labelOf('pace'));
-    summaryEl.textContent = parts.filter(Boolean).join(' · ');
+    // each setting stays in one piece, and a line never starts with the dot
+    summaryEl.textContent = parts.filter(Boolean).map(function (p) { return p.replace(/ /g, '\u00a0'); }).join('\u00a0· ');
   }
   var adjustHooks = [];
   function setAdjust(open) {
@@ -2265,6 +2266,10 @@
   root.addEventListener('click', function (e) {
     var b = e.target.closest('[data-act]');
     if (b) onAct(b.getAttribute('data-act'));
+  });
+  // the start button at the foot of the page, outside the ritual's own section
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-ritual-start]')) onAct('door');
   });
 
   document.addEventListener('keydown', function (e) {

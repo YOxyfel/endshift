@@ -214,7 +214,7 @@ export default ({ cfg, state, fmt, url, t, formula }) => {
       ritual: { stamp: '20:00 · Двайсет минути' },
       reset: { stamp: 'По желание' },
       notMagic: { stamp: 'Дребният шрифт, с едри букви' },
-      batch: { stamp: 'Партида №001', slotsEarly: (goal) => `Nº 001 е свободен. Всеки квадрат е един от ${goal}-те основатели.`, slots: (n, goal) => `${n} от ${goal} места за основатели са заети. Всяко квадратче е човек.` },
+      batch: { stamp: 'Партида №001', slotsEarly: (goal) => `Всеки квадрат е едно от ${goal}-те места за основатели.`, slots: (n, goal) => `${n} от ${goal} места за основатели са заети. Всяко квадратче е човек.` },
       founder: { stamp: 'Междувременно' },
       letters: { stamp: 'Писма' },
       end: { mark: 'Край', sub: '(на смяната)' },

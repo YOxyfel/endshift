@@ -162,7 +162,7 @@ export default ({ cfg }) => ({
   founder: { listen: 'Listen to the founder', pause: 'Pause', transcript: 'Read it instead' },
 
   meter: {
-    early: (goal) => `is free. The first ${goal} people on the founding list are Batch #001’s founders.`,
+    early: (goal) => `is still open. The first ${goal} people on the founding list are Batch #001’s founders.`,
     listLabel: (n) => `${n === 1 ? 'person' : 'people'} on the founding list`,
     foundersLabel: (n, goal) => `${n === 1 ? 'founder' : 'founders'} so far. Production starts at ${goal}.`,
     source: (date) => `Counted by a person, not a script. Last checked ${date}.`,

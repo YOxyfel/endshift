@@ -124,7 +124,7 @@ export default function batch(ctx) {
       <p class="lead section-lead">${c.crate.lead}</p>
       <p class="crate__count" aria-hidden="true"><span data-crate-n>${state.founderCount}</span><span class="crate__goal">/ ${state.founderGoal}</span></p>
       <p class="crate__next"><span class="crate__dot" aria-hidden="true"></span>${c.crate.next('<span data-crate-next>' + String(state.founderCount + 1).padStart(3, '0') + '</span>')}</p>
-      <div class="cta-row" style="margin-top:var(--s-5)">${state.checkoutLive ? batchAction(ctx, { location: 'batch_crate', size: 'lg' }) : `<a class="btn btn--primary" href="#join" data-track="cta_click" data-track-id="batch_crate">${c.crate.cta}</a>`}</div>
+      <div class="cta-row" style="margin-top:var(--s-5)">${state.checkoutLive ? batchAction(ctx, { location: 'batch_crate', size: 'lg' }) : `<a class="link crate__cta" href="#join" data-track="cta_click" data-track-id="batch_crate">${c.crate.cta}</a>`}</div>
     </div>
     <figure class="crate" data-crate>
       ${crateSvg(state.founderCount, state.founderGoal, c.crate.aria(state.founderCount, state.founderGoal), c.crate.stencil(state.founderGoal), c.crate.lid)}

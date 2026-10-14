@@ -156,6 +156,22 @@
   border-bottom-color: var(--line-soft);
 }
 
+/* at the very top, over a lit picture (a lamp, a warehouse light), the links still read */
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 -1.5rem 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(10, 11, 12, 0.62), rgba(10, 11, 12, 0.28) 60%, transparent);
+  pointer-events: none;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+
+.site-header.is-scrolled::before,
+.site-header.is-solid::before {
+  opacity: 0;
+}
+
 .site-header__inner {
   display: flex;
   align-items: center;
@@ -207,11 +223,11 @@
 }
 
 .site-nav a:hover,
-.site-nav a[aria-current='page'] {
+.site-nav a[aria-current] {
   color: var(--paper);
 }
 
-.site-nav a[aria-current='page'] {
+.site-nav a[aria-current] {
   text-decoration: underline;
   text-decoration-color: var(--tungsten);
   text-decoration-thickness: 2px;
@@ -227,6 +243,29 @@
 .header-cta {
   display: none;
   white-space: nowrap;
+}
+
+/* both labels ("Free ritual" / "Your 20 minutes") share one cell, so switching work mode off
+   doesn't change the button's width and push the nav sideways */
+.header-cta > span {
+  display: inline-grid;
+}
+
+.header-cta .if-on,
+.header-cta .if-off,
+[data-shift='off'] .header-cta .if-on {
+  grid-area: 1 / 1;
+  display: inline;
+  text-align: center;
+}
+
+.header-cta .if-off,
+[data-shift='off'] .header-cta .if-on {
+  visibility: hidden;
+}
+
+[data-shift='off'] .header-cta .if-off {
+  visibility: visible;
 }
 
 .lang-link {
@@ -881,7 +920,7 @@ html:not(.motion-ok) .workping {
   text-transform: uppercase;
 }
 
-.menu-panel__nav a[aria-current='page'] {
+.menu-panel__nav a[aria-current] {
   color: var(--tungsten);
 }
 
@@ -1437,6 +1476,29 @@ html:not(.motion-ok) .workping {
   border-bottom: 0;
 }
 
+.switch > .chip,
+.switch--action > .btn {
+  flex: none;
+}
+
+.switch--action {
+  flex-wrap: wrap;
+  cursor: default;
+}
+
+.switch--action > .btn {
+  white-space: normal;
+  text-align: left;
+}
+
+@media (max-width: 599px) {
+  .switch--action > .btn {
+    flex-basis: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
 .switch__text {
   display: grid;
   gap: 0.1rem;
@@ -1914,6 +1976,19 @@ html:not(.motion-ok) .workping {
   gap: 0.5rem 0.75rem;
 }
 
+/* phones: the label sits above its value, so long values (and longer Bulgarian labels) get the
+   whole width instead of wrapping into a narrow column */
+@media (max-width: 479px) {
+  .specs__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
+    padding: 0.75rem 0;
+  }
+  .specs dt {
+    padding-top: 0;
+  }
+}
+
 /* Is / isn't columns -------------------------------------------------------- */
 
 .isnt {
@@ -2131,14 +2206,22 @@ html:not(.motion-ok) .workping {
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 0.5rem;
-  color: var(--paper-2);
-  font-weight: 600;
-  font-size: 0.9375rem;
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-  text-decoration-color: color-mix(in srgb, var(--tungsten) 70%, transparent);
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 0.95rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.sticky-cta__link:active {
+  background: var(--graphite-2);
 }
 
 @media (min-width: 900px) {
@@ -2235,10 +2318,29 @@ html:not(.motion-ok) .workping {
 }
 
 .site-footer h2 {
-  margin-bottom: var(--s-3);
-  font-size: var(--fs-small);
-  font-weight: 650;
+  margin-bottom: var(--s-2);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--fog);
+}
+
+/* phones: Explore runs down the left; Help and Legal stack on the right, with no gap under Help */
+@media (max-width: 899px) {
+  .site-footer__col--explore {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+  .site-footer__col--help {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .site-footer__col--legal {
+    grid-column: 2;
+    grid-row: 3;
+  }
 }
 
 .site-footer ul {
@@ -2260,6 +2362,10 @@ html:not(.motion-ok) .workping {
   text-decoration: underline;
   text-decoration-color: var(--tungsten);
   text-underline-offset: 0.25em;
+}
+
+.site-footer__legal p {
+  max-width: 72ch;
 }
 
 .site-footer__legal {
@@ -2295,14 +2401,20 @@ html:not(.motion-ok) .workping {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  font-family: var(--font-display);
-  font-weight: 760;
-  font-size: clamp(1.75rem, 6vw, 2.75rem);
-  line-height: 1;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: clamp(1.25rem, 4vw, 1.625rem);
+  line-height: 1.2;
   color: var(--paper);
-  text-decoration: none;
-  word-break: break-all;
-  user-select: all;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--tungsten) 70%, transparent);
+  text-underline-offset: 0.25em;
+  overflow-wrap: anywhere;
+}
+
+.copy-field__value:hover {
+  text-decoration-color: var(--tungsten);
 }
 
 /* the quick fade when a link takes you back to the top (site.js) */

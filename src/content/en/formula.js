@@ -34,6 +34,12 @@ export default ({ state, formula }) => ({
     lead: 'The statements every EU food supplement must carry, plus the warnings we’ll add.',
     back: 'Back of the jar',
   },
+  // the end of the page: a say in what's still open, and the way back to RESET
+  end: {
+    title: 'Want a say in what’s still open?',
+    text: 'Founders vote on the open questions, starting with melatonin. Joining the founding list is free.',
+    back: 'Back to RESET',
+  },
   wrong: 'Spotted something wrong or out of date on this page?',
   wrongLink: 'Tell us',
 });

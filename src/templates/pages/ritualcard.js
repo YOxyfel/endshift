@@ -14,7 +14,7 @@ export default function ritualCard(ctx) {
   <div class="wrap rcard-tools">
     <p><a class="link" href="${ctx.url('ritual')}">${c.back}</a></p>
     <div class="cta-row">
-      <button class="btn btn--primary" type="button" data-print>${icon('download')}<span>${c.print}</span></button>
+      <button class="btn btn--primary" type="button" data-print>${icon('print')}<span>${c.print}</span></button>
     </div>
     <p class="small muted">${c.how}</p>
   </div>

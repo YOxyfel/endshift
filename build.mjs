@@ -7,6 +7,7 @@
  *   node build.mjs --check     → only run the config checks
  *   node build.mjs --artifact  → dist-artifact/ (preview build whose home page is a body fragment, for hosts
  *                                that wrap the page in their own document, e.g. a claude.ai artifact)
+ *   node build.mjs --dev       → dist-dev/      (like dist, with scripts and styles left unminified, for debugging)
  *
  * esbuild (devDependency) is used for minifying CSS/JS when installed; otherwise files are copied as-is.
  */
@@ -25,7 +26,8 @@ const args = new Set(process.argv.slice(2));
 const ARTIFACT = args.has('--artifact');
 const PREVIEW = args.has('--preview') || ARTIFACT;
 const CHECK_ONLY = args.has('--check');
-const OUT = path.join(ROOT, ARTIFACT ? 'dist-artifact' : PREVIEW ? 'dist-preview' : 'dist');
+const DEV = args.has('--dev') && !PREVIEW;
+const OUT = path.join(ROOT, ARTIFACT ? 'dist-artifact' : PREVIEW ? 'dist-preview' : DEV ? 'dist-dev' : 'dist');
 
 const load = async (p) => (await import(pathToFileURL(path.join(SRC, p)).href)).default;
 
@@ -109,7 +111,7 @@ if (CHECK_ONLY) {
 
 let esbuild = null;
 try {
-  esbuild = await import('esbuild');
+  if (!DEV) esbuild = await import('esbuild');
 } catch {
   log('\n(esbuild not installed: CSS/JS are copied unminified. Run `npm install` to minify.)');
 }
@@ -241,6 +243,35 @@ function makeFmt(loc, ui) {
   };
 }
 
+/**
+ * Line-break hygiene on the rendered page's text (never inside tags, scripts, styles or <pre>):
+ * - a number stays with the word or unit after it ("156 mg", "20 minutes", "150 founders");
+ * - "Nº 001" / "№ 001" stay together;
+ * - a spaced dash stays at the end of the line, never at the start of the next;
+ * - Bulgarian: one-letter words (с, в, и, а, у, к, о) stay with the next word.
+ */
+function typeset(html, locale) {
+  const NB = ' ';
+  const fix = (s) => {
+    let t = s
+      .replace(/(\d)[ ](?=[A-Za-zА-Яа-яµ%°])/g, `$1${NB}`)
+      .replace(/(Nº|№|No\.)[ ](?=\d)/g, `$1${NB}`)
+      .replace(/[ ]([–—])[ ]/g, `${NB}$1 `);
+    if (locale === 'bg') t = t.replace(/(?<=^|[\s(„“"«—–-])([сСвВиИаАуУкКоО])[ ](?=\S)/g, `$1${NB}`);
+    return t;
+  };
+  let out = '';
+  let skip = null; // the tag we're inside and must leave alone
+  for (const part of html.split(/(<[^>]+>)/)) {
+    if (part.startsWith('<')) {
+      const m = /^<(\/?)(script|style|pre|textarea)\b/i.exec(part);
+      if (m) skip = m[1] ? null : m[2].toLowerCase();
+      out += part;
+    } else out += skip ? part : fix(part);
+  }
+  return out;
+}
+
 const rendered = [];
 const inlineScriptHashes = new Set();
 const sha256 = (str) => createHash('sha256').update(str, 'utf8').digest('base64');
@@ -329,7 +360,7 @@ for (const loc of locales) {
     }
 
     const result = templates[page.template](ctx);
-    const htmlOut = renderDocument(ctx, result);
+    const htmlOut = typeset(renderDocument(ctx, result), loc.code);
     for (const m of htmlOut.matchAll(/<script>([\s\S]*?)<\/script>/g)) inlineScriptHashes.add(sha256(m[1]));
     const dest = path.join(OUT, file);
     await mkdir(path.dirname(dest), { recursive: true });

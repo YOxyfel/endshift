@@ -37,6 +37,9 @@ export default ({ cfg }) => {
       ['es:reward', 'That you claimed the game’s reward on this device, so the form isn’t shown again. Your email is not stored here.'],
     ],
     storedNote: 'None of this is sent to us.',
+    notInUse: 'Not in use',
+    clearTitle: 'Saved on this device',
+    clearHint: 'Your ritual settings, your evenings and these preferences. Everything is listed below.',
     clear: 'Clear everything ENDSHIFT saved here',
     cleared: 'Cleared',
   };

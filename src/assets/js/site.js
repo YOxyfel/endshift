@@ -314,7 +314,8 @@
   var sticky = qs('[data-sticky-cta]');
   if (sticky && 'IntersectionObserver' in window) {
     var topEl = qs('[data-hero]') || qs('.page-intro');
-    var endEls = qsa('.finale, .site-footer, [data-hide-sticky]');
+    // hidden while the page shows its own buttons or a signup form: one call to action at a time
+    var endEls = qsa('.finale, .site-footer, [data-hide-sticky], main .cta-row, main form[data-signup]');
     var pastTop = false;
     var nearEnd = false;
     var typing = false;
@@ -530,16 +531,37 @@
   });
 
   /* FAQ side column (wide screens): the topic you're reading is marked --------------------------- */
+  // the FAQ's topic list marks where you are: the last topic whose heading has passed 40% of the
+  // screen, or the first one at the top of the page (in either scroll direction)
   (function faqTopics() {
     var nav = qs('[data-faq-topics]');
-    if (!nav || !('IntersectionObserver' in window)) return;
+    if (!nav) return;
     var links = qsa('[data-topic]', nav);
-    var mark = function (id) { links.forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('data-topic') === id ? 'true' : 'false'); }); };
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { if (e.isIntersecting) mark(e.target.id); });
-    }, { rootMargin: '-35% 0px -55% 0px' });
-    links.forEach(function (a) { var g = document.getElementById(a.getAttribute('data-topic')); if (g) io.observe(g); });
+    var groups = links.map(function (a) { return document.getElementById(a.getAttribute('data-topic')); });
+    var current = null;
+    var mark = function (id) {
+      if (id === current) return;
+      current = id;
+      links.forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('data-topic') === id ? 'true' : 'false'); });
+    };
+    var ticking = false;
+    var update = function () {
+      ticking = false;
+      var line = window.innerHeight * 0.4;
+      var id = groups[0] ? groups[0].id : null;
+      groups.forEach(function (g) { if (g && g.getBoundingClientRect().top <= line) id = g.id; });
+      if (id) mark(id);
+    };
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
   })();
+
+  /* Legal pages: "On this page" starts folded on a phone (open on wider screens, and without JS) */
+  qsa('[data-toc]').forEach(function (d) {
+    if (window.matchMedia && matchMedia('(max-width: 899px)').matches) d.open = false;
+    qsa('a', d).forEach(function (a) { a.addEventListener('click', function () { if (window.matchMedia && matchMedia('(max-width: 899px)').matches) d.open = false; }); });
+  });
 
   /* FAQ tracking --------------------------------------------------------------------------- */
   qsa('details[data-faq]').forEach(function (d) {

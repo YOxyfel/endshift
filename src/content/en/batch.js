@@ -32,7 +32,7 @@ export default ({ cfg, state, fmt, t }) => {
         state.status === 'concept'
           ? `Every cap is one person on the founding list. When there are ${b.founderGoal}, there’s a reason to open preorders.`
           : `Every cap is one founder’s jar. When the crate is full, production is booked.`,
-      next: (n) => `Nº ${String(n).padStart(3, '0')} is free`,
+      next: (n) => `Nº ${String(n).padStart(3, '0')} is still open`,
       cta: state.status === 'concept' ? 'Take a place in the crate' : 'Take the next number',
       aria: (n, goal) => `A crate with ${goal} places, ${n} taken.`,
       stencil: (goal) => `${goal} FOUNDERS · ONE PER PLACE · THIS WAY UP ↑`,

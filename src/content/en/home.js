@@ -229,7 +229,7 @@ export default ({ cfg, state, fmt, t, formula }) => {
       ritual: { stamp: '20:00 · Twenty minutes' },
       reset: { stamp: 'Optional' },
       notMagic: { stamp: 'The small print, in big letters' },
-      batch: { stamp: 'Batch #001', slotsEarly: (goal) => `Nº 001 is free. Each square is one of the ${goal} founders.`, slots: (n, goal) => `${n} of ${goal} founder places taken. Each square is a person.` },
+      batch: { stamp: 'Batch #001', slotsEarly: (goal) => `Each square is one of the ${goal} founder places.`, slots: (n, goal) => `${n} of ${goal} founder places taken. Each square is a person.` },
       founder: { stamp: 'Meanwhile' },
       letters: { stamp: 'Letters' },
       end: { mark: 'The end', sub: '(of your shift)' },

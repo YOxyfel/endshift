@@ -9,6 +9,7 @@ const ICONS = {
   music: '<path d="M9 17.5V5.5l11-2v12"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/>',
   chevron: '<path d="M6 9.5l6 6 6-6"/>',
   edit: '<path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 7.5l2 2"/>',
+  print: '<path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8.5" rx="1.5"/><path d="M7 14h10v6.5H7z"/>',
   download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
   close: '<path d="M6 6l12 12M18 6L6 18"/>',
   bus: '<path d="M6 17V5.5A2.5 2.5 0 0 1 8.5 3h7A2.5 2.5 0 0 1 18 5.5V17"/><path d="M5 17h14M6 11h12M7.5 20v-3M16.5 20v-3"/><path d="M8.5 14h.01M15.5 14h.01"/>',

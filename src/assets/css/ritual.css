@@ -1229,6 +1229,7 @@
 }
 
 .why__sources summary {
+  padding-block: 0.6rem;
   cursor: pointer;
   font-weight: 650;
   color: var(--paper);
@@ -3110,5 +3111,56 @@ html.immersive-open body {
     background: color-mix(in srgb, var(--tungsten) 4%, transparent);
     box-shadow: 0 0 0 0.6rem color-mix(in srgb, var(--tungsten) 4%, transparent);
     outline-color: color-mix(in srgb, var(--tungsten) 25%, transparent);
+  }
+}
+
+/* the three facts under the intro are facts, not options: a tick, not an empty radio circle */
+.ritual__facts .chip::before {
+  width: 0.62rem;
+  height: 0.34rem;
+  margin: -0.18rem 0.05rem 0 0.05rem;
+  border: 0;
+  border-left: 1.75px solid var(--tungsten);
+  border-bottom: 1.75px solid var(--tungsten);
+  border-radius: 0;
+  transform: rotate(-45deg);
+}
+
+/* the foot of the page: after the research, one more way in */
+.ritual-end {
+  padding-block: calc(var(--section-pad) * 0.8);
+  border-top: 1px solid var(--line-soft);
+  background: radial-gradient(40rem 18rem at 20% 100%, rgba(242, 168, 75, 0.08), transparent 70%);
+}
+
+.ritual-end__inner {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+}
+
+.ritual-end__title {
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-size: var(--fs-display-s);
+  line-height: 1;
+}
+
+.ritual-end__sub {
+  color: var(--fog);
+}
+
+.ritual-end__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4) var(--s-6);
+  margin-top: var(--s-3);
+}
+
+/* phones: a one-minute step's start mark would sit on top of the next one (09 / 10) */
+@media (max-width: 599px) {
+  .dimrail__ticks .is-short {
+    color: transparent;
   }
 }

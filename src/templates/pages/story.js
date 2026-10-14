@@ -19,7 +19,7 @@ export default function story(ctx) {
   </div>
 </section>
 
-<section class="section section--flush-top" style="--depth:.15">
+<section class="section section--after-intro" style="--depth:.15">
   <div class="wrap split">
     <h2 class="display display--mixed founder__title">${c.note.title}</h2>
     <div class="founder__story" style="margin-top:0">

@@ -59,7 +59,7 @@
 
   --gutter: 1.25rem;
   --wrap: 78rem;
-  --section-pad: clamp(4.5rem, 11vw, 9rem);
+  --section-pad: clamp(4rem, 8.5vw, 7rem);
   --header-h: 4rem;
 
   /* Shape: radius by role, never one radius for everything */
@@ -199,6 +199,14 @@ h4 {
 ul,
 ol {
   padding: 0;
+}
+
+/* no single word left alone on the last line of a paragraph (where the browser supports it) */
+p,
+li,
+dd,
+figcaption {
+  text-wrap: pretty;
 }
 
 button,
@@ -445,6 +453,11 @@ button {
 
 .section--flush-top {
   padding-top: 0;
+}
+
+/* right after a page's picture band: some air, not a whole section's worth */
+.section--after-intro {
+  padding-top: calc(var(--section-pad) * 0.5);
 }
 
 .stack > * + * {

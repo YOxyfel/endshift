@@ -77,7 +77,8 @@ export default function notfound(ctx) {
       <div class="hallway__dark" aria-hidden="true"></div>
       <p class="hallway__hint">${c.hallway.hint}</p>
     </div>
-    <div class="cta-row" style="margin-top:var(--s-6)">
+    <nav class="hallway__list" aria-label="${esc(c.hallway.doors)}"><ul>${DOORS.map((d) => `<li><a href="${esc(href[d.key])}" data-track="cta_click" data-track-id="404_list_${d.key}">${label[d.key]}</a></li>`).join('')}</ul></nav>
+    <div class="cta-row notfound__ctas" style="margin-top:var(--s-6)">
       ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'xl', trackId: '404_ritual' })}
       ${btn({ href: ctx.url('home'), label: ui.common.backHome, variant: 'ghost', size: 'xl', trackId: '404_home' })}
     </div>

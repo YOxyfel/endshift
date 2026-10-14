@@ -59,8 +59,10 @@
 }
 
 @media (max-width: 640px) {
+  /* phones too: say the jar turns (a finger drag works the same) */
   .turntable__hint {
-    display: none;
+    flex-basis: 100%;
+    font-size: 0.8125rem;
   }
   .turntable .scene-band__note {
     top: calc(var(--header-h) + 0.6rem);
@@ -603,6 +605,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
+  justify-content: center;
   gap: var(--s-7) 0;
   margin: var(--s-6) 0 0;
   padding: 0;
@@ -814,9 +817,19 @@
   }
 }
 
+/* every tag the same height, whatever the name's length (two lines reserved for it) */
+.vial__tag {
+  grid-template-rows: 2.35rem auto auto;
+  align-content: start;
+}
+
+.vial__name {
+  align-self: center;
+}
+
 .vial__status,
 .vial__dose {
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   line-height: 1.25;
 }
 
@@ -1187,5 +1200,49 @@
     right: 0.6rem;
     bottom: 0.4rem;
     font-size: 0.72rem;
+  }
+}
+
+/* 404 on a phone: the hallway is a picture (lit), and the doors are a list you can tap */
+.hallway__list {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .hallway__doors {
+    display: none;
+  }
+  .hallway__list {
+    display: block;
+    margin-top: var(--s-5);
+  }
+  .hallway__list ul {
+    list-style: none;
+    display: grid;
+    gap: var(--s-2);
+  }
+  .hallway__list a {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 var(--s-4);
+    border: 2px solid #c9b48a;
+    border-radius: 4px;
+    background: #1c1f22;
+    color: #efe8d6;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.125rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  .hallway__list li:first-child a {
+    border-color: var(--tungsten);
+    background: var(--tungsten);
+    color: #121314;
+  }
+  .notfound__ctas {
+    display: none;
   }
 }

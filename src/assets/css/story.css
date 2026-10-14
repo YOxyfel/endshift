@@ -57,6 +57,7 @@
 }
 
 .cap--stamp {
+  max-width: 100%;
   padding: 0.3em 0.6em 0.26em;
   background: var(--tungsten);
   font-size: 0.92rem;
@@ -514,8 +515,8 @@
 
 .nm__panel--isnt li span {
   text-decoration: line-through;
-  text-decoration-thickness: 2px;
-  text-decoration-color: rgba(176, 53, 42, 0.75);
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(176, 53, 42, 0.42);
 }
 
 .nm__formula {
@@ -791,6 +792,10 @@
   border-color: rgba(21, 23, 26, 0.18);
 }
 
+.letters .faq__item:last-child {
+  border-bottom: 0;
+}
+
 .letters .faq__q {
   color: var(--cap-ink);
   font-family: var(--font-display);
@@ -810,6 +815,16 @@
 }
 
 .letters .faq__sign {
+  color: var(--cap-ink);
+}
+
+/* the + / − on the cream letters page: ink, not amber (amber on cream is too faint) */
+.letters .faq__sign::before,
+.letters .faq__sign::after {
+  background: var(--cap-ink);
+}
+
+.fpanel--beat .founder__sign {
   color: var(--cap-ink);
 }
 
@@ -1493,6 +1508,11 @@ html[lang='bg'] .line__w {
 
 .comic h2.display {
   text-transform: uppercase;
+}
+
+/* the founder's line on the Story page is a quote, set in the case it was said in */
+.comic h2.display--mixed {
+  text-transform: none;
 }
 
 .comic .specs {

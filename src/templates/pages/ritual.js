@@ -181,7 +181,7 @@ export default function ritual(ctx) {
         <h2 class="section-title plan__head">${r.stepsTitle}</h2>
         <div class="dimrail" aria-hidden="true">
           <div class="dimrail__bar">${r.steps.map((s, k) => `<span class="dimrail__seg" style="--w:${s.seconds.full};--k:${k}"><b>${s.title}</b></span>`).join('')}</div>
-          <div class="dimrail__ticks">${r.steps.map((s) => `<span style="--w:${s.seconds.full}">${mm(s.minute)}</span>`).join('')}<span class="dimrail__end">${mm(Math.round(totalFull / 60))}</span></div>
+          <div class="dimrail__ticks">${r.steps.map((s) => `<span style="--w:${s.seconds.full}"${s.seconds.full <= 60 ? ' class="is-short"' : ''}>${mm(s.minute)}</span>`).join('')}<span class="dimrail__end">${mm(Math.round(totalFull / 60))}</span></div>
           ${r.railNote ? `<p class="dimrail__note">${r.railNote}</p>` : ''}
         </div>
         <ol class="board">
@@ -310,6 +310,17 @@ export default function ritual(ctx) {
         <summary>${r.why.sourcesTitle} <span class="muted">(${r.why.sources.length})</span></summary>
         <ol class="sources">${r.why.sources.map((src) => `<li>${src.text} <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.url.replace('https://', ''))}</a></li>`)}</ol>
       </details>
+    </div>
+  </div>
+</section>
+
+<section class="ritual-end" aria-labelledby="ritual-end-title">
+  <div class="wrap ritual-end__inner">
+    <h2 class="ritual-end__title" id="ritual-end-title">${r.setup.quickReady}.</h2>
+    <p class="ritual-end__sub">${r.setup.door.first}</p>
+    <div class="ritual-end__ctas">
+      <button class="btn btn--primary btn--lg" type="button" data-ritual-start>${icon('play')}<span>${r.setup.start}</span></button>
+      ${r.cardLink ? `<a class="link" href="${ctx.url('ritual-card')}" data-track="cta_click" data-track-id="ritual_card_end">${r.cardLink}</a>` : ''}
     </div>
   </div>
 </section>

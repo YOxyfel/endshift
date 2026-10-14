@@ -12,6 +12,13 @@ export default function article(ctx) {
         <p class="small muted">${j.tonight.saved}</p>
       </section>`
     : '';
+  // two more guides to read next: from the same group on the journal index (the evening, or the
+  // ingredient shortlist), topped up from the rest
+  const group = (j?.groups || []).find((g) => g.ids.includes(ctx.page.id));
+  const pool = [...(group ? group.ids : []), ...((j?.posts || []).map((p) => p.id))];
+  const next = j?.readNext
+    ? [...new Set(pool)].filter((id) => id !== ctx.page.id && ctx.content[id]?.title).slice(0, 2).map((id) => ({ id, ...ctx.content[id] }))
+    : [];
   const body = html`
 <div class="reading-lamp" data-lamp aria-hidden="true">
   <div class="reading-lamp__light"></div>
@@ -48,13 +55,19 @@ export default function article(ctx) {
   </header>
   <div class="section section--flush-top" style="--depth:.5">
     <div class="wrap article-layout${tonight ? ' article-layout--aside' : ''}">
-      <div class="prose">${c.body}
+      <div class="prose">${c.body}</div>
+      ${tonight ? `<aside class="article-aside">${tonight}</aside>` : ''}
+      <div class="cta-row article-cta">${btn({ href: ctx.url('ritual'), label: c.cta, size: 'xl', trackId: 'guide_ritual' })}</div>
+      <div class="prose article-sources">
         <h2>${c.sourcesTitle}</h2>
         <ol class="sources">${c.sources.map((s) => `<li>${s.text} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url.replace('https://', ''))}</a></li>`)}</ol>
         <p class="small muted">${c.disclaimer}</p>
       </div>
-      ${tonight ? `<aside class="article-aside">${tonight}</aside>` : ''}
-      <div class="cta-row article-cta">${btn({ href: ctx.url('ritual'), label: c.cta, size: 'xl', trackId: 'guide_ritual' })}</div>
+      ${next.length ? html`<nav class="read-next" aria-labelledby="read-next-title">
+        <h2 class="read-next__title" id="read-next-title">${j.readNext}</h2>
+        <ul class="read-next__list">${next.map((n) => `<li><a class="read-next__item" href="${ctx.url(n.id)}" data-track="cta_click" data-track-id="guide_next"><span class="read-next__name">${n.title}</span><span class="read-next__meta">${j.readTime(n.readTime)}</span></a></li>`)}</ul>
+        <p><a class="link" href="${ctx.url('journal')}">${j.all}</a></p>
+      </nav>` : ''}
     </div>
   </div>
 </article>`;

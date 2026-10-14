@@ -9,9 +9,13 @@ const FOOT = {
   legal: ['privacy', 'terms', 'cookies'],
 };
 
+// pages that live under a section in the nav: that section stays marked while you're on them
+const PARENT = { formula: 'reset', 'ritual-card': 'ritual' };
+
 function navLink(ctx, id) {
-  const current = ctx.page.id === id || (id === 'journal' && ctx.page.id.startsWith('guide-'));
-  return `<a href="${ctx.url(id)}"${current ? ' aria-current="page"' : ''}>${ctx.ui.nav[id]}</a>`;
+  const pid = ctx.page.id;
+  const current = pid === id ? 'page' : PARENT[pid] === id || (id === 'journal' && pid.startsWith('guide-')) ? 'true' : null;
+  return `<a href="${ctx.url(id)}"${current ? ` aria-current="${current}"` : ''}>${ctx.ui.nav[id]}</a>`;
 }
 
 function langLinks(ctx) {
@@ -31,7 +35,7 @@ export function header(ctx) {
   return html`<header class="site-header${ctx.page.solidHeader ? ' is-solid' : ''}" data-header>
     <div class="wrap site-header__inner">
       <a class="wordmark" href="${ctx.url('home')}" aria-label="${esc(ctx.cfg.brandName)}, ${esc(ui.nav.home)}">${mark()}<span>${esc(ctx.cfg.brandName)}</span></a>
-      <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.filter((id) => id !== 'ritual' || ctx.page.id === 'ritual').map((id) => `<li>${navLink(ctx, id)}</li>`)}</ul></nav>
+      <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.filter((id) => id !== 'ritual' || ctx.page.id === 'ritual' || ctx.page.id === 'ritual-card').map((id) => `<li>${navLink(ctx, id)}</li>`)}</ul></nav>
       <div class="header-tools">
         <span class="hdr-switch">${wallSwitch(ctx, { source: 'header', cls: 'wallswitch--mini' })}<span class="hdr-switch__label" aria-hidden="true" data-shift-label>${shiftLabel(ui.shift.labelOn, ui.shift.labelOff)}</span></span>
         ${langLinks(ctx)}
@@ -59,7 +63,7 @@ export function footer(ctx) {
         .join(', ')
     : ui.footer.companyPending;
   const col = (key) =>
-    html`<div><h2>${ui.footer[key]}</h2><ul>${FOOT[key].map((id) => `<li><a href="${ctx.url(id)}">${ui.nav[id]}</a></li>`)}</ul></div>`;
+    html`<div class="site-footer__col site-footer__col--${key}"><h2>${ui.footer[key]}</h2><ul>${FOOT[key].map((id) => `<li><a href="${ctx.url(id)}">${ui.nav[id]}</a></li>`)}</ul></div>`;
   const socials = [
     cfg.contact.instagram && { label: 'Instagram', href: `https://instagram.com/${encodeURIComponent(cfg.contact.instagram)}` },
     cfg.contact.tiktok && { label: 'TikTok', href: `https://www.tiktok.com/@${encodeURIComponent(cfg.contact.tiktok)}` },
@@ -85,7 +89,8 @@ export function footer(ctx) {
 }
 
 function stickyCta(ctx) {
-  if (['ritual', '404'].includes(ctx.page.id)) return '';
+  // not where it would interrupt reading or a form: guides, legal pages, contact, the print card
+  if (['ritual', '404', 'ritual-card', 'contact'].includes(ctx.page.id) || ['article', 'legal', 'cookies'].includes(ctx.page.template)) return '';
   const { ui } = ctx;
   return html`<div class="sticky-cta" data-sticky-cta aria-hidden="true">
     ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.sticky || ui.cta.ritual, ui.cta.stickyOff || ui.cta.ritualOff), trackId: 'sticky', attr: { tabindex: '-1' } })}

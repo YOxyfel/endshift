@@ -15,7 +15,7 @@ export default function legal(ctx) {
 </section>
 <section class="section section--flush-top legal" style="--depth:.5">
   <div class="wrap split">
-    <nav aria-label="${ui.legal.contents}" class="split__sticky"><p class="label" style="margin-bottom:var(--s-3)">${ui.legal.contents}</p><ul class="toc">${c.sections.map((s) => `<li><a href="#${s.id}">${s.title}</a></li>`)}</ul></nav>
+    <nav aria-label="${ui.legal.contents}" class="split__sticky"><details class="toc-box" data-toc open><summary class="label toc-box__sum">${ui.legal.contents} <span class="muted">(${c.sections.length})</span></summary><ul class="toc">${c.sections.map((s) => `<li><a href="#${s.id}">${s.title}</a></li>`)}</ul></details></nav>
     <div class="prose">${c.sections.map((s) => html`<h2 id="${s.id}">${s.title}</h2>${s.body}`)}</div>
   </div>
 </section>`;

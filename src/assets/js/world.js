@@ -289,6 +289,12 @@
       track('404_switch', { on: lit });
     });
     scene.classList.add('is-dark');
+    // no torch without a pointer: on touch screens and small phones the light is simply on
+    var mouse = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!mouse || window.innerWidth <= 640) {
+      scene.classList.add('is-lit');
+      if (sw) sw.setAttribute('aria-pressed', 'true');
+    }
   }
 
   qsa('[data-turntable]').forEach(turntable);

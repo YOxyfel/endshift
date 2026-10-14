@@ -16,6 +16,7 @@ export default ({ cfg, t }) => ({
     nameHint: 'Optional',
     email: 'Your email',
     topic: 'About',
+    topicPick: 'Choose a topic',
     topics: ['A question about RESET', 'The founding batch', 'The ritual', 'Something on the site is wrong', 'Press or partnerships', 'Something else'],
     message: 'Message',
     submit: 'Send message',

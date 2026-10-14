@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { notice, ingredientRow, visibleIngredients, vialGlass } from '../components.js';
+import { notice, ingredientRow, visibleIngredients, vialGlass, batchAction } from '../components.js';
 
 // One vial per ingredient, standing in a wooden rack: empty, with a question mark, until its dose
 // is confirmed and published (the glass itself is vialGlass, shared with the journal's covers).
@@ -65,8 +65,15 @@ export default function formulaPage(ctx) {
   </div>
 </section>
 
-<section class="section section--tight" style="--depth:.9">
-  <div class="wrap"><p>${c.wrong} <a class="link" href="${ctx.url('contact')}">${c.wrongLink}</a></p></div>
+<section class="section section--tight formula-end" style="--depth:.9">
+  <div class="wrap">
+    ${c.end ? html`<div class="formula-end__box">
+      <h2 class="section-title section-title--s">${c.end.title}</h2>
+      <p class="lead">${c.end.text}</p>
+      <div class="cta-row">${batchAction(ctx, { location: 'formula_end', size: 'lg' })}<a class="link" href="${ctx.url('reset')}" data-track="cta_click" data-track-id="formula_back_reset">${c.end.back}</a></div>
+    </div>` : ''}
+    <p class="formula-end__wrong small muted">${c.wrong} <a class="link" href="${ctx.url('contact')}">${c.wrongLink}</a></p>
+  </div>
 </section>`;
 
   return { title: c.meta.title, description: c.meta.description, body, styles: ['world'], scripts: ['world'] };

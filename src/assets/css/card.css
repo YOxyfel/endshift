@@ -144,6 +144,22 @@
   }
 }
 
+/* on a phone screen the card is read, not printed: normal reading sizes (print keeps A5 sizes) */
+@media screen and (max-width: 520px) {
+  .rcard__lead {
+    font-size: 0.9375rem;
+  }
+  .rcard__do {
+    font-size: 0.9375rem;
+  }
+  .rcard__name {
+    font-size: 1.2rem;
+  }
+  .rcard__foot {
+    font-size: 0.8125rem;
+  }
+}
+
 /* on paper: only the card, A5, ink on white */
 @media print {
   @page {
