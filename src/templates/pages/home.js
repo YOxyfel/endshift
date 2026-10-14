@@ -95,23 +95,46 @@ export default function home(ctx) {
   const founders = Math.min(state.founderCount, goal);
 
   const Q = c.inShort;
+  const pageId = (to) => to.replace(/-/g, '_');
+  // a line of the summary; "more" opens a few facts and the pages that go deeper
+  const shortLine = (it) => html`<li class="in-short__row">
+        <span class="in-short__k">${it.k}</span>
+        <div class="in-short__v">
+          <p>${it.v}</p>
+          ${it.more ? html`<details class="in-short__more">
+            <summary data-track="in_short_more" data-track-id="${it.id}"><span>${it.more.label}</span>${icon('chevron')}</summary>
+            <div class="in-short__more-body">
+              <ul class="in-short__facts">${it.more.facts.map((f) => `<li>${f}</li>`)}</ul>
+              <p class="in-short__links">${it.more.links.map((l) => `<a class="link" href="${ctx.url(l.to, { hash: l.hash })}" data-track="cta_click" data-track-id="in_short_${it.id}_${pageId(l.to)}">${l.label}</a>`)}</p>
+            </div>
+          </details>` : ''}
+        </div>
+      </li>`;
   const body = html`
 ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
 <section class="in-short" id="in-short" aria-labelledby="in-short-title">
   <div class="wrap in-short__inner">
-    <p class="in-short__kicker">${Q.kicker}</p>
-    <h2 class="in-short__title" id="in-short-title">${Q.title}</h2>
-    <ol class="in-short__list">${Q.items.map((it) => html`<li><span class="in-short__k">${it.k}</span><span class="in-short__v">${it.v}</span></li>`)}</ol>
-    <div class="cta-row in-short__ctas">
-      ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'lg', trackId: 'in_short_ritual' })}
-      ${state.checkoutLive ? batchAction(ctx, { location: 'in_short', variant: 'ghost', size: 'lg' }) : btn({ href: ctx.url('batch', { hash: 'join' }), label: ui.cta.batchConcept, variant: 'ghost', size: 'lg', trackId: 'in_short_batch' })}
+    <div class="in-short__head">
+      <p class="in-short__kicker">${Q.kicker}</p>
+      <h2 class="in-short__title" id="in-short-title">${Q.title}</h2>
+      ${Q.go ? html`<nav class="in-short__go" aria-labelledby="in-short-go">
+        <h3 class="in-short__go-title" id="in-short-go">${Q.go.title}</h3>
+        <ul class="in-short__index">${Q.go.items.map((g) => `<li><a href="${ctx.url(g.to)}" data-track="cta_click" data-track-id="in_short_go_${pageId(g.to)}"><span class="in-short__name">${g.name}</span><span class="in-short__what">${g.text}</span></a></li>`)}</ul>
+      </nav>` : ''}
     </div>
-    ${useGame ? html`<div class="jobpick" data-jobpick>
-      <p class="jobpick__q">${Q.jobQ}</p>
-      <div class="jobpick__chips" role="group" aria-label="${esc(Q.jobQ)}">${Q.jobs.map(([id, label]) => `<button class="jobpick__chip" type="button" data-job="${id}" aria-pressed="false">${label}</button>`).join('')}</div>
-      <p class="jobpick__hint" data-jobpick-hint data-saved="${esc(Q.jobSaved)}">${Q.jobHint}</p>
-    </div>` : ''}
-    <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
+    <div class="in-short__body">
+      <ol class="in-short__list">${Q.items.map(shortLine)}</ol>
+      <div class="cta-row in-short__ctas">
+        ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'lg', trackId: 'in_short_ritual' })}
+        ${state.checkoutLive ? batchAction(ctx, { location: 'in_short', variant: 'ghost', size: 'lg' }) : btn({ href: ctx.url('batch', { hash: 'join' }), label: ui.cta.batchConcept, variant: 'ghost', size: 'lg', trackId: 'in_short_batch' })}
+      </div>
+      ${useGame ? html`<div class="jobpick" data-jobpick>
+        <p class="jobpick__q">${Q.jobQ}</p>
+        <div class="jobpick__chips" role="group" aria-label="${esc(Q.jobQ)}">${Q.jobs.map(([id, label]) => `<button class="jobpick__chip" type="button" data-job="${id}" aria-pressed="false">${label}</button>`).join('')}</div>
+        <p class="jobpick__hint" data-jobpick-hint data-saved="${esc(Q.jobSaved)}">${Q.jobHint}</p>
+      </div>` : ''}
+      <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
+    </div>
   </div>
 </section>
 <div class="story" data-story>

@@ -2815,12 +2815,12 @@ code {
   border-bottom: 1px solid var(--line);
 }
 
-.in-short__list li {
+.in-short__row {
   display: grid;
   grid-template-columns: minmax(6.5rem, 9rem) 1fr;
   gap: var(--s-4);
   align-items: baseline;
-  padding: var(--s-4) 0;
+  padding: var(--s-4) 0 var(--s-3);
   border-top: 1px solid var(--line);
 }
 
@@ -2833,15 +2833,158 @@ code {
   color: var(--paper);
 }
 
-.in-short__list li:first-child .in-short__k {
+.in-short__row:first-child .in-short__k {
   color: var(--tungsten);
 }
 
 .in-short__v {
+  min-width: 0;
+}
+
+.in-short__v > p {
   color: var(--paper-2);
   font-size: var(--fs-lead);
   line-height: 1.45;
   max-width: 46ch;
+}
+
+/* "More about the ritual": a few facts and the pages that go deeper, under each line */
+.in-short__more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  color: var(--tungsten);
+  font-weight: 600;
+  font-size: var(--fs-small);
+  cursor: pointer;
+  list-style: none;
+}
+
+.in-short__more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.in-short__more > summary span {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  text-decoration-color: color-mix(in srgb, var(--tungsten) 45%, transparent);
+}
+
+.in-short__more > summary:hover span {
+  text-decoration-color: currentColor;
+}
+
+.in-short__more > summary .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  transition: transform var(--dur-2) ease;
+}
+
+.in-short__more[open] > summary .icon {
+  transform: rotate(180deg);
+}
+
+.in-short__more-body {
+  display: grid;
+  gap: var(--s-4);
+  margin: var(--s-1) 0 var(--s-2);
+  padding-left: var(--s-4);
+  border-left: 2px solid color-mix(in srgb, var(--tungsten) 40%, transparent);
+  max-width: 46ch;
+}
+
+.motion-ok .in-short__more[open] .in-short__more-body {
+  animation: in-short-open var(--dur-2) ease-out;
+}
+
+@keyframes in-short-open {
+  from {
+    opacity: 0;
+    transform: translateY(-0.35rem);
+  }
+}
+
+.in-short__facts {
+  display: grid;
+  gap: var(--s-2);
+  list-style: none;
+  color: var(--paper-2);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+.in-short__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  font-weight: 600;
+}
+
+/* "Skip the walkthrough": every page in one list, name then what's on it */
+.in-short__go {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.in-short__go-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.375rem;
+  color: var(--paper);
+}
+
+.in-short__index {
+  display: grid;
+  grid-template-columns: fit-content(10.5rem) 1fr;
+  column-gap: var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+
+/* each row shares the list's two columns, so the names line up whatever their length */
+.in-short__index li,
+.in-short__index a {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  grid-template-columns: subgrid;
+  column-gap: inherit;
+}
+
+.in-short__index a {
+  align-items: baseline;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line);
+  color: var(--paper);
+  text-decoration: none;
+}
+
+.in-short__name {
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1.125rem;
+  line-height: 1.15;
+  transition: color var(--dur-1) ease;
+}
+
+.in-short__what {
+  color: var(--fog);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  transition: color var(--dur-1) ease;
+}
+
+.in-short__index a:hover .in-short__name,
+.in-short__index a:focus-visible .in-short__name {
+  color: var(--tungsten);
+}
+
+.in-short__index a:hover .in-short__what {
+  color: var(--paper-2);
 }
 
 .in-short__ctas {
@@ -2912,34 +3055,41 @@ code {
   font-size: var(--fs-small);
 }
 
+/* phones and tablets: one column, the summary first, then where to go */
+.in-short__head,
+.in-short__body {
+  display: contents;
+}
+
+.in-short__kicker { order: 1; }
+.in-short__title { order: 2; }
+.in-short__list { order: 3; }
+.in-short__ctas { order: 4; }
+.in-short__go { order: 5; margin-top: var(--s-4); }
+.jobpick { order: 6; }
+.in-short__film { order: 7; }
+
+/* wider: the title and the page list on the left, the three lines on the right */
 @media (min-width: 900px) {
   .in-short__inner {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     column-gap: clamp(2.5rem, 6vw, 6rem);
     align-items: start;
   }
-  .in-short__kicker,
-  .in-short__title {
-    grid-column: 1;
+  .in-short__head,
+  .in-short__body {
+    display: grid;
+    gap: var(--s-5);
+    align-content: start;
   }
-  .in-short__title {
-    grid-row: 2 / span 3;
-    align-self: start;
-  }
-  .in-short__list,
-  .in-short__ctas,
-  .jobpick,
-  .in-short__film {
-    grid-column: 2;
-  }
-  .in-short__list {
-    grid-row: 1 / span 2;
+  .in-short__go {
+    margin-top: var(--s-6);
   }
 }
 
 /* phones: the label sits above its line, so the line gets the full width */
 @media (max-width: 599px) {
-  .in-short__list li {
+  .in-short__row {
     grid-template-columns: 1fr;
     gap: 0.35rem;
   }

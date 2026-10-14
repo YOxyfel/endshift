@@ -177,7 +177,7 @@ export default function ritual(ctx) {
         </div>
       </div>
 
-      <div class="ritual__plan">
+      <div class="ritual__plan" id="plan">
         <h2 class="section-title plan__head">${r.stepsTitle}</h2>
         <div class="dimrail" aria-hidden="true">
           <div class="dimrail__bar">${r.steps.map((s, k) => `<span class="dimrail__seg" style="--w:${s.seconds.full};--k:${k}"><b>${s.title}</b></span>`).join('')}</div>
