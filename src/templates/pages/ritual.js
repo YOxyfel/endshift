@@ -223,57 +223,70 @@ export default function ritual(ctx) {
     </div>
 
     <div class="ritual__view ritual__done" data-view="done" hidden>
-      <p class="done__stamp" aria-hidden="true"><span>${r.done.stamp}</span> <span data-done-time>--:--</span></p>
-      <h2 class="display done__title" tabindex="-1" data-done-title>${r.done.title}</h2>
-      <p class="lead done__lead"><span data-done-clocked></span> <span data-done-count></span></p>
-      <div class="cta-row done__ctas">
-        <button class="btn btn--primary" type="button" data-act="restart">${icon('restart')}<span>${r.done.restart}</span></button>
-        <button class="btn btn--ghost" type="button" data-share data-share-url="${esc(ctx.canonical)}" data-share-text="${esc(r.done.shareText)}">${icon('share')}<span>${r.done.share}</span></button>
-        <a class="text-btn" href="${ctx.url('reset')}" data-track="cta_click" data-track-id="ritual_done_reset">${r.done.seeReset}</a>
-      </div>
-      <div class="done__grid">
-        <div class="done__block evlog" data-evlog>
-          <h3 class="h3">${r.done.logTitle}</h3>
-          <p class="evlog__month" data-evlog-month></p>
-          <div class="evlog__grid" data-evlog-grid aria-hidden="true"></div>
-          <p class="small muted">${r.done.logNote}</p>
+      <div class="done__hero">
+        <div class="done__words">
+          <p class="done__stamp" aria-hidden="true"><span>${r.done.stamp}</span> <span data-done-time>--:--</span></p>
+          <h2 class="display done__title" tabindex="-1" data-done-title>${r.done.title}</h2>
+          <p class="lead done__lead"><span data-done-clocked></span> <span data-done-count></span></p>
         </div>
-        <div class="done__block outcard" data-outcard>
-          <h3 class="h3">${r.done.cardTitle}</h3>
-          <p class="muted">${r.done.cardText}</p>
-          <div class="outcard__preview" data-outcard-preview hidden><img alt="" data-outcard-img></div>
-          <div class="cta-row">
-            <button class="btn btn--primary" type="button" data-outcard-make>${icon('spark')}<span>${r.done.cardMake}</span></button>
-            <button class="btn btn--ghost" type="button" data-outcard-share hidden>${icon('share')}<span>${r.done.cardShare}</span></button>
-            <a class="btn btn--quiet" data-outcard-save hidden download="endshift-out.png" href="#">${icon('download')}<span>${r.done.cardSave}</span></a>
+        <figure class="done__card outcard" data-outcard>
+          <div class="outcard__frame">
+            <div class="outcard__preview" data-outcard-preview hidden><img alt="" data-outcard-img></div>
+            <button class="btn btn--ghost btn--sm outcard__make" type="button" data-outcard-make>${icon('spark')}<span>${r.done.cardMake}</span></button>
           </div>
-        </div>
-        <div class="done__block" data-install hidden>
-          <h3 class="h3">${r.done.installTitle}</h3>
-          <p class="muted">${r.done.installText}</p>
-          <button class="btn btn--ghost" type="button" data-install-btn hidden>${r.done.installBtn}</button>
-          <p class="small muted" data-install-ios hidden>${r.done.installIos}</p>
-        </div>
-        <div class="done__block">
-          <h3 class="h3">${r.done.reminderTitle}</h3>
-          <p class="muted">${r.done.reminderText}</p>
+          <figcaption class="outcard__foot">
+            <div class="cta-row outcard__actions">
+              <a class="btn btn--ghost btn--sm" data-outcard-save hidden download="endshift-out.png" href="#">${icon('download')}<span>${r.done.cardSave}</span></a>
+              <button class="btn btn--ghost btn--sm" type="button" data-outcard-share hidden>${icon('share')}<span>${r.done.cardShare}</span></button>
+            </div>
+            <p class="small muted outcard__note">${r.done.cardText}</p>
+          </figcaption>
+        </figure>
+        <div class="done__next">
+          <h3 class="done__h">${r.done.reminderTitle}</h3>
           <div class="reminder">
             <div class="field"><label class="label" for="reminder-time">${r.done.reminderTime}</label><input class="input reminder__time" id="reminder-time" type="time" value="18:00" data-reminder-time></div>
             <label class="reminder__check"><input type="checkbox" id="reminder-weekdays" data-reminder-weekdays> <span>${r.done.weekdays}</span></label>
-            <button class="btn btn--quiet" type="button" data-act="ics">${icon('calendar')}<span>${r.done.reminderBtn}</span></button>
+            <button class="btn btn--primary" type="button" data-act="ics">${icon('calendar')}<span>${r.done.reminderBtn}</span></button>
           </div>
+          <p class="small muted done__next-note">${r.done.reminderText}</p>
           ${pushOn ? html`<div class="push" data-push hidden>
             <button class="btn btn--ghost" type="button" data-push-on>${icon('clock')}<span>${r.done.push.on}</span></button>
             <p class="push__set" data-push-set hidden>${icon('check')}<span data-push-text></span> <button class="link link-btn" type="button" data-push-off>${r.done.push.off}</button></p>
             <p class="small muted" data-push-note>${r.done.push.note}</p>
           </div>` : ''}
         </div>
-        <div class="done__block">
-          <h3 class="h3">${r.done.emailTitle}</h3>
-          ${signupForm(ctx, { source: 'ritual-done', list: 'ritual', submit: ui.signup.submit, note: r.done.emailNote, fields: r.done.remindEmail ? `<label class="signup__remind"><input type="checkbox" name="remind_on" data-remind-email><span>${r.done.remindEmail}</span></label>` : '' })}
-        </div>
       </div>
-      <p class="small muted done__saved">${r.done.saved}</p>
+      <div class="done__rows">
+        <section class="done__row evlog" data-evlog>
+          <h3 class="done__h">${r.done.logTitle}</h3>
+          <div class="done__row-body">
+            <p class="evlog__month" data-evlog-month></p>
+            <div class="evlog__grid" data-evlog-grid aria-hidden="true"></div>
+            <p class="small muted">${r.done.logNote}</p>
+          </div>
+        </section>
+        <section class="done__row" data-install hidden>
+          <h3 class="done__h">${r.done.installTitle}</h3>
+          <div class="done__row-body">
+            <p class="muted">${r.done.installText}</p>
+            <button class="btn btn--ghost btn--sm" type="button" data-install-btn hidden>${r.done.installBtn}</button>
+            <p class="small muted" data-install-ios hidden>${r.done.installIos}</p>
+          </div>
+        </section>
+        <section class="done__row">
+          <h3 class="done__h">${r.done.emailTitle}</h3>
+          <div class="done__row-body">
+            ${signupForm(ctx, { source: 'ritual-done', list: 'ritual', submit: ui.signup.submit, note: r.done.emailNote, variant: 'ghost', fields: r.done.remindEmail ? `<label class="signup__remind"><input type="checkbox" name="remind_on" data-remind-email><span>${r.done.remindEmail}</span></label>` : '' })}
+          </div>
+        </section>
+      </div>
+      <div class="done__foot">
+        <button class="text-btn" type="button" data-act="restart">${icon('restart')}<span>${r.done.restart}</span></button>
+        <button class="text-btn" type="button" data-share data-share-url="${esc(ctx.canonical)}" data-share-text="${esc(r.done.shareText)}">${icon('share')}<span>${r.done.share}</span></button>
+        <a class="text-btn" href="${ctx.url('reset')}" data-track="cta_click" data-track-id="ritual_done_reset">${r.done.seeReset}</a>
+        <p class="small muted done__saved">${r.done.saved}</p>
+      </div>
     </div>
   </div>
 </section>
@@ -458,6 +471,8 @@ export default function ritual(ctx) {
           clocked: r.done.clocked('{t}'),
           count1: r.done.count(1),
           countN: r.done.count(99).replace('99', '{n}'),
+          evenings1: r.done.logEvenings(1),
+          eveningsN: r.done.logEvenings(99).replace('99', '{n}'),
           nextIn: r.run.nextIn('{t}'),
           aboutMin: r.run.aboutMin('{m}'),
           aboutSec: r.run.aboutSec('{s}'),

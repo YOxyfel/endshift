@@ -117,7 +117,7 @@ export function batchAction(ctx, { location = 'unknown', variant = 'primary', si
 /* Email capture ---------------------------------------------------------------- */
 
 let formSeq = 0;
-export function signupForm(ctx, { source, list = 'batch-001', submit, note, label, reward, doneTitle, doneText, fields = '' } = {}) {
+export function signupForm(ctx, { source, list = 'batch-001', submit, note, label, reward, doneTitle, doneText, fields = '', variant = 'primary' } = {}) {
   const { ui } = ctx;
   const id = `signup-${source || ++formSeq}`;
   const extra = attrs({ 'data-reward': reward, 'data-done-title': doneTitle, 'data-done-text': doneText });
@@ -125,7 +125,7 @@ export function signupForm(ctx, { source, list = 'batch-001', submit, note, labe
     <label class="label signup__label" for="${id}">${label || ui.signup.label}</label>
     <div class="signup__row">
       <input class="input" id="${id}" name="email" type="email" inputmode="email" autocomplete="email" placeholder="${esc(ui.signup.placeholder)}" required aria-describedby="${id}-note ${id}-status">
-      <button class="btn btn--primary" type="submit">${submit || ui.signup.submit}</button>
+      <button class="btn btn--${variant}" type="submit">${submit || ui.signup.submit}</button>
     </div>
     ${fields}
     <div class="hp-field" aria-hidden="true"><label for="${id}-hp">Leave empty</label><input id="${id}-hp" name="company" type="text" tabindex="-1" autocomplete="off"></div>

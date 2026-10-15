@@ -458,6 +458,7 @@ export default ({ state }) => ({
     installIos: 'On iPhone: tap Share, then “Add to Home Screen”.',
     logTitle: 'Evenings you ended',
     logNote: 'Saved on this device only. A missed day doesn’t undo anything.',
+    logEvenings: (n) => (n === 1 ? '1 evening ended' : `${n} evenings ended`),
     logDays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
   },
 

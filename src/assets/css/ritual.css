@@ -1532,30 +1532,40 @@
   margin-top: var(--s-4);
 }
 
-.done__ctas {
-  margin-top: var(--s-6);
+/* The last page of the evening: the words and one next step on the left, the OUT card (your
+   clock-out, drawn on the device the moment you arrive here) on the right; then a few quiet
+   rows, then the small links. One amber button on the whole page: tomorrow's reminder. */
+.done__hero {
+  display: grid;
+  gap: var(--s-8);
+  align-items: start;
 }
 
-.done__grid {
+.done__h {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1.3rem;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--paper);
+}
+
+.done__next {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--s-7);
-  margin-top: var(--s-8);
+  gap: var(--s-3);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line);
 }
 
 @media (min-width: 900px) {
-  .done__grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--s-8);
+  .done__next {
+    margin-top: var(--s-7);
   }
 }
 
-.done__block {
-  display: grid;
-  gap: var(--s-3);
-  align-content: start;
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--line);
+.done__next-note {
+  max-width: 48ch;
 }
 
 .reminder {
@@ -1586,57 +1596,199 @@
   accent-color: var(--tungsten);
 }
 
-.done__saved {
-  margin-top: var(--s-7);
+/* the card: a frame in a pool of lamplight, the picture arriving in it */
+.done__card {
+  justify-self: center;
+  width: min(100%, 21rem);
+  margin: 0;
 }
 
-/* The evenings you ended: a month, a ring round each one. No streaks. */
+/* (the lamplight is a shadow, not a box: shadows never make the page scroll sideways) */
+.outcard__frame {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  background: #0e1015;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 40px 90px -40px rgba(0, 0, 0, 0.95),
+    0 0 90px 10px color-mix(in srgb, var(--tungsten) 14%, transparent);
+}
+
+.outcard__preview {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.outcard__preview[hidden],
+.outcard__make[hidden],
+[data-install][hidden],
+[data-install] [hidden] {
+  display: none;
+}
+
+.outcard__preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.motion-ok .outcard__preview:not([hidden]) {
+  animation: card-in 700ms var(--ease-out) both;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+
+.outcard__make {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.outcard__foot {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: center;
+  margin-top: var(--s-5);
+  text-align: center;
+}
+
+.outcard__actions {
+  justify-content: center;
+  margin: 0;
+}
+
+.outcard__note {
+  max-width: 32ch;
+  text-wrap: pretty;
+}
+
+/* the quiet rows: one line of title, the thing itself beside it */
+.done__rows {
+  margin-top: var(--s-9);
+  border-top: 1px solid var(--line);
+}
+
+.done__row {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-6) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.done__row[hidden] {
+  display: none;
+}
+
+.done__row-body {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+}
+
+.done__row-body .signup {
+  width: 100%;
+}
+
+.done__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-6);
+  margin-top: var(--s-6);
+}
+
+.done__saved {
+  flex-basis: 100%;
+  margin-top: var(--s-3);
+}
+
+@media (min-width: 720px) {
+  .done__row {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    gap: var(--s-7);
+    align-items: start;
+  }
+}
+
+@media (min-width: 900px) {
+  .done__hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    grid-template-areas:
+      'words card'
+      'next card';
+    column-gap: var(--s-9);
+    row-gap: 0;
+    align-items: start;
+  }
+
+  .done__words {
+    grid-area: words;
+  }
+
+  .done__card {
+    grid-area: card;
+    align-self: center;
+    width: min(100%, 23rem);
+  }
+
+  .done__next {
+    grid-area: next;
+  }
+}
+
+/* The evenings you ended: the month as a line of dots, a lamp on each evening ended here
+   (the home page's calendar crossed evenings off; this one keeps the good ones). No streaks. */
 .evlog__month {
-  color: var(--fog);
+  color: var(--paper-2);
   font-size: var(--fs-small);
   font-weight: 650;
-  text-transform: capitalize;
+}
+
+.evlog__month::first-letter {
+  text-transform: uppercase;
 }
 
 .evlog__grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 2.6rem));
-  gap: 0.35rem;
-  margin-top: var(--s-2);
-}
-
-.evlog__dow {
-  color: var(--fog);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  text-align: center;
+  grid-template-columns: repeat(var(--days, 31), minmax(0, 1fr));
+  gap: 3px;
+  width: min(100%, 26rem);
 }
 
 .evlog__day {
-  display: grid;
-  place-items: center;
   aspect-ratio: 1;
   border-radius: 50%;
-  color: color-mix(in srgb, var(--paper) 45%, transparent);
-  font-size: var(--fs-micro);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  background: var(--line);
 }
 
-.evlog__day.is-blank {
-  visibility: hidden;
+.evlog__day.is-weekend {
+  background: var(--line-soft);
 }
 
 .evlog__day.is-ended {
-  color: var(--paper);
-  box-shadow: inset 0 0 0 2px var(--tungsten);
-  background: color-mix(in srgb, var(--tungsten) 12%, transparent);
+  background: var(--tungsten);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tungsten) 55%, transparent);
 }
 
 .evlog__day.is-today {
-  font-weight: 800;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  box-shadow: 0 0 0 2px var(--paper-2);
+}
+
+.evlog__day.is-today.is-ended {
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 10px color-mix(in srgb, var(--tungsten) 55%, transparent);
 }
 
 /* ==========================================================================
@@ -2792,26 +2944,6 @@ html.immersive-open body {
 }
 
 /* OUT card (done view) ------------------------------------------------------------ */
-.outcard__preview {
-  width: min(100%, 17rem);
-  margin: var(--s-3) 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  box-shadow: 0 24px 50px -24px rgba(0, 0, 0, 0.8);
-}
-
-.outcard__preview[hidden],
-[data-install][hidden],
-[data-install] [hidden] {
-  display: none;
-}
-
-.outcard__preview img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
 
 /* what you ticked in a guide today, on a slip of the notepad by the start button */
 .tonight-slip {

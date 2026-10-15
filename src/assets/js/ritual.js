@@ -1374,6 +1374,7 @@
     root.setAttribute('data-state', 'done');
     window.scrollTo({ top: 0, behavior: 'auto' });
     showInstall();
+    makeCard();
     closeOverlay(function () {
       S.finished = 0;
       overlay.classList.remove('is-ending', 'is-finished', 'is-lightsout');
@@ -1390,18 +1391,22 @@
     var now = new Date(), y = now.getFullYear(), mo = now.getMonth();
     var first = new Date(y, mo, 1), days = new Date(y, mo + 1, 0).getDate();
     var lead = (first.getDay() + 6) % 7;
-    var names = (CFG.log && CFG.log.days) || ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    var out = names.map(function (d) { return '<span class="evlog__dow">' + d + '</span>'; });
-    for (var i = 0; i < lead; i++) out.push('<span class="evlog__day is-blank"></span>');
+    var out = [], n = 0;
     for (var d = 1; d <= days; d++) {
       var key = y + '-' + pad(mo + 1) + '-' + pad(d);
       var on = stats.days.indexOf(key) >= 0;
-      out.push('<span class="evlog__day' + (on ? ' is-ended' : '') + (d === now.getDate() ? ' is-today' : '') + '">' + d + '</span>');
+      if (on) n++;
+      var weekend = (lead + d - 1) % 7 >= 5;
+      out.push('<span class="evlog__day' + (on ? ' is-ended' : '') + (d === now.getDate() ? ' is-today' : '') + (weekend ? ' is-weekend' : '') + '" title="' + d + '"></span>');
     }
+    grid.style.setProperty('--days', String(days));
     grid.innerHTML = out.join('');
     var mn = qs('[data-evlog-month]', root);
     if (mn) {
-      try { mn.textContent = now.toLocaleDateString(document.documentElement.lang || undefined, { month: 'long', year: 'numeric' }); } catch (e) {}
+      var month = '';
+      try { month = now.toLocaleDateString(document.documentElement.lang || undefined, { month: 'long', year: 'numeric' }); } catch (e) {}
+      var count = n === 1 ? CFG.tpl.evenings1 : fill(CFG.tpl.eveningsN, { n: n });
+      setText(mn, month ? month + ' · ' + count : count);
     }
   }
 
@@ -1799,6 +1804,7 @@
     qs('[data-outcard-preview]', cardBox).hidden = true;
     qs('[data-outcard-share]', cardBox).hidden = true;
     qs('[data-outcard-save]', cardBox).hidden = true;
+    qs('[data-outcard-make]', cardBox).hidden = false;
   }
   function drawCard(done) {
     var D = CFG.done, c = S.card || { t: clock(new Date()), m: 20, n: stats.count || 1, date: new Date() };
@@ -1862,6 +1868,7 @@
     cv.toBlob(function (blob) { done(blob); }, 'image/png');
   }
   function makeCard() {
+    if (!cardBox || !S.card) return;
     var go = function () {
       drawCard(function (blob) {
         if (!blob) return;
@@ -1872,6 +1879,7 @@
         img.src = cardUrl;
         img.alt = fill(CFG.done.cardAlt, { t: (S.card && S.card.t) || '' });
         qs('[data-outcard-preview]', cardBox).hidden = false;
+        qs('[data-outcard-make]', cardBox).hidden = true;
         var save = qs('[data-outcard-save]', cardBox);
         save.href = cardUrl;
         save.hidden = false;

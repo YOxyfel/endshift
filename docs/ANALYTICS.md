@@ -58,6 +58,7 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `ritual_breath_complete` | The breathing step ran to its end | `pace`, `length` | How many finish the five minutes of breathing |
 | `ritual_complete` | Lights out at the end | `minutes`, `length`, `context`, `pace`, `step`, `evenings` (evenings ended on this device) | **Ritual completions** |
 | `ritual_reminder_download` | Calendar reminder downloaded | `weekdays` | Intent to repeat |
+| `out_card` | The OUT card (tonight's clock-out as a picture): `make` when it's drawn (by itself, as the Shift over page opens), `save`, `share` | `action` | Shares ÷ completions |
 | `ritual_sound` | Sound switched on or off during the ritual | `on` | |
 | `ritual_preview_step` | A step opened in the preview on home or RESET | `step` | Interest before starting |
 | `signup_submit` | Valid email submitted | `list`, `source`, `reward` (e.g. `switch-15` from the game) | |
