@@ -1962,8 +1962,10 @@
       var open = !adjust.classList.contains('is-open');
       setAdjust(open);
       if (open) {
+        // the card opens under the hero: bring it up, then hand focus to its first choice
+        adjust.scrollIntoView({ behavior: still() ? 'auto' : 'smooth', block: 'start' });
         var first = qs('input, button', adjust);
-        if (first) first.focus();
+        if (first) try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
       }
     });
   }
@@ -2195,10 +2197,9 @@
     }
     if (act === 'door-adjust') {
       setAdjust(true);
-      var box = qs('[data-quickstart]', form) || adjust;
-      if (box) box.scrollIntoView({ behavior: still() ? 'auto' : 'smooth', block: 'start' });
+      adjust.scrollIntoView({ behavior: still() ? 'auto' : 'smooth', block: 'start' });
       var first = qs('input, button', adjust);
-      if (first) first.focus({ preventScroll: true });
+      if (first) try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
       return;
     }
     if (S.finished && act !== 'restart' && act !== 'ics') return;

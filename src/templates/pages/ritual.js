@@ -109,33 +109,43 @@ export default function ritual(ctx) {
             ${nudge('qs')}
           </div>
           <div class="ritual__adjust" id="ritual-adjust" data-adjust>
+          <div class="adjust__grid">
+          <div class="adjust__cell adjust__cell--where">
           <fieldset class="choices">
             <legend>${r.setup.versionLegend} <span class="muted">${r.setup.versionHint}</span></legend>
             ${r.setup.versions.map((v, i) => `<label class="choice"><input type="radio" name="version" value="${v.id}"${i === 0 ? ' checked' : ''}><span>${v.label}</span></label>`)}
           </fieldset>
+          </div>
+          <div class="adjust__cell adjust__cell--who">
           <fieldset class="choices">
             <legend>${r.setup.contextLegend} <span class="muted">${r.setup.contextHint}</span></legend>
             ${r.setup.contexts.map((c) => `<label class="choice"><input type="radio" name="context" value="${c.id}"><span>${c.label}</span></label>`)}
           </fieldset>
+          </div>
+          <div class="adjust__cell adjust__cell--time">
           <fieldset class="choices">
             <legend>${r.setup.lengthLegend}</legend>
             ${r.setup.lengths.map((l, i) => `<label class="choice"><input type="radio" name="length" value="${l.id}"${i === 0 ? ' checked' : ''}><span>${l.label}</span></label>`)}
           </fieldset>
+          </div>
+          <div class="adjust__cell adjust__cell--pace">
           <fieldset class="choices">
             <legend>${r.setup.paceLegend} <span class="muted">${r.setup.paceHint}</span></legend>
             ${b.paces.map((p) => `<label class="choice"><input type="radio" name="pace" value="${p.id}"${p.default ? ' checked' : ''}><span>${p.label}</span></label>`)}
           </fieldset>
+          </div>
+          <div class="adjust__cell adjust__cell--sound">
           <fieldset class="choices soundpick" data-soundpick>
             <legend>${m.legend} <span class="muted">${m.hint}</span></legend>
             ${m.modes.map((x) => `<label class="choice"><input type="radio" name="music" value="${x.id}"${x.id === 'endshift' ? ' checked' : ''}><span>${x.label}</span></label>`)}
             <div class="soundpick__panel" data-music-panel="endshift">
-              <p class="small muted">${m.endshiftNote}</p>
               <div class="variants" role="radiogroup" aria-label="${esc(m.variantsLabel)}">
                 ${m.variants.map(
                   (v, i) =>
                     html`<div class="variant"><label class="variant__pick"><input type="radio" name="variant" value="${v.id}"${i === 0 ? ' checked' : ''}><span class="variant__name">${v.name}</span><span class="variant__hint">${v.hint}</span></label><button class="variant__listen" type="button" data-listen="${v.id}" aria-pressed="false"><span class="variant__eq" aria-hidden="true"><i></i><i></i><i></i></span><span data-listen-label>${m.listen}</span><span class="visually-hidden">: ${v.name}</span></button></div>`,
                 )}
               </div>
+              <p class="small muted">${m.endshiftNote}</p>
             </div>
             <div class="soundpick__panel" data-music-panel="own" hidden>
               <div class="services" role="radiogroup" aria-label="${esc(m.servicesLabel)}">
@@ -152,14 +162,21 @@ export default function ritual(ctx) {
               ${sw('fade', m.fade, true)}
             </div>
           </fieldset>
-          <div class="ritual__settings">
-            <p class="label">${r.setup.settingsTitle}</p>
-            ${sw('binaural', r.setup.settings.binaural)}
+          </div>
+          <div class="adjust__cell adjust__cell--screen ritual__settings">
+            <p class="legend">${r.setup.settingsTitle}</p>
+            <div class="adjust__switches">
             ${sw('speak', r.setup.settings.speak)}
+            ${sw('binaural', r.setup.settings.binaural)}
             ${sw('haptics', r.setup.settings.haptics, true)}
             ${sw('wake', r.setup.settings.wake, true)}
+            </div>
           </div>
-          <button class="btn btn--primary btn--xl ritual__start" type="submit">${icon('play')}<span>${r.setup.start}</span></button>
+          <div class="adjust__cell adjust__foot">
+            <button class="btn btn--primary btn--xl ritual__start" type="submit">${icon('play')}<span>${r.setup.start}</span></button>
+            <p class="adjust__note">${r.setup.adjustNote}</p>
+          </div>
+          </div>
           </div>
         </form>
           ${r.nearby ? html`<div class="nearby">

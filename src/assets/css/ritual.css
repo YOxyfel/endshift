@@ -109,18 +109,73 @@
   }
 }
 
-/* wide screens: the room you'll be in sits beside the words and Start, not under them */
+/* wide screens: the room you'll be in sits beside the words and Start, not under them; the
+   settings card (Adjust) opens under both, the full width (the column and the form give up
+   their boxes, so their parts sit on the hero's grid) */
 @media (min-width: 960px) {
   .ritual__hero {
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-    gap: var(--s-8);
+    grid-template-areas:
+      'intro side'
+      'resume side'
+      'quick side'
+      'nearby side'
+      'adjust adjust';
+    column-gap: var(--s-8);
+    row-gap: 0;
     align-items: start;
   }
 
+  .ritual__hero > .ritual__hero-main,
+  .ritual__hero .ritual__form {
+    display: contents;
+  }
+
+  .ritual__intro {
+    grid-area: intro;
+    margin-bottom: var(--s-6);
+  }
+
+  .ritual__resume {
+    grid-area: resume;
+    margin-bottom: var(--s-6);
+  }
+
+  .quickstart {
+    grid-area: quick;
+    margin-bottom: var(--s-6);
+  }
+
+  .nearby {
+    grid-area: nearby;
+  }
+
+  .ritual__adjust {
+    grid-area: adjust;
+    margin-top: var(--s-4);
+  }
+
+  /* the room stays in view beside the words (sticky inside its column, which ends where the
+     settings card begins, so it never slides over the card) */
   .ritual__hero-side {
+    grid-area: side;
+    align-self: stretch;
+  }
+
+  .ritual__hero-side > .room-peek {
     position: sticky;
     top: calc(var(--header-h) + var(--s-5));
     padding-top: var(--s-3);
+  }
+
+  .has-door .ritual__hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'intro'
+      'resume'
+      'quick'
+      'nearby'
+      'adjust';
   }
 
   .ritual__hero .ritual__title {
@@ -216,13 +271,158 @@
   flex: 0 1 auto;
 }
 
+/* Adjust: the settings open as one ruled card under the start card (the full width of the hero
+   on wide screens): six cells on a hairline grid, where / you / time, breath / sound, voice and
+   screen, then Start. Each cell is one question in the card's own type, with its chips. */
 .ritual__adjust {
-  display: grid;
-  gap: var(--s-6);
+  container-type: inline-size;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-slip);
+  background: var(--graphite);
+  scroll-margin-top: calc(var(--header-h) + var(--s-4));
 }
 
 .js .ritual__adjust:not(.is-open) {
   display: none;
+}
+
+.adjust__grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+}
+
+.adjust__cell {
+  grid-column: span 12;
+  min-width: 0;
+  padding: var(--s-5);
+  background: var(--graphite);
+}
+
+.adjust__cell > .choices {
+  align-content: start;
+}
+
+.ritual__adjust legend,
+.adjust__cell > .legend {
+  display: block;
+  margin: 0 0 var(--s-3);
+  padding: 0;
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1.3rem;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: var(--paper);
+}
+
+.ritual__adjust legend .muted {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-body);
+  font-weight: 450;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--fog);
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+.ritual__adjust .choice span {
+  min-height: 40px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+/* the sound cell: the moods as a small grid, no box inside the box */
+.ritual__adjust .soundpick__panel {
+  margin-top: var(--s-4);
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.ritual__adjust .variants {
+  gap: var(--s-2);
+}
+
+/* voice and screen: four switches, two by two on wide cards, a hairline above each row */
+.adjust__switches {
+  display: grid;
+  gap: 0 var(--s-6);
+}
+
+.adjust__switches .switch {
+  align-items: start;
+  border-bottom: 0;
+  border-top: 1px solid var(--line-soft);
+  padding: var(--s-3) 0;
+}
+
+.adjust__switches .switch input {
+  margin-top: 0.1rem;
+}
+
+.adjust__switches .switch:first-child {
+  border-top: 0;
+}
+
+.adjust__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+}
+
+.adjust__foot .ritual__start {
+  width: 100%;
+}
+
+.adjust__note {
+  color: var(--fog);
+  font-size: var(--fs-small);
+}
+
+@container (min-width: 36rem) {
+  .adjust__cell--where,
+  .adjust__cell--who,
+  .adjust__cell--time,
+  .adjust__cell--pace {
+    grid-column: span 6;
+  }
+
+  .adjust__switches,
+  .ritual__adjust .variants {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adjust__switches .switch:nth-child(-n + 2) {
+    border-top: 0;
+  }
+
+  .adjust__foot .ritual__start {
+    width: auto;
+  }
+}
+
+@container (min-width: 60rem) {
+  .adjust__cell--where,
+  .adjust__cell--who,
+  .adjust__cell--time,
+  .adjust__cell--pace {
+    grid-column: span 3;
+  }
+
+  .ritual__adjust .variants {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .adjust__cell {
+    padding: var(--s-5) var(--s-6);
+  }
 }
 
 /* The door: when you come back (or open it from your home screen), one big button ---------- */
@@ -788,18 +988,6 @@
 
 .immersive.is-ending ~ .music-dock:not(:hover):not(:focus-within) {
   opacity: 0.2;
-}
-
-.ritual__settings {
-  padding: var(--s-4) var(--s-5) var(--s-2);
-  border-radius: var(--r-slip);
-  background: var(--graphite);
-  border: 1px solid var(--line-soft);
-}
-
-.ritual__settings > .label {
-  display: block;
-  margin-bottom: var(--s-2);
 }
 
 .ritual__start {
@@ -2903,11 +3091,9 @@ html.immersive-open body {
 
 /* "Read each step aloud" lights up when you arrive from the note */
 .switch.is-spotlit {
-  border-radius: 6px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--tungsten) 12%, transparent);
   box-shadow: 0 0 0 0.6rem color-mix(in srgb, var(--tungsten) 12%, transparent);
-  outline: 2px solid color-mix(in srgb, var(--tungsten) 70%, transparent);
-  outline-offset: 0.6rem;
 }
 
 .motion-ok .quickstart.is-stacked .nudge:not([hidden]) .nudge__arrow {

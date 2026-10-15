@@ -166,6 +166,7 @@ export default ({ state }) => ({
     startNow: 'Започни сега',
     adjust: 'Настрой',
     adjustHide: 'Скрий настройките',
+    adjustNote: 'Запомня се на това устройство за следващия път.',
     voiceNudge: null, // no recorded Bulgarian voice yet
     paceLegend: 'Темпо на дишане',
     paceHint: 'Избери това, което ти е леко. Удобството е по-важно от броенето.',
