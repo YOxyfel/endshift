@@ -26,7 +26,7 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `intro_complete` | The opening handed over to the page | `skipped`, `flipped` | |
 | `intro_handoff` | The opening's switch flew into the game (home with the game on) | | |
 | `story_switch` | The switch is pressed in the home page film (scrolled past the moment, once per visit) | `how` (`film`) | How far people watch |
-| `film_watch` | “Watch with sound”: the home page film playing by itself | `action` (`start` / `pause` / `resume` / `end` / `close` / `voice_on` / `voice_off`; sound is the header's speaker, see `sound_toggle`), `from` (`top` = the button under the summary, `here` = the one in the film), `via` (on `start`: `nudge` = the hand-drawn "Much better with narration" note, `button`), `voice` (`clip` = recorded, `device` = the device's speech voice, `none`, `off`), `how` (`button` / `tap` / `key` / `scroll` / `seek` / `skip` / `left` / `hidden`), `beat` (where in the film), `percent` (on `close`) | Whether people watch it rather than scroll it, and where they stop. `start` ÷ home views next to `scroll_depth` |
+| `film_watch` | “Watch with sound”: the home page film playing by itself | `action` (`start` / `pause` / `resume` / `end` / `close` / `voice_on` / `voice_off`), `from` (`top` = the button under the summary, `here` = the one in the film), `via` (on `start`: `nudge` = the hand-drawn "Much better with narration" note, `button`), `voice` (`clip` = recorded, `device` = the device's speech voice, `none`, `off`), `how` (`button` / `tap` / `key` / `scroll` / `seek` / `skip` / `left` / `hidden`), `beat` (where in the film), `percent` (on `close`) | Whether people watch it rather than scroll it, and where they stop. `start` ÷ home views next to `scroll_depth` |
 | `game_start` | First interaction with today's game | `game` (`bed`, `kitchen`, `ward`, `office`, `shop`, `clients`, `depot`), `type` (`room` / `flood` / `torch`) | **Game engagement** |
 | `game_touch` | Something that isn't the switch was used | `game`, `object`, `kind` (`object` / `decoy`) | What people try first |
 | `game_hint` | The game helped (by itself or asked) | `game`, `level` (1–4), `asked` | Whether a game is too hard |
@@ -71,7 +71,6 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `story_engage` | Story video, social or timeline media link opened | `id` | **Founder story engagement**, together with page views and scroll depth on `/story/` |
 | `scroll_depth` | 25 / 50 / 75 / 100 % reached, once each per page view | `percent`, `page` | **Scroll depth** |
 | `low_stim_toggle` | Low-stim mode switched | `state` | How many people use it |
-| `sound_toggle` | The speaker in the header switched (sound for the whole site, off by default; it's also the film player's sound) | `state` (`on` / `off`), `via` (`speaker`, or `watch` when Watch with sound switched it on) | How many people want the film's sound while they scroll |
 | `language_switch` | Language link used | `id` | |
 | `share` | Share button used on the ritual end screen | `method` (`native` / `copy`) | |
 | `contact_submit` | Contact form sent | `topic`, `preview` | |

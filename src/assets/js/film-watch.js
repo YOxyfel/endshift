@@ -43,8 +43,8 @@
   var skipEl = film.querySelector('[data-film-skip]');
   var filmBtn = film.querySelector('.film__watch');
 
-  // The voice, as this viewer left it (this device only). Sound itself is the site's one setting,
-  // the speaker in the header (ES.sound): pressing Watch with sound switches it on.
+  // The voice, as this viewer left it (this device only). Sound is asked for by pressing Watch
+  // with sound: scrolled by hand, the film is silent.
   var PREF = 'es:watch';
   var pref = { voice: true };
   try {
@@ -52,7 +52,6 @@
     if (saved) pref.voice = saved.voice !== false;
   } catch (e) {}
   function savePref() { try { localStorage.setItem(PREF, JSON.stringify(pref)); } catch (e) {} }
-  function soundOn() { return ES.sound ? ES.sound.on() : true; }
 
   /* ------------------------------------------------------------------ the lines
      Each [data-say] is a line: when it is fully on screen (s), the last moment it still is (by),
@@ -184,7 +183,7 @@
   var DEVICE = WC.deviceVoice === true;
   function deviceOk() { return !!(DEVICE && synth && sv && synthFails < 2); }
   function mode(c) {
-    if (!pref.voice || !soundOn()) return 'none';
+    if (!pref.voice) return 'none';
     if (c && hasClip(c) && ac) return 'clip';
     return deviceOk() ? 'device' : 'none';
   }
@@ -465,13 +464,13 @@
     L.padF.frequency.setTargetAtTime(lv.padF, t, 0.8);
     L.dream.gain.setTargetAtTime(lv.dream, t, 0.8);
     // (these two only while the picture moves: held on a line, the water and the breath wait too)
-    var mv = st.playing ? clamp(st.v / (0.1 * TS), 0, 1) : sc.audible ? clamp(sc.v / 0.1, 0, 1) : 0;
+    var mv = st.playing ? clamp(st.v / (0.1 * TS), 0, 1) : 0;
     L.pour.gain.setTargetAtTime(lv.pour * mv, t, 0.04);
     L.pour.f.setTargetAtTime(lv.pourF, t, 0.08);
     L.breath.gain.setTargetAtTime(lv.breath * mv, t, 0.09);
     L.breath.f.setTargetAtTime(lv.breathF, t, 0.12);
     sfxBus.gain.setTargetAtTime(speaking ? SFX_LV * 0.8 : SFX_LV, t, 0.25);
-    var on = (st.on && (st.playing || st.waiting) && soundOn()) || sc.audible;
+    var on = st.on && (st.playing || st.waiting);
     master.gain.setTargetAtTime(on ? 1 : 0, t, on ? 0.35 : 0.12);
     // the music steps back while a line is said
     bedBus.gain.setTargetAtTime(speaking ? 0.55 : 1, t, 0.3);
@@ -804,7 +803,6 @@
   }
   function events(a, b, max) {
     if (!ac || b <= a || b - a > (max || 0.25)) return;
-    if (!soundOn()) return;
     var t = ac.currentTime + 0.04;
     EV.forEach(function (e) { if (e[0] > a && e[0] <= b) SFX[e[1]](t, e[2]); });
     GR.forEach(function (g) {
@@ -1003,9 +1001,6 @@
 
   function start(from, trigger) {
     if (!F.live()) return false;
-    sc.audible = false;
-    // "Watch with sound": the site's sound comes on with it (no chime, the film has its own)
-    if (ES.sound && !ES.sound.on()) ES.sound.set(true, { quiet: true });
     // inside the tap: wake the sound and the voice now (browsers only allow it here)
     audio();
     session(true);
@@ -1044,7 +1039,7 @@
     voiceUi();
     ui();
     try { playBtn.focus({ preventScroll: true }); } catch (e) { playBtn.focus(); }
-    track('film_watch', { action: 'start', from: from, via: trigger && trigger.hasAttribute('data-watch-nudge') ? 'nudge' : 'button', voice: pref.voice ? voiceKind() : 'off', sound: soundOn() });
+    track('film_watch', { action: 'start', from: from, via: trigger && trigger.hasAttribute('data-watch-nudge') ? 'nudge' : 'button', voice: pref.voice ? voiceKind() : 'off' });
     nudgeDone();
     glide(Math.round(F.y(st.T)), function () {
       if (!st.on) return;
@@ -1065,8 +1060,6 @@
     if (st.raf) cancelAnimationFrame(st.raf);
     st.raf = 0;
     if (ac && master) master.gain.setTargetAtTime(0, ac.currentTime, 0.15);
-    sc.T = null;
-    setTimeout(scrollKick, 400);
     root.classList.remove('is-watching', 'watch-idle');
     setTimeout(nudgeUi, 0);
     clearTimeout(idleT);
@@ -1077,84 +1070,6 @@
       if (back) { try { back.focus({ preventScroll: true }); } catch (e) {} }
     }
   }
-
-  /* ------------------------------------------------------------------ sound while scrolling
-     With the site's sound on (the speaker in the header: ES.sound in site.js), the film plays the
-     same music and small sounds as you scroll it yourself, without the voice. The music follows
-     where you are; the small sounds play as you pass them going forward (not going back); the
-     water and the breaths only while the picture moves. It steps aside while Watch with sound is
-     on. Until the first click, tap or key the browser won't let it start: the speaker waits. */
-  var sc = { audible: false, raf: 0, T: null, v: 0, lastNow: 0, moved: 0, here: false };
-  function scrollWanted() { return !!(ES.sound && ES.sound.on()) && F.live() && !st.on && !document.hidden; }
-  function inFilm() { var t = F.t(scrollNow()); return t > -0.35 && t < F.TOTAL + 0.35; }
-  function scrollKick() {
-    if (sc.raf || !scrollWanted()) return;
-    sc.raf = requestAnimationFrame(scrollFrame);
-  }
-  function scrollFrame(now) {
-    sc.raf = 0;
-    if (!scrollWanted()) { scrollQuiet(); return; }
-    if (!ac || ac.state !== 'running') { sc.T = null; return; }
-    if (!EV) buildEvents();
-    var here = inFilm();
-    var T = F.at();
-    var dt = sc.lastNow ? Math.min(0.1, (now - sc.lastNow) / 1000) : 0;
-    sc.lastNow = now;
-    if (sc.T !== null && dt > 0) {
-      var d = T - sc.T;
-      sc.v += (Math.max(0, d) / dt - sc.v) * Math.min(1, dt * 8);
-      if (here && d > 0) events(sc.T, T, 0.6);
-      if (Math.abs(d) > 1e-4) sc.moved = now;
-    }
-    sc.T = T;
-    var changed = here !== sc.here;
-    sc.here = sc.audible = here;
-    soundTo(T, false, changed);
-    // on while in the film, and a moment longer after the picture stops or you leave it (the fade)
-    if (here || now - sc.moved < 1500) sc.raf = requestAnimationFrame(scrollFrame);
-    else sc.lastNow = 0;
-  }
-  function scrollQuiet() {
-    if (sc.raf) cancelAnimationFrame(sc.raf);
-    sc.raf = 0;
-    sc.audible = sc.here = false;
-    sc.T = null;
-    sc.lastNow = 0;
-    sc.v = 0;
-    if (ac && master && !st.on) master.gain.setTargetAtTime(0, ac.currentTime, 0.25);
-  }
-  // inside the click on the speaker, or the page's first click, tap or key: start the sound
-  function scrollWake() {
-    if (!scrollWanted()) return;
-    var a = audio();
-    if (!a) return;
-    a.onstatechange = function () { if (a.state === 'running') scrollKick(); };
-    scrollKick();
-  }
-  window.addEventListener('es:sound', function (e) {
-    if (st.on) {
-      if (e.detail && e.detail.on) audio();
-      soundTo(st.T, false, true);
-      // (the line on screen is said again, or now only shown, straight away)
-      if (st.playing && st.line) {
-        var c = st.line.c;
-        stopVoice();
-        st.line = null;
-        st.next = c.k;
-      }
-      voiceUi();
-      return;
-    }
-    if (e.detail && e.detail.on) scrollWake();
-    else scrollQuiet();
-  });
-  window.addEventListener('es:sound-unlock', scrollWake);
-  window.addEventListener('scroll', scrollKick, { passive: true });
-  document.addEventListener('visibilitychange', function () { if (document.hidden) scrollQuiet(); else scrollKick(); });
-  window.addEventListener('es:calm', function () { if (!scrollWanted()) scrollQuiet(); });
-  // (the film decides a moment after load whether it runs; then the speaker knows whether to wait)
-  setTimeout(function () { if (ES.sound && ES.sound.sync) ES.sound.sync(); if (ES.sound && !ES.sound.locked()) scrollWake(); }, 0);
-  window.addEventListener('load', function () { if (ES.sound && ES.sound.sync) ES.sound.sync(); });
 
   /* ------------------------------------------------------------------ "much better with narration"
      A hand-drawn note points at the play buttons while the narration is new: on the first six
@@ -1293,7 +1208,7 @@
     voiceBtn.hidden = kind === 'none' && !DEVICE;
     var na = kind === 'none' && voicesTried;
     voiceBtn.classList.toggle('is-na', na);
-    voiceBtn.setAttribute('aria-pressed', String(pref.voice && !na && soundOn()));
+    voiceBtn.setAttribute('aria-pressed', String(pref.voice && !na));
     var label = voiceBtn.getAttribute('aria-label') || '';
     var credit = voiceBtn.getAttribute('data-credit');
     var note = na ? voiceBtn.getAttribute('data-none') : kind === 'device' ? voiceBtn.getAttribute('data-device') : kind === 'clip' && credit ? label + '. ' + credit : label;
@@ -1304,13 +1219,6 @@
   closeBtn.addEventListener('click', function () { close('button'); });
   voiceBtn.addEventListener('click', function () {
     if (voiceBtn.classList.contains('is-na')) return;
-    // with the sound off, the voice button brings the sound (and the voice) back
-    if (!soundOn()) {
-      pref.voice = true;
-      savePref();
-      if (ES.sound) ES.sound.set(true, { quiet: true });
-      return;
-    }
     pref.voice = !pref.voice;
     savePref();
     voiceUi();
@@ -1424,6 +1332,6 @@
     // (for testing: a faster film)
     speed: function (x) { TS = x || 1; V = 0.3 * TS; },
     // (for testing: the sounds, their moments, and where they go)
-    sounds: function () { if (!cues) { cues = buildCues(); buildEvents(); } return { sfx: SFX, ev: EV, ac: audio(), bus: sfxBus, master: master, scroll: sc }; },
+    sounds: function () { if (!cues) { cues = buildCues(); buildEvents(); } return { sfx: SFX, ev: EV, ac: audio(), bus: sfxBus, master: master }; },
   };
 })();

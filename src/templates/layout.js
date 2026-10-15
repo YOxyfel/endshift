@@ -50,7 +50,6 @@ export function header(ctx) {
       <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.map((id) => `<li>${navLink(ctx, id, true)}</li>`)}</ul></nav>
       <div class="header-tools">
         <span class="hdr-switch">${wallSwitch(ctx, { source: 'header', cls: 'wallswitch--mini' })}<span class="hdr-switch__label" aria-hidden="true" data-shift-label>${shiftLabel(ui.shift.labelOn, ui.shift.labelOff)}</span></span>
-        <button class="sound-toggle" type="button" data-sound-toggle aria-pressed="false" aria-label="${esc(ui.sound.label)}" title="${esc(ui.sound.hint)}"><span class="sound-toggle__off">${icon('mute')}</span><span class="sound-toggle__on">${icon('sound')}</span></button>
         ${langLinks(ctx)}
         ${ctx.page.id === 'ritual'
           ? btn({ href: '#ritual-start', label: `${shiftLabel(ui.cta.ritualShort, ui.cta.ritualShortOff)}<span class="if-here">${ui.cta.startNow}</span>`, size: 'sm', trackId: 'header_start', cls: 'header-cta', attr: { 'aria-current': 'page' } })
@@ -252,7 +251,7 @@ function clientConfig(ctx, page) {
     analytics: cfg.analytics,
     countEndpoint: cfg.batch.countEndpoint,
     urls: { ritual: ctx.url('ritual'), cookies: ctx.url('cookies'), batch: ctx.url('batch') },
-    strings: { signup: ui.signup, toast: ui.toast, calm: ui.calm, sound: ui.sound, menu: ui.menu, shift: ui.shift, meter: { live: ui.meter.live }, joined: ui.joined },
+    strings: { signup: ui.signup, toast: ui.toast, calm: ui.calm, menu: ui.menu, shift: ui.shift, meter: { live: ui.meter.live }, joined: ui.joined },
     batch: { goal: cfg.batch.founderGoal },
     // the domain printed on the founder card (left off while it's still the placeholder)
     site: /\.example$/.test(String(cfg.siteUrl || '').replace(/\/$/, '')) ? '' : String(cfg.siteUrl || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),

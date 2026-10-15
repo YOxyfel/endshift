@@ -35,7 +35,6 @@ export default ({ cfg }) => {
       ['es:game', 'That you found today’s switch on the home page, and how fast, so the evening shows instead of the game. Replaced the next day.'],
       ['es:exp', 'Which version of a page you see while we compare two versions of something (a line of text, for example).'],
       ['es:reward', 'That you claimed the game’s reward on this device, so the form isn’t shown again. Your email is not stored here.'],
-      ['es:sound', 'Whether you switched the site’s sound on or off with the speaker in the header.'],
       ['es:watch', 'Your voice and sound choices for “Watch with sound” on the home page.'],
       ['es:nudge-watch', 'How many times the “Much better with narration” note has shown, so it stops after a few visits.'],
       ['es:nudge-voice', 'The same for the ritual’s “Now with narration” note.'],
