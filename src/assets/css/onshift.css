@@ -1,7 +1,9 @@
 /* ==========================================================================================
-   Still on shift (onshift.js): the slips, the meeting, the lean-in, the Overtime gauntlet.
+   Still on shift (onshift.js): the slips, the emails and their replies, the surveys, the
+   meeting, the lean-in, the screen share, the update, IT's cursor, the Overtime gauntlet.
    Everything is paper and ink, drawn into one fixed layer under the header (the header, and
-   its switch, stay above it all). The layer itself lets clicks through; its things don't.
+   its switch, stay above it all: the only way out). The layer lets clicks through; its things
+   don't.
    ========================================================================================== */
 
 :root {
@@ -191,16 +193,33 @@
   color: #000;
 }
 
-/* the way out, on every slip: the switch's own amber */
-.os-slip .btn--quiet {
-  background: var(--tungsten);
-  border: 2px solid var(--os-ink);
-  color: #1b1a17;
+/* what you type stays selectable; the slip around it doesn't */
+.os-slip input,
+.os-slip textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  touch-action: auto;
 }
 
-.os-slip .btn--quiet:hover {
-  background: var(--tungsten-hi);
-  color: #000;
+.os-slip .btn.is-picked {
+  background: var(--os-ink);
+  color: var(--os-paper);
+}
+
+.os-slip__text--dim {
+  font-weight: 500;
+  color: #3a3833;
+}
+
+/* the kicker on an envelope: what kind of thing this is */
+.os-slip__k {
+  margin-bottom: 0.3rem;
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* sizes: a note, a message, half the screen */
@@ -565,6 +584,64 @@ html.is-os-busy * {
   to { transform: scaleY(2.2) translateY(2px); }
 }
 
+/* once you're in the call, the heads move: a slow listening sway, a nod when they speak */
+.os-fig__hd {
+  transform-box: view-box;
+  transform-origin: 36px 54px;
+}
+
+.motion-ok .os-tile .os-fig__hd {
+  animation: os-sway 5.6s ease-in-out infinite;
+}
+
+.motion-ok .os-tile--1 .os-fig__hd {
+  animation-delay: -2.1s;
+  animation-duration: 6.4s;
+}
+
+.motion-ok .os-tile--2 .os-fig__hd {
+  animation-delay: -3.7s;
+  animation-duration: 5.1s;
+}
+
+.motion-ok .os-tile--3 .os-fig__hd {
+  animation-delay: -1.2s;
+  animation-duration: 7s;
+}
+
+.motion-ok .os-tile.is-speaking .os-fig__hd {
+  animation: os-nod 1.15s ease-in-out infinite;
+}
+
+.motion-ok .os-tile .os-fig__body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: os-breathe 4.2s ease-in-out infinite;
+}
+
+.motion-ok .os-tile.is-frozen .os-fig__hd,
+.motion-ok .os-tile.is-frozen .os-fig__body,
+.motion-ok .os-tile.is-frozen .os-eye,
+.motion-ok .os-tile.is-frozen .os-mouth {
+  animation-play-state: paused;
+}
+
+@keyframes os-sway {
+  0%, 100% { transform: rotate(-2deg) translateX(-0.6px); }
+  35% { transform: rotate(1.5deg) translateX(0.8px) translateY(0.4px); }
+  70% { transform: rotate(2.4deg) translateX(0.2px); }
+}
+
+@keyframes os-nod {
+  0%, 100% { transform: rotate(-1deg) translateY(0); }
+  30% { transform: rotate(0.5deg) translateY(1.6px); }
+  60% { transform: rotate(-2deg) translateY(-0.4px); }
+}
+
+@keyframes os-breathe {
+  50% { transform: scaleY(1.016) scaleX(0.994); }
+}
+
 /* The meeting -------------------------------------------------------------------------------- */
 /* inside the layer: slips under the veil, the veil under a dialog, the gauntlet strip on top */
 .os-veil {
@@ -688,6 +765,138 @@ html.is-os-busy * {
 
 .os-tile.is-speaking {
   border-color: #8fd39a;
+}
+
+/* the sound bars by the name, only while speaking */
+.os-tile__bars {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.55rem;
+  display: none;
+  align-items: flex-end;
+  gap: 2px;
+  height: 0.9rem;
+}
+
+.os-tile.is-speaking .os-tile__bars {
+  display: inline-flex;
+}
+
+.os-tile__bars i {
+  width: 3px;
+  height: 40%;
+  border-radius: 1px;
+  background: #8fd39a;
+}
+
+.motion-ok .os-tile__bars i {
+  animation: os-bars 520ms ease-in-out infinite alternate;
+}
+
+.motion-ok .os-tile__bars i:nth-child(2) {
+  animation-delay: -180ms;
+}
+
+.motion-ok .os-tile__bars i:nth-child(3) {
+  animation-delay: -340ms;
+}
+
+@keyframes os-bars {
+  from { height: 25%; }
+  to { height: 100%; }
+}
+
+/* camera off: the initial where the face was */
+.os-tile__init {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  background: #2a3338;
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 3.2rem;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.os-tile.is-camoff .os-fig {
+  display: none;
+}
+
+.os-tile.is-camoff .os-tile__init {
+  display: block;
+}
+
+/* frozen: the picture smears and stops */
+.os-tile.is-frozen .os-fig {
+  filter: saturate(0.25) contrast(1.5) blur(0.7px);
+  opacity: 0.8;
+}
+
+.os-tile__badge {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.45rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--paper);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+}
+
+.os-tile__badge[hidden] {
+  display: none;
+}
+
+.os-tile.is-late {
+  outline: 2px solid rgba(143, 211, 154, 0.5);
+  outline-offset: -2px;
+}
+
+.motion-ok .os-tile.is-late {
+  animation: os-join 420ms var(--ease-out) both;
+}
+
+@keyframes os-join {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+/* a thumbs-up floating off a tile */
+.os-react {
+  position: absolute;
+  bottom: 30%;
+  font-size: 1.5rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.motion-ok .os-react {
+  animation: os-float 1.9s ease-out both;
+}
+
+@keyframes os-float {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(1);
+  }
 }
 
 .os-tile__name {
@@ -1331,11 +1540,1037 @@ html.is-os-busy * {
   color: #1b1a17;
 }
 
+/* Chat, in the slip: you answer, they answer back ---------------------------------------------- */
+.os-chat {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed rgba(27, 26, 23, 0.35);
+}
+
+.os-chat[hidden] {
+  display: none;
+}
+
+.os-chat__in {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.7rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 3px;
+  background: #fff;
+  color: #1b1a17;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.os-chat__in:focus-visible {
+  outline: 3px solid var(--tungsten);
+  outline-offset: 1px;
+}
+
+.os-slip__you {
+  justify-self: end;
+  max-width: 85%;
+  margin-top: 0.6rem;
+  margin-left: auto;
+  padding: 0.4rem 0.7rem;
+  border-radius: 10px 10px 2px 10px;
+  background: var(--os-ink);
+  color: var(--os-paper);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  width: fit-content;
+}
+
+.os-slip__seen {
+  display: block;
+  margin-top: 0.15rem;
+  color: rgba(241, 234, 217, 0.6);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-align: right;
+}
+
+.os-slip__typing,
+.os-slip__text--re {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.os-slip__typing {
+  color: rgba(27, 26, 23, 0.55);
+  font-style: italic;
+}
+
+.motion-ok .os-slip__typing {
+  animation: os-pulse 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes os-pulse {
+  to { opacity: 0.45; }
+}
+
+/* a thread shrinks the shout to a conversation */
+.os-slip.is-thread .os-slip__body {
+  display: block;
+  max-height: 46vh;
+  overflow: auto;
+}
+
+.os-slip--l.is-thread .os-slip__text,
+.os-slip--m.is-thread .os-slip__text {
+  font-family: var(--font-body);
+  font-weight: 650;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.os-slip--l.is-thread {
+  min-height: 0;
+}
+
+/* The small flows: choices, two cards, a quote ------------------------------------------------ */
+.os-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.os-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.os-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 2px solid var(--os-ink);
+  border-left-width: 6px;
+  border-radius: 3px;
+  background: #fff;
+  color: #1b1a17;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.os-card:nth-child(2) {
+  border-left-color: var(--os-red);
+}
+
+.os-card:hover,
+.os-card:focus-visible {
+  background: #fff6dc;
+}
+
+.os-card.is-picked {
+  background: var(--os-ink);
+  color: var(--os-paper);
+}
+
+.os-card__t {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.os-quote {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0 0.3rem 0.7rem;
+  border-left: 3px solid var(--os-red);
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.os-ta {
+  min-height: 3.5rem;
+  resize: vertical;
+}
+
+/* "is typing": three dots */
+.os-dots {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+}
+
+.os-dots i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: rgba(27, 26, 23, 0.55);
+}
+
+.motion-ok .os-dots i {
+  animation: os-dot 1s ease-in-out infinite;
+}
+
+.motion-ok .os-dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.motion-ok .os-dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes os-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* the one that follows the pointer */
+.os-slip--shadow {
+  pointer-events: none;
+  width: auto;
+  padding: 0.45rem 0.8rem;
+  transition: left 140ms linear, top 140ms linear, opacity 260ms ease;
+}
+
+.os-slip--shadow .os-slip__text {
+  white-space: nowrap;
+}
+
+/* the call that rings */
+.os-ring {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.os-ring i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #3f9a52;
+}
+
+.motion-ok .os-ring i {
+  animation: os-ringing 1.2s ease-in-out infinite;
+}
+
+.motion-ok .os-ring i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.motion-ok .os-ring i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes os-ringing {
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* Email ---------------------------------------------------------------------------------------- */
+.os-slip--mail {
+  background:
+    linear-gradient(90deg, transparent 0 2.1rem, rgba(216, 70, 58, 0.35) 2.1rem calc(2.1rem + 1px), transparent calc(2.1rem + 1px)),
+    repeating-linear-gradient(180deg, transparent 0 1.55rem, rgba(27, 26, 23, 0.1) 1.55rem calc(1.55rem + 1px)),
+    var(--os-paper);
+}
+
+.os-slip--mail .os-slip__body {
+  padding-left: 2.6rem;
+}
+
+.os-mail__subject {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.55rem;
+  text-transform: uppercase;
+}
+
+.os-mail__body {
+  margin-top: 0.3rem;
+  font-size: 0.98rem;
+  font-weight: 500;
+  line-height: 1.55rem;
+}
+
+.os-mail__re {
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* the compose window: a white sheet on the paper */
+.os-mail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+  border: 2px solid var(--os-ink);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.os-mail__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.8rem;
+  border-bottom: 1px solid rgba(27, 26, 23, 0.14);
+}
+
+.os-mail__lbl {
+  flex: 0 0 4rem;
+  color: #6a665d;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-mail__in {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  color: #1b1a17;
+  font: inherit;
+  font-size: 0.98rem;
+}
+
+.os-mail__in:focus-visible {
+  outline: none;
+  box-shadow: inset 0 -2px 0 var(--tungsten);
+}
+
+.os-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.6rem 0.15rem 0.2rem;
+  border-radius: 999px;
+  background: #eee9dc;
+  color: #1b1a17;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.os-mail__ta {
+  flex: 1 1 auto;
+  min-height: 9rem;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  background: transparent;
+  color: #1b1a17;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: none;
+}
+
+.os-mail__ta:focus-visible {
+  outline: none;
+  background: #fffdf6;
+}
+
+.os-mail__quote {
+  padding: 0 0.8rem 0.6rem;
+}
+
+.os-mail__qbtn {
+  min-height: 1.4rem;
+  padding: 0 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  background: #e3ded0;
+  color: #1b1a17;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.os-mail__qbtn[hidden] {
+  display: none;
+}
+
+.os-mail__q {
+  margin: 0;
+  padding: 0.3rem 0 0 0.8rem;
+  border-left: 3px solid rgba(27, 26, 23, 0.3);
+  color: #4a4740;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.os-mail__q[hidden] {
+  display: none;
+}
+
+.os-mail__qhead {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+}
+
+.os-mail__also {
+  padding: 0 0.8rem 0.4rem;
+  color: #6a665d;
+  font-size: var(--fs-micro);
+  font-style: italic;
+}
+
+.os-mail__also[hidden] {
+  display: none;
+}
+
+.os-mail__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-top: 1px solid rgba(27, 26, 23, 0.14);
+  background: #f6f2e8;
+}
+
+.os-mail__draft {
+  margin-left: auto;
+  color: #6a665d;
+  font-size: var(--fs-micro);
+}
+
+.os-mail__sure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  background: #fff1c9;
+  font-weight: 600;
+}
+
+.os-mail__sure[hidden] {
+  display: none;
+}
+
+.os-mail__sent {
+  padding: 2.5rem 1rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.os-mail__sent b {
+  color: #3f9a52;
+}
+
+.os-mail .btn--ghost {
+  border-color: var(--os-ink);
+  color: #1b1a17;
+}
+
+/* Forms: the survey, the policy, the training --------------------------------------------- */
+.os-slip--f {
+  width: min(46rem, 94vw);
+  max-height: calc(100vh - var(--header-h) - 2.5rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-shadow: 14px 16px 0 rgba(0, 0, 0, 0.55);
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.os-slip--f .os-slip__head {
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border-bottom: 1px dashed rgba(27, 26, 23, 0.35);
+}
+
+.os-slip--f .os-slip__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.9rem 1.1rem 1rem;
+}
+
+.os-slip--compose .os-slip__body {
+  padding: 0.8rem;
+}
+
+.os-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.os-form__k {
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.os-form__title {
+  margin-top: 0.2rem;
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.os-form__intro {
+  margin-top: 0.4rem;
+  color: #3a3833;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+}
+
+.os-form__prog {
+  margin-top: 0.3rem;
+  color: #6a665d;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.os-form__prog:empty {
+  display: none;
+}
+
+.os-form__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-top: 0.7rem;
+  padding: 0.2rem 0.3rem 0.2rem 0;
+  overflow: auto;
+  scrollbar-color: var(--os-ink) transparent;
+}
+
+.os-form__body:focus {
+  outline: none;
+}
+
+.os-form__anon,
+.os-form__more {
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px dashed rgba(27, 26, 23, 0.4);
+  border-radius: 3px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-form__anon small {
+  display: block;
+  margin-top: 0.1rem;
+  color: #6a665d;
+  font-weight: 500;
+}
+
+.os-form__more {
+  border-color: var(--os-red);
+  color: var(--os-red);
+}
+
+.os-form__done {
+  padding: 1.6rem 0.5rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.os-form__done b {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #3f9a52;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+
+.os-form__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed rgba(27, 26, 23, 0.35);
+}
+
+.os-form__foot[hidden] {
+  display: none;
+}
+
+.os-form__foot--wrap {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.os-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.os-form__gap {
+  flex: 1 1 auto;
+}
+
+/* a question */
+.os-q {
+  margin: 0 0 1rem;
+  padding: 0 0 0.9rem;
+  border: 0;
+  border-bottom: 1px solid rgba(27, 26, 23, 0.14);
+  min-inline-size: 0;
+}
+
+.os-q:last-child {
+  border-bottom: 0;
+}
+
+.os-q__t {
+  display: block;
+  padding: 0;
+  margin-bottom: 0.55rem;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.os-q__n {
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.os-q__opt {
+  color: #6a665d;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.os-q__err {
+  margin-top: 0.4rem;
+  color: var(--os-red);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-q__err[hidden] {
+  display: none;
+}
+
+.os-q.is-missing {
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--os-red);
+}
+
+.os-q.is-wrong .os-opt:has(input:checked) span {
+  color: var(--os-red);
+  text-decoration: line-through;
+}
+
+.os-q input[type='radio'],
+.os-q input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--os-ink);
+  flex: 0 0 auto;
+}
+
+.os-opts {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.os-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.2rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(27, 26, 23, 0.25);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 0.95rem;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.os-opt:hover {
+  background: #fff;
+}
+
+.os-opt:has(input:checked) {
+  border-color: var(--os-ink);
+  background: #fff;
+}
+
+.os-scale {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.os-scale__c {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 3px;
+  background: #fff;
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.os-scale--nps .os-scale__c {
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+  font-size: 0.9rem;
+}
+
+.os-scale__c input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.os-scale__c:hover {
+  background: #fff6dc;
+}
+
+.os-scale__c:has(input:checked) {
+  background: var(--os-ink);
+  color: var(--os-paper);
+}
+
+.os-scale__c:has(input:focus-visible) {
+  outline: 3px solid var(--tungsten);
+  outline-offset: 1px;
+}
+
+.os-scale__ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.3rem;
+  color: #6a665d;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+}
+
+/* the policy: a document to the end */
+.os-doc {
+  padding-right: 0.8rem;
+  border: 1px solid rgba(27, 26, 23, 0.25);
+  background: #fff;
+  max-height: 38vh;
+}
+
+.os-doc__list {
+  margin: 0;
+  padding: 0.8rem 0.8rem 0.8rem 2.2rem;
+  font-size: var(--fs-small);
+  line-height: 1.55;
+}
+
+.os-doc__list li {
+  margin-bottom: 0.9rem;
+}
+
+.os-doc__list li::marker {
+  color: var(--os-red);
+  font-weight: 800;
+}
+
+.os-ack {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-ack input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--os-ink);
+}
+
+.os-ack:has(input:disabled) {
+  color: #8a867c;
+}
+
+/* The screen share: a red frame, a bar that drifts ----------------------------------------- */
+.os-shareframe {
+  position: fixed;
+  inset: 0;
+  border: 4px solid var(--os-red);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.os-shareframe.is-in {
+  opacity: 1;
+}
+
+.os-sharebar {
+  position: fixed;
+  left: 50%;
+  top: calc(var(--header-h) + 0.6rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: var(--os-red);
+  color: #fff;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  transform: translate(calc(-50% + var(--x, 0vw)), -140%);
+  transition: transform 900ms var(--ease-out);
+}
+
+.os-sharebar.is-in {
+  transform: translate(calc(-50% + var(--x, 0vw)), 0);
+}
+
+.os-sharebar__dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.motion-ok .os-sharebar__dot {
+  animation: os-rec 1.2s ease-in-out infinite;
+}
+
+.os-sharebar__stop {
+  background: #fff;
+  border-color: #fff;
+  color: var(--os-red);
+}
+
+.os-sharebar__stop:hover {
+  background: #ffe3df;
+}
+
+/* The update: the whole screen, a percentage that stops at 97 -------------------------------- */
+.os-update {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: var(--header-h) var(--gutter) 2rem;
+  background: #10233f;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+.os-update.is-in {
+  opacity: 1;
+}
+
+.os-update__box {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.os-update__spin {
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.8rem;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+}
+
+.motion-ok .os-update__spin {
+  animation: os-spin 1s linear infinite;
+}
+
+@keyframes os-spin {
+  to { transform: rotate(360deg); }
+}
+
+.os-update__pct {
+  min-height: 1.2em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.os-update__t {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.os-update__d {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: var(--fs-small);
+}
+
+.os-update__skip {
+  margin-top: 2rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: var(--fs-micro);
+}
+
+/* IT's cursor, wandering ------------------------------------------------------------------- */
+.os-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 1.4rem;
+  height: 1.4rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 1000ms cubic-bezier(0.4, 0, 0.3, 1), opacity 300ms ease;
+  will-change: transform;
+}
+
+.os-ghost.is-in {
+  opacity: 1;
+}
+
+.os-ghost svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.os-ghost svg path {
+  fill: #fff;
+  stroke: var(--os-ink);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.os-ghost__tag {
+  position: absolute;
+  left: 1.2rem;
+  top: 1.1rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 3px;
+  background: #3f9a52;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.os-ghost::after {
+  content: '';
+  position: absolute;
+  left: 0.1rem;
+  top: 0.1rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid #3f9a52;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.motion-ok .os-ghost.is-click::after {
+  animation: os-ripple 420ms ease-out;
+}
+
+@keyframes os-ripple {
+  from {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
 /* phones: the big slip is the whole width, the meeting fills the screen */
 @media (max-width: 600px) {
   .os-slip--l {
     min-height: 56vh;
     padding: 1rem 1.1rem;
+  }
+
+  .os-slip--f {
+    width: 100vw;
+    max-height: calc(100svh - var(--header-h) - 0.5rem);
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  .os-slip--f .os-slip__body {
+    padding: 0.7rem 0.9rem 0.9rem;
+  }
+
+  .os-slip--f::before {
+    display: none;
+  }
+
+  .os-doc {
+    max-height: none;
+  }
+
+  .os-mail__lbl {
+    flex-basis: 3.2rem;
+  }
+
+  .os-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .os-sharebar {
+    font-size: var(--fs-micro);
   }
 
   .os-call {

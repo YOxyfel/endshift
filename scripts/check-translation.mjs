@@ -44,7 +44,8 @@ for (const id of ids) {
     const partial = id === 'ui' || id === 'game';
     const diffs = compare(en, lo, id).filter((d) => !(partial && /missing$/.test(d)));
     // leftover Latin letters glued to Cyrillic ones (a typo that looks right)
-    const mixed = JSON.stringify(lo).match(/[а-яА-Я][a-zA-Z]|[a-zA-Z][а-яА-Я]/g);
+    // (the "\n" of a line break inside a string is an escape, not a letter)
+    const mixed = JSON.stringify(lo).replace(/\\[ntr"\\]/g, ' ').match(/[а-яА-Я][a-zA-Z]|[a-zA-Z][а-яА-Я]/g);
     if (mixed) diffs.push(`mixed Latin/Cyrillic letters: ${[...new Set(mixed)].join(' ')}`);
     if (diffs.length) { bad++; console.log(`✗ ${id}\n  ${diffs.slice(0, 30).join('\n  ')}`); }
     else console.log(`✓ ${id}`);

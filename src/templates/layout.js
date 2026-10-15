@@ -134,9 +134,10 @@ export function whereNext(ctx) {
   </nav>`;
 }
 
-/* Still on shift: the layer work mode uses while it's on (onshift.js draws the slips, the meeting
-   and the rest into it). The 50% claim is real markup, so the site's form handling binds it. Not
-   on the ritual, Contact, the legal pages, the print card or the design-system page. */
+/* Still on shift: the layer work mode uses while it's on (onshift.js draws the slips, the emails,
+   the surveys, the meeting and the rest into it). The 50% claim is real markup, so the site's form
+   handling binds it. The layer offers no way out: the header's switch is the only one. Not on the
+   ritual, Contact, the legal pages, the print card or the design-system page. */
 const ONSHIFT_OFF = ['ritual', 'ritual-card', 'contact', 'shipping', 'privacy', 'terms', 'cookies', 'system', '404'];
 const onshiftOn = (ctx) => !!(ctx.content.onshift && ctx.cfg.onshift?.enabled && !ONSHIFT_OFF.includes(ctx.page.id));
 function onshiftLayer(ctx) {
@@ -151,7 +152,6 @@ function onshiftLayer(ctx) {
       <p class="os-claim__text">${cl.text}</p>
       ${signupForm(ctx, { source: 'overtime', submit: cl.submit, label: cl.label, note: cl.note, reward: R.tag, doneTitle: cl.doneTitle, doneText: cl.doneText })}
       <p class="small muted os-claim__terms">${cl.terms} <a class="link" href="${ctx.url('terms', { hash: 'overtime' })}">${cl.termsLink}</a></p>
-      <div class="cta-row"><button class="btn btn--ghost" type="button" data-os-clockout>${icon('power')}<span>${o.clockOut}</span></button></div>
     </div>`
     : '';
   return html`<div class="onshift" data-onshift hidden>${claim}</div>`;

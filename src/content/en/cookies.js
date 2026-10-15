@@ -29,7 +29,7 @@ export default ({ cfg }) => {
       ['es:push', 'That the phone reminder is on, and its time, so the ritual shows it.'],
       ['es:lang-hint', 'That you answered the “read it in Bulgarian” note, so it doesn’t show again.'],
       ['es:shift', 'Whether you switched work mode off, and when. Resets at 05:00.'],
-      ['es:onshift', 'How many of work mode’s messages you ignored, and whether you collected the Overtime code, so Finance stops asking. (The current visit’s count is kept only until the tab closes.)'],
+      ['es:onshift', 'How many of work mode’s messages you ignored or answered, how many of its surveys you finished, and whether you collected the Overtime code, so Finance stops asking. Nothing you type into its emails or surveys is kept or sent. (The current visit’s count is kept only until the tab closes.)'],
       ['es:opening', 'That you’ve seen the opening on the home page, so it doesn’t play again.'],
       ['es:embeds', 'Which music services you chose in the ritual, so their player can load next time.'],
       ['es:out', 'Your usual end of shift, if you changed it on the home page.'],
