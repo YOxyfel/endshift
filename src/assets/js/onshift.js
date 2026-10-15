@@ -59,12 +59,12 @@
   function save(st, key, v) { try { st.setItem(key, JSON.stringify(v)); } catch (e) {} }
   var SKEY = 'es:onshift-visit', LKEY = 'es:onshift';
   // this visit: seconds endured with work on, when the next thing comes, what's been shown
-  var S = load(sessionStorage, SKEY, { t: 0, next: 20, shown: 0, dismissed: 0, unread: 0, last: '', lastText: '', meetAt: 0, forced: 0, declined: 0, offerAt: 0, stage: 0, stamps: 0, seen: {}, surveys: [], mails: [], upd: 0, cb: 0 });
+  var S = load(sessionStorage, SKEY, { t: 0, next: 6, shown: 0, dismissed: 0, unread: 0, last: '', lastText: '', meetAt: -999, forced: 0, declined: 0, offerAt: 0, stage: 0, stamps: 0, seen: {}, surveys: [], mails: [], upd: 0, cb: 0, lvl: 1 });
   // this device: the running count, and whether the code was collected
   var L = load(localStorage, LKEY, { pings: 0, ignored: 0, survived: 0, overtime: null, answered: 0, surveys: 0, sent: 0 });
   var saveS = function () { save(sessionStorage, SKEY, S); };
   var saveL = function () { save(localStorage, LKEY, L); };
-  var CAP = 14; // incidents per page load (a cap, so a long read isn't a storm)
+  var CAP = 24; // incidents per page load (a cap, so a long read isn't a storm forever)
   var shownHere = 0;
   var live = []; // slips on screen
   var modal = null; // the meeting, a gauntlet stage, the update screen or the claim: one at a time
@@ -89,7 +89,17 @@
       gameBusy() || typing();
   }
   function formOpen() { return live.some(function (e) { return e.hasAttribute('data-keep'); }); }
-  function level() { return S.t >= 120 || S.dismissed >= 4 ? 3 : S.t >= 45 || S.dismissed >= 2 ? 2 : 1; }
+  // a minigame's pace: level 2 after 25 seconds on (or one slip ignored), level 3 after a minute (or three)
+  function level() { return S.t >= 60 || S.dismissed >= 3 ? 3 : S.t >= 25 || S.dismissed >= 1 ? 2 : 1; }
+  function levelCheck() {
+    var l = level();
+    if (l <= (S.lvl || 1)) return;
+    S.lvl = l;
+    saveS();
+    meter(true);
+    if (O.meter && O.meter.levelUp && O.meter.levelUp[l]) toast(O.meter.levelUp[l]);
+    track('onshift_level', { level: l, t: S.t, ignored: S.dismissed });
+  }
 
   /* ------------------------------------------------------------------ the badge: the tab counts */
   var title0 = document.title;
@@ -232,21 +242,27 @@
     later(ms || 1700, function () { finish(e, kind); });
   }
 
-  /* ------------------------------------------------------------------ the pile of ignored slips */
-  var pileEl = null;
-  function pile() {
-    if (!pileEl) {
-      pileEl = el('os-pile', '<i></i><i></i><i></i><b class="os-pile__n"></b>');
-      pileEl.setAttribute('aria-hidden', 'true');
-      host.appendChild(pileEl);
+  /* ------------------------------------------------------------------ the shift meter, bottom left */
+  // how long you've been on, how bad it's got (three bars), and the pile of ignored slips
+  var meterEl = null;
+  function meter(bump) {
+    if (!meterEl) {
+      meterEl = el('os-meter', '<span class="os-meter__on">' + esc(O.meter ? O.meter.on : '') + '</span><span class="os-meter__t" data-t>00:00</span><span class="os-meter__lvl" data-lvl><i></i><i></i><i></i></span><span class="os-pile" data-pile><i></i><i></i><i></i><b class="os-pile__n"></b></span>');
+      meterEl.setAttribute('aria-hidden', 'true');
+      host.appendChild(meterEl);
+      void meterEl.offsetWidth;
     }
-    pileEl.title = fill(O.pile, { n: L.ignored });
-    qs('.os-pile__n', pileEl).textContent = L.ignored;
-    pileEl.classList.toggle('is-on', L.ignored > 0);
-    pileEl.classList.remove('is-bump');
-    void pileEl.offsetWidth;
-    pileEl.classList.add('is-bump');
+    var lvl = level();
+    qs('[data-t]', meterEl).textContent = pad(Math.floor(S.t / 60)) + ':' + pad(S.t % 60);
+    qsa('[data-lvl] i', meterEl).forEach(function (i, k) { i.classList.toggle('is-on', k < lvl); });
+    meterEl.classList.toggle('is-3', lvl === 3);
+    qs('.os-pile__n', meterEl).textContent = L.ignored;
+    qs('[data-pile]', meterEl).classList.toggle('is-on', L.ignored > 0);
+    meterEl.title = O.meter ? fill(O.meter.title, { time: qs('[data-t]', meterEl).textContent, lvl: lvl, n: L.ignored }) : '';
+    meterEl.classList.toggle('is-on', workOn() && (S.shown > 0 || L.ignored > 0));
+    if (bump) { meterEl.classList.remove('is-bump'); void meterEl.offsetWidth; meterEl.classList.add('is-bump'); }
   }
+  function pile() { meter(true); }
 
   // ignored: flicked, "Later", Escape
   function dismiss(e, how, kind) {
@@ -256,6 +272,7 @@
     L.ignored++;
     saveS(); saveL();
     pile();
+    levelCheck();
     remove(e, how === 'flick' ? 'is-flying' : 'is-gone');
     track('onshift_incident', { kind: kind || 'ping', action: 'dismiss', how: how, level: level() });
     // they reply (level 2 and up, most of the time)
@@ -606,7 +623,7 @@
         track('onshift_email', { action: 'send', depth: depth, chars: body.length });
         later(1200, function () { finish(e, 'compose', 'sent'); });
         // the reply to your reply
-        if (depth < 2) later(rnd(12000, 26000), function () {
+        if (depth < 2) later(rnd(8000, 16000), function () {
           if (!workOn() || paused() || modal || formOpen()) return;
           email({ from: item.from, subject: subj, body: pick(Mm.followups) + '\n\n' + who }, depth + 1);
         });
@@ -827,7 +844,7 @@
         if (act === 'decline') {
           remove(e);
           S.declined++;
-          S.forced = S.t + Math.round(rnd(60, 90));
+          S.forced = S.t + Math.round(rnd(30, 45));
           saveS();
           var r = slip({ size: 's', from: 'dana', text: M.rescheduled, kind: 'resched', flick: true });
           later(4000, function () { remove(r); });
@@ -836,15 +853,17 @@
       },
     });
     var tm = setInterval(function () {
+      // dismissed with Escape, or the shift ended: the countdown stops with it
+      if (e.getAttribute('data-done') || !e.parentNode) { clearInterval(tm); return; }
       n--;
       var c = qs('[data-count]', e);
       if (c) c.textContent = fill(M.startingIn, { n: Math.max(0, n) });
-      if (n <= 0) { clearInterval(tm); if (e.parentNode) { remove(e); call({}); } }
+      if (n <= 0) { clearInterval(tm); remove(e); call({}); }
     }, 1000);
   }
   // the call that comes back: it rings, you pick up (or it picks up for you)
   function ring() {
-    if (modal) { S.forced = S.t + 10; saveS(); return; }
+    if (modal || formOpen()) { S.forced = S.t + 10; saveS(); return; }
     var who = 'dana', C = O.callback;
     var e = slip({
       size: 'm', from: who, kind: 'ring', flick: false, aria: true, cls: 'os-slip--ring',
@@ -861,12 +880,19 @@
         }
       },
     });
-    var auto = setTimeout(function () { if (e.parentNode) { remove(e); call({ force: true }); } }, 7000);
+    var auto = setTimeout(function () { if (e.parentNode && !e.getAttribute('data-done')) { remove(e); call({ force: true }); } }, 7000);
     unread(1);
     track('onshift_meeting', { action: 'ring' });
   }
 
   function call(opts) {
+    opts = opts || {};
+    // one dialog at a time: a call never opens over a stage, the update, the claim or another call
+    // (that left the first one stranded with nothing to close it); it comes back a little later
+    if (modal) {
+      if (opts.force || !opts.deck) { S.forced = S.t + 12; saveS(); }
+      return;
+    }
     var people = ['dana', 'petar', 'mira'];
     var c = el('os-call' + (opts.deck ? ' os-call--deck' : ''));
     c.setAttribute('role', 'dialog');
@@ -887,7 +913,9 @@
     veil.setAttribute('aria-hidden', 'true');
     host.appendChild(veil);
     host.appendChild(c);
-    modal = { el: c, veil: veil, kind: 'call', timers: [] };
+    var rec = { el: c, veil: veil, kind: 'call', timers: [] };
+    modal = rec;
+    c.__rec = rec;
     void c.offsetWidth;
     c.classList.add('is-in');
     S.meetAt = S.t;
@@ -901,7 +929,7 @@
       var te = qs('[data-time]', c);
       if (te) te.textContent = pad(Math.floor(s / 60)) + ':' + pad(s % 60);
     }, 1000);
-    modal.timers.push(tmr);
+    rec.timers.push(tmr);
     var cap = qs('[data-cap]', c), capI = -1, say = function (t) { if (cap) cap.textContent = t; };
     // someone speaks every few seconds; the captions follow
     var talk = function () {
@@ -911,10 +939,10 @@
       if (who) who.classList.add('is-speaking');
       capI = (capI + 1 + Math.floor(Math.random() * 2)) % M.captions.length;
       say(M.captions[capI]);
-      modal.timers.push(setTimeout(talk, rnd(2400, 4200)));
+      rec.timers.push(setTimeout(talk, rnd(2400, 4200)));
     };
-    modal.timers.push(setTimeout(talk, 1200));
-    modal.timers.push(setTimeout(function () { say(M.recording); }, 2600));
+    rec.timers.push(setTimeout(talk, 1200));
+    rec.timers.push(setTimeout(function () { say(M.recording); }, 2600));
     // the small things that happen on calls: a camera goes, someone freezes, a hand, a thumbs-up, a late joiner
     var late = false, muted = true;
     var happen = function () {
@@ -930,29 +958,29 @@
         say(fill(M.joined, { name: name('petar') }));
       } else if (ev === 'camoff') {
         t.classList.add('is-camoff');
-        modal.timers.push(setTimeout(function () { t.classList.remove('is-camoff'); }, rnd(6000, 10000)));
+        rec.timers.push(setTimeout(function () { t.classList.remove('is-camoff'); }, rnd(6000, 10000)));
       } else if (ev === 'frozen') {
         t.classList.add('is-frozen');
         var b = qs('[data-badge]', t); b.textContent = M.frozen; b.hidden = false;
         say(fill(M.lostName, { name: who }));
-        modal.timers.push(setTimeout(function () { t.classList.remove('is-frozen'); b.hidden = true; }, rnd(3000, 5200)));
+        rec.timers.push(setTimeout(function () { t.classList.remove('is-frozen'); b.hidden = true; }, rnd(3000, 5200)));
       } else if (ev === 'hand') {
         var hb = qs('[data-badge]', t); hb.textContent = '✋'; hb.hidden = false;
         say(fill(M.hand, { name: who }));
-        modal.timers.push(setTimeout(function () { hb.hidden = true; }, 5000));
+        rec.timers.push(setTimeout(function () { hb.hidden = true; }, 5000));
       } else react(t);
-      modal.timers.push(setTimeout(happen, rnd(5500, 10000)));
+      rec.timers.push(setTimeout(happen, rnd(5500, 10000)));
     };
-    modal.timers.push(setTimeout(happen, 4500));
+    rec.timers.push(setTimeout(happen, 4500));
     var react = function (t) {
       var r = el('os-react', pick(M.reactions), 'span');
       r.style.left = rnd(15, 75).toFixed(0) + '%';
       t.appendChild(r);
-      modal.timers.push(setTimeout(function () { rm(r); }, 1900));
+      rec.timers.push(setTimeout(function () { rm(r); }, 1900));
     };
     // the screen share: a chart nobody can read, or (the gauntlet) Dana's deck
     var share = qs('[data-share]', c);
-    if (!opts.deck) modal.timers.push(setTimeout(function () {
+    if (!opts.deck) rec.timers.push(setTimeout(function () {
       share.hidden = false;
       share.innerHTML = '<p class="os-share__who">' + esc(fill(M.sharing, { name: name('dana') })) + '</p>' + chart();
       c.classList.add('is-sharing');
@@ -965,7 +993,7 @@
         muted = !muted;
         b.textContent = muted ? M.unmute : M.mute;
         qs('[data-mic]', c).textContent = muted ? M.muted : M.micOn;
-        if (!muted) modal.timers.push(setTimeout(function () {
+        if (!muted) rec.timers.push(setTimeout(function () {
           if (muted) return;
           muted = true;
           b.textContent = M.unmute;
@@ -976,42 +1004,57 @@
       else if (act === 'raise') {
         toast(M.raised);
         var yb = qs('[data-you] [data-badge]', c); yb.textContent = '✋'; yb.hidden = false;
-        modal.timers.push(setTimeout(function () { yb.hidden = true; }, 6000));
+        rec.timers.push(setTimeout(function () { yb.hidden = true; }, 6000));
       }
       else if (act === 'leave') { qs('[data-sure]', c).hidden = false; qs('[data-act="stay"]', c).focus(); }
       else if (act === 'stay') qs('[data-sure]', c).hidden = true;
       else if (act === 'leave-anyway') {
-        endCall();
+        endCall(c);
         toast(M.left);
         track('onshift_meeting', { action: 'leave' });
+        // Dana's deck doesn't take no for an answer: it comes back from the first slide
+        if (opts.deck) later(2500, function () { if (workOn() && S.stage === 3 && !modal) gauntlet(3); });
         // at the absurd level, Dana calls back
-        if (level() >= 3 && !opts.deck && !S.cb) { S.cb = 1; S.forced = S.t + 25; saveS(); }
+        else if (level() >= 3 && !S.cb) { S.cb = 1; S.forced = S.t + 15; saveS(); }
       }
       else if (opts.on) opts.on(act, b, c);
     });
     c.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); qs('[data-sure]', c).hidden = false; } });
     setTimeout(function () { var l = qs('[data-act="leave"]', c); if (l) try { l.focus({ preventScroll: true }); } catch (e) {} }, 60);
     // a call without a deck wraps itself up eventually
-    if (!opts.deck) modal.timers.push(setTimeout(function () { say(M.captions[3]); setTimeout(endCall, 2500); }, 95000));
+    if (!opts.deck) rec.timers.push(setTimeout(function () { say(M.captions[3]); setTimeout(function () { endCall(c); }, 2500); }, 95000));
   }
   function chart() {
     var bars = '';
     for (var i = 0; i < 7; i++) bars += '<rect x="' + (14 + i * 26) + '" y="' + (70 - rnd(10, 60)).toFixed(0) + '" width="16" height="' + rnd(10, 60).toFixed(0) + '"/>';
     return '<svg class="os-chart" viewBox="0 0 200 90" aria-hidden="true"><path d="M10 80h180M10 80V8"/>' + bars + '<path class="os-chart__line" d="M14 60c20-30 40 10 60-20s40 30 60-10 30-20 52 6"/></svg>';
   }
-  function endCall() {
-    if (!modal || modal.kind !== 'call') return;
-    closeModal();
+  // a call closes by its own record, whatever else is up: Leave always works
+  function endCall(c) {
+    var rec = c && c.__rec ? c.__rec : modal && modal.kind === 'call' ? modal : null;
+    if (rec) closeRec(rec);
   }
-  function closeModal() {
-    if (!modal) return;
-    var m = modal;
-    modal = null;
+  function closeRec(m) {
+    if (!m || m.closed) return;
+    m.closed = true;
+    if (modal === m) modal = null;
     if (m.cleanup) m.cleanup();
     m.timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
     m.el.classList.remove('is-in');
     m.veil.classList.add('is-gone');
     setTimeout(function () { rm(m.el); rm(m.veil); }, still() ? 0 : 450);
+    sweep();
+  }
+  function closeModal() { closeRec(modal); }
+  // nothing stays behind: a veil or a dialog that isn't the current one goes
+  function sweep() {
+    qsa('.os-veil, .os-call, .os-stage, .os-update', host).forEach(function (e) {
+      if (modal && (e === modal.el || e === modal.veil)) return;
+      if (e.classList.contains('is-gone')) return;
+      e.classList.remove('is-in');
+      e.classList.add('is-gone');
+      setTimeout(function () { rm(e); }, still() ? 0 : 450);
+    });
   }
 
   /* ------------------------------------------------------------------ the screen share, the update, IT's cursor */
@@ -1158,7 +1201,7 @@
       buttons: [{ label: OT.offer.later, act: 'later' }, { label: OT.offer.go, act: 'go', cls: 'btn--primary' }],
       on: function (act) { if (act === 'go') { remove(e); gauntlet(1); } },
     });
-    S.offerAt = S.t + 120;
+    S.offerAt = S.t + 60;
     saveS();
     track('overtime_stage', { stage: 0, action: 'offer' });
   }
@@ -1184,7 +1227,7 @@
   function giveUp() {
     S.stage = 0;
     S.stamps = 0;
-    S.offerAt = S.t + 120;
+    S.offerAt = S.t + 60;
     saveS();
     closeModal();
     dropHud();
@@ -1213,6 +1256,7 @@
   }
   // a stage sits in a card in the middle, over a veil (the page waits)
   function stageCard(cls, html) {
+    if (modal) closeRec(modal); // a stage takes the desk; whatever was up goes first
     var c = el('os-stage ' + cls, html);
     c.setAttribute('role', 'dialog');
     c.setAttribute('aria-modal', 'true');
@@ -1221,6 +1265,7 @@
     host.appendChild(veil);
     host.appendChild(c);
     modal = { el: c, veil: veil, kind: 'stage', timers: [] };
+    c.__rec = modal;
     void c.offsetWidth;
     c.classList.add('is-in');
     return c;
@@ -1332,7 +1377,7 @@
             lost = true;
             c.classList.add('is-lost');
             qs('[data-cap]', c).textContent = M.lost;
-            modal.timers.push(setTimeout(function () { lost = false; c.classList.remove('is-lost'); i = Math.max(0, i - 2); render(c); }, 1800));
+            c.__rec.timers.push(setTimeout(function () { lost = false; c.classList.remove('is-lost'); i = Math.max(0, i - 2); render(c); }, 1800));
             return;
           }
           i = Math.min(n - 1, i + 1);
@@ -1439,6 +1484,7 @@
   function claim() {
     var box = qs('[data-os-claim]', host);
     if (!box) return;
+    if (modal) closeRec(modal);
     var veil = el('os-veil');
     veil.setAttribute('aria-hidden', 'true');
     host.appendChild(veil);
@@ -1472,6 +1518,7 @@
     live = [];
     if (modal && modal.kind === 'claim') { var m = modal; modal = null; m.el.classList.remove('is-in'); m.el.hidden = true; rm(m.veil); }
     else if (modal) closeModal();
+    sweep();
     qsa('.os-lean, .os-rere, .os-flicker, .os-runner, .os-ghost', host).forEach(rm);
     shareStop(true);
     dropHud();
@@ -1481,12 +1528,12 @@
     S.stage = 0;
     saveS(); saveL();
     badge();
-    if (pileEl) pileEl.classList.remove('is-on');
+    if (meterEl) meterEl.classList.remove('is-on');
     if (S.shown > 0 || L.ignored > 0) toast(O.off.line + (L.ignored ? ' ' + fill(O.off.stat, { n: L.ignored }) : ''));
   }
   window.addEventListener('es:shift', function (e) {
     if (e.detail && e.detail.off) off();
-    else badge();
+    else { badge(); if (meterEl) meter(); }
   });
 
   /* ------------------------------------------------------------------ the clock that decides */
@@ -1500,7 +1547,7 @@
     birthday: { run: birthday, w: [1, 1, 0], max: 1 },
     sys: { run: sysNote, w: [1, 1, 2], max: 4 },
     notice: { run: notice, w: [1, 1, 1], max: 5 },
-    meeting: { run: meeting, w: [0, 2, 2], gate: function () { return S.t - S.meetAt >= 120 && !S.declined; } },
+    meeting: { run: meeting, w: [0, 2, 2], gate: function () { return S.t - S.meetAt >= 60 && !S.declined; } },
     lean: { run: lean, w: [0, 1, 1], light: true },
     flicker: { run: flicker, w: [0, 1, 1], light: true },
     spinner: { run: spinner, w: [0, 1, 1], light: true },
@@ -1537,8 +1584,9 @@
     var lvl = level();
     var kind = kindWanted;
     if (!kind) {
-      if (hasReward && !L.overtime && lvl === 3 && S.stage === 0 && S.t >= S.offerAt && (S.dismissed >= 6 || S.t >= 180)) kind = 'offer';
+      if (hasReward && !L.overtime && lvl === 3 && S.stage === 0 && S.t >= S.offerAt && (S.dismissed >= 4 || S.t >= 90)) kind = 'offer';
       else if (S.forced && S.t >= S.forced) { S.forced = 0; saveS(); return ring(); }
+      else if (S.shown === 0) kind = 'ping'; // the first thing is always a message: the pattern is set
       else kind = choose(lvl);
     }
     if (!KINDS[kind]) return;
@@ -1550,6 +1598,7 @@
     track('onshift_incident', { kind: kind, action: 'show', level: lvl, t: S.t });
     KINDS[kind].run();
     saveL();
+    meter(S.shown === 1);
     // the absurd level comes in bursts: something small right behind the thing itself
     if (lvl === 3 && !kindWanted && Math.random() < 0.4 && kind !== 'storm' && kind !== 'update' && kind !== 'offer') {
       later(1800, function () {
@@ -1561,12 +1610,14 @@
   }
   function gap() {
     var lvl = level();
-    return Math.round(lvl === 1 ? rnd(24, 34) : lvl === 2 ? rnd(16, 24) : rnd(10, 16));
+    return Math.round(lvl === 1 ? rnd(11, 16) : lvl === 2 ? rnd(8, 12) : rnd(5, 9));
   }
   function tick() {
     if (!workOn() || paused()) return;
     S.t++;
     if (S.t % 5 === 0) saveS();
+    if (meterEl || S.shown > 0) meter();
+    levelCheck();
     if (modal || formOpen() || shownHere >= CAP) return;
     if (S.t >= S.next) {
       fire();
@@ -1578,7 +1629,7 @@
     host.hidden = false;
     setInterval(tick, 1000);
     badge();
-    if (L.ignored) pile();
+    if (L.ignored || S.shown > 0) meter();
     // a gauntlet left mid-way comes back where it was
     if (S.stage > 0 && hasReward && !L.overtime) setTimeout(function () { if (workOn() && !paused()) gauntlet(S.stage); }, 2500);
   }

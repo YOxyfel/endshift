@@ -347,19 +347,85 @@
   border-color: var(--os-ink);
 }
 
-/* The pile of ignored slips, bottom left ------------------------------------------------------ */
-.os-pile {
+/* The shift meter, bottom left: how long, how bad, how many ignored ---------------------------- */
+.os-meter {
   position: fixed;
   left: 1rem;
   bottom: 1rem;
-  width: 3.6rem;
-  height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.75rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 3px;
+  background: var(--os-paper);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: opacity 400ms ease;
+  transform: translateY(8px);
+  transition: opacity 320ms ease, transform 320ms var(--ease-out);
+}
+
+.os-meter.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+.os-meter__on {
+  color: rgba(27, 26, 23, 0.6);
+}
+
+.os-meter__t {
+  font-variant-numeric: tabular-nums;
+}
+
+.os-meter__lvl {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+
+.os-meter__lvl i {
+  width: 0.5rem;
+  height: 0.9rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 2px;
+}
+
+.os-meter__lvl i.is-on {
+  background: var(--os-ink);
+}
+
+.os-meter.is-3 .os-meter__lvl i.is-on {
+  background: var(--os-red);
+  border-color: var(--os-red);
+}
+
+.motion-ok .os-meter.is-bump {
+  animation: os-bump 360ms var(--ease-out);
+}
+
+@keyframes os-bump {
+  40% {
+    transform: translateY(-5px) scale(1.05);
+  }
+}
+
+/* the pile of ignored slips, inside the meter */
+.os-pile {
+  position: relative;
+  display: none;
+  width: 1.7rem;
+  height: 1.2rem;
+  margin-left: 0.2rem;
 }
 
 .os-pile.is-on {
-  opacity: 1;
+  display: inline-block;
 }
 
 .os-pile i {
@@ -367,42 +433,30 @@
   inset: 0;
   border: 2px solid var(--os-ink);
   border-radius: 2px;
-  background: var(--os-paper);
-  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.5);
+  background: #fff;
 }
 
 .os-pile i:nth-child(1) {
-  transform: translate(-4px, 4px) rotate(-7deg);
+  transform: translate(-2px, 2px) rotate(-7deg);
 }
 
 .os-pile i:nth-child(2) {
-  transform: translate(3px, 1px) rotate(5deg);
+  transform: translate(2px, 0) rotate(5deg);
 }
 
 .os-pile__n {
   position: absolute;
-  right: -0.6rem;
-  top: -0.7rem;
-  min-width: 1.5rem;
-  padding: 0 0.35rem;
+  right: -0.7rem;
+  top: -0.75rem;
+  min-width: 1.3rem;
+  padding: 0 0.3rem;
   border-radius: 999px;
   background: var(--os-red);
   color: #fff;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 0.9rem;
-  line-height: 1.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  line-height: 1.3rem;
   text-align: center;
-}
-
-.motion-ok .os-pile.is-bump {
-  animation: os-bump 320ms var(--ease-out);
-}
-
-@keyframes os-bump {
-  40% {
-    transform: translateY(-4px) scale(1.06);
-  }
 }
 
 /* The small cruelties ---------------------------------------------------------------------- */
@@ -2571,6 +2625,16 @@ html.is-os-busy * {
 
   .os-sharebar {
     font-size: var(--fs-micro);
+  }
+
+  .os-meter {
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .os-meter__on {
+    display: none;
   }
 
   .os-call {

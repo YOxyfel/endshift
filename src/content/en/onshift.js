@@ -59,6 +59,12 @@ export default ({ cfg }) => {
     ok: 'OK',
     flick: 'Flick it away',
     pile: 'Pings ignored: {n}',
+    // the shift meter, bottom left: how long you've been on, how bad it's got
+    meter: {
+      title: 'On shift {time} · level {lvl} of 3 · {n} ignored',
+      on: 'On shift',
+      levelUp: { 2: 'They can see you’re online.', 3: 'This is where it gets absurd.' },
+    },
 
     // email: read it, reply to it (it goes nowhere), get a reply anyway
     mail: {
