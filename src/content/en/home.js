@@ -46,8 +46,8 @@ export default ({ cfg, state, fmt, t, formula }) => {
           },
           { to: 'batch', slot: 2, name: 'Batch #001', text: `Free to join. At ${cfg.batch.founderGoal} sign-ups, an email to pay, then the first run.` },
           { to: 'story', slot: 3, name: 'Story', text: 'The idea, and every decision since.' },
-          { to: 'faq', slot: 4, name: 'FAQ', text: 'Shipping, refunds, safety.' },
-          { to: 'journal', slot: 5, name: 'Journal', text: 'Guides for switching off after work.' },
+          { to: 'journal', slot: 4, name: 'Journal', text: 'Guides for switching off after work.' },
+          { to: 'faq', slot: 5, name: 'FAQ', text: 'Shipping, refunds, safety.' },
         ],
       },
       // the way into the film: a still of its first frame to press play on, or scroll it yourself

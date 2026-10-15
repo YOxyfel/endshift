@@ -1,5 +1,5 @@
 import { html, esc, plain } from '../../lib/html.js';
-import { chip, icon, signupForm, panelPoster } from '../components.js';
+import { chip, icon, signupForm, panelPoster, pageStamp, posterPreload } from '../components.js';
 
 const SERVICES = ['spotify', 'youtube', 'soundcloud', 'apple'];
 // the room in four moments: clock out at the desk, the lamp, the window, the bed
@@ -86,6 +86,7 @@ export default function ritual(ctx) {
       <div class="ritual__hero">
         <div class="ritual__hero-main">
         <header class="ritual__intro">
+          ${pageStamp(ctx.ui.stamp.ritual)}
           <h1 class="display ritual__title" id="ritual-title">${r.intro.title}</h1>
           <p class="lead ritual__lead">${r.intro.lead}</p>
           <ul class="ritual__facts">${r.intro.facts.map((f) => `<li>${chip(f)}</li>`)}</ul>
@@ -96,7 +97,7 @@ export default function ritual(ctx) {
           <div class="cta-row"><button class="btn btn--primary btn--sm" type="button" data-resume-go>${r.setup.resume}</button><button class="btn btn--ghost btn--sm" type="button" data-resume-discard>${r.setup.discard}</button></div>
         </div>
 
-        <form class="ritual__form" data-setup>
+        <form class="ritual__form" id="ritual-start" data-setup>
           <div class="quickstart" data-quickstart>
             <p class="quickstart__label" data-quick-label>${r.setup.quickReady}</p>
             <p class="quickstart__summary" data-quick-summary aria-live="polite"></p>
@@ -170,7 +171,7 @@ export default function ritual(ctx) {
           ${r.peek ? html`<figure class="room-peek" role="img" aria-label="${esc(r.peek.aria)}">
             <div class="room-peek__frame">${PEEK.map(([view, id], k) => {
               const st = r.steps.find((x) => x.id === id);
-              return `<div class="room-peek__shot" style="--k:${k}">${panelPoster(ctx, view, { sizes: '(min-width: 960px) 46vw, 92vw', eager: k === 0 })}${st ? `<span class="room-peek__cap" aria-hidden="true"><b>${mm(st.minute)}</b> ${st.title}</span>` : ''}</div>`;
+              return `<div class="room-peek__shot" style="--k:${k}">${panelPoster(ctx, view, { sizes: '(min-width: 960px) 46vw, 100vw', eager: k === 0 })}${st ? `<span class="room-peek__cap" aria-hidden="true"><b>${mm(st.minute)}</b> ${st.title}</span>` : ''}</div>`;
             }).join('')}</div>
             <figcaption class="room-peek__note">${r.peek.caption}</figcaption>
           </figure>` : ''}
@@ -411,6 +412,7 @@ export default function ritual(ctx) {
     body,
     styles: ['ritual'],
     scripts: ['ink', 'room', 'ritual'],
+    preload: r.peek ? [posterPreload(ctx, PEEK[0][0], '(min-width: 960px) 46vw, 100vw')] : [],
     client: {
       ritual: {
         steps: r.steps,

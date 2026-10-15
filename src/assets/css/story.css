@@ -1353,6 +1353,21 @@
   }
 }
 
+/* work switched off elsewhere (game.js, showOff): the evening without the reward card */
+.after__card[hidden] {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .game.is-off .after__panels {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'ritual reset'
+      'fits fits'
+      'foot foot';
+  }
+}
+
 /* while the room comes apart: the panels wait, the sky is already there */
 .motion-ok .game.is-ending .after__head > *,
 .motion-ok .game.is-ending .after__panels > * {

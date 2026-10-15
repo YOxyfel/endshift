@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { icon, mark, panelPoster } from '../components.js';
+import { icon, mark, panelPoster, pageStamp } from '../components.js';
 
 /* The ritual on one A5 page, to print: the ritual asks you to put the phone down, but it lives
    on the phone. This lives by the door or the bed. */
@@ -12,6 +12,7 @@ export default function ritualCard(ctx) {
   const body = html`
 <section class="rcard-page">
   <div class="wrap rcard-tools">
+    ${pageStamp(ctx.ui.stamp.ritualCard, { href: ctx.url('ritual') })}
     <p><a class="link" href="${ctx.url('ritual')}">${c.back}</a></p>
     <div class="cta-row">
       <button class="btn btn--primary" type="button" data-print>${icon('print')}<span>${c.print}</span></button>

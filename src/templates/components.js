@@ -217,6 +217,23 @@ export function panelPoster(ctx, view, { sizes = '100vw', eager = false } = {}) 
   return `<img class="shot-poster" src="${ctx.asset(`${base}-${big}.webp`)}" srcset="${set}" sizes="${sizes}" width="${big}" height="${Math.round(big * PANELS.ratio)}" alt="" loading="${eager ? 'eager' : 'lazy'}" decoding="async"${eager ? ' fetchpriority="high"' : ''}>`;
 }
 
+// For the head: preload a page's first poster, so the picture is there on the first paint and a
+// page turn lands on a finished page (see layout.js, page.preload)
+export function posterPreload(ctx, view, sizes = '100vw') {
+  if (!PANELS.views.includes(view)) return null;
+  const base = `assets/img/panels/${view}${ctx.locale === 'bg' && PANELS.bg.includes(view) ? '-bg' : ''}`;
+  const big = PANELS.w[PANELS.w.length - 1];
+  return { href: `${base}-${big}.webp`, srcset: PANELS.w.map((w) => `${ctx.asset(`${base}-${w}.webp`)} ${w}w`).join(', '), sizes };
+}
+
+/* The stamp: a time-card chip at the top of every page, in the film's own style ("19:25 · Home"),
+   so each side of the site opens the same way: a stamp, then the title. `parts` are joined with
+   a dot; a link makes it a way back to the page's section. */
+export function pageStamp(parts, { href = '', cls = '' } = {}) {
+  const inner = parts.filter(Boolean).map((t, i) => `${i ? '<span class="page-stamp__dot" aria-hidden="true">·</span>' : ''}<span>${t}</span>`).join('');
+  return href ? `<a class="page-stamp ${cls}" href="${href}">${inner}</a>` : `<p class="page-stamp ${cls}">${inner}</p>`;
+}
+
 export function shot(ctx, view, { fallback = '', sizes = '100vw', eager = false } = {}) {
   const m = ctx.cfg.story?.media?.[view];
   const media = m

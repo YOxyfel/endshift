@@ -1,5 +1,5 @@
 import { html } from '../../lib/html.js';
-import { notice } from '../components.js';
+import { notice, pageStamp } from '../components.js';
 
 export default function legal(ctx) {
   const c = ctx.content[ctx.page.id];
@@ -7,9 +7,9 @@ export default function legal(ctx) {
   const body = html`
 <section class="page-intro">
   <div class="wrap">
+    ${pageStamp((ui.stamp[ctx.page.id] || [c.title, '']).map((t) => t.replace('{n}', c.updated)))}
     <h1 class="display page-intro__title">${c.title}</h1>
     <p class="lead page-intro__lead">${c.lead}</p>
-    <p class="small muted" style="margin-top:var(--s-4)">${ui.common.updated}: ${c.updated}</p>
     ${cfg.legal.draft ? `<div style="margin-top:var(--s-5)">${notice(ui.legal.draft, { iconName: 'alert' })}</div>` : ''}
   </div>
 </section>

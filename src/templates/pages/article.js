@@ -1,5 +1,5 @@
 import { html, esc, plain } from '../../lib/html.js';
-import { btn } from '../components.js';
+import { btn, pageStamp } from '../components.js';
 
 export default function article(ctx) {
   const c = ctx.content[ctx.page.id];
@@ -47,8 +47,8 @@ export default function article(ctx) {
 <article data-article>
   <header class="page-intro">
     <div class="wrap"><div class="article-head">
-      <p><a class="link small" href="${ctx.url('journal')}">${ctx.ui.nav.journal}</a></p>
-      <h1 class="display article-head__title" style="margin-top:var(--s-4)">${c.title}</h1>
+      ${pageStamp(ctx.ui.stamp.guide.map((t) => t.replace('{n}', String(c.readTime))), { href: ctx.url('journal') })}
+      <h1 class="display article-head__title">${c.title}</h1>
       <p class="lead page-intro__lead">${c.dek}</p>
       <p class="article-head__meta"><time datetime="${c.date}">${ctx.fmt.date(c.date)}</time>, ${j ? j.readTime(c.readTime) : ''}</p>
     </div></div>

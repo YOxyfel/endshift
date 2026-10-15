@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { btn, shiftLabel } from '../components.js';
+import { btn, shiftLabel, pageStamp } from '../components.js';
 
 // A dark hallway, drawn in one-point perspective. Each door is a real link; the torch follows the
 // pointer (or the focused door), and there's a light switch by the end door.
@@ -65,8 +65,8 @@ export default function notfound(ctx) {
   const body = html`
 <section class="page-intro notfound" data-hallway>
   <div class="wrap">
-    <p class="timecard" aria-hidden="true"><span class="timecard__cell"><span class="timecard__k">404</span><span class="timecard__v timecard__v--now">${c.stamp || 'Out'}</span></span></p>
-    <h1 class="display page-intro__title" style="margin-top:var(--s-5);max-width:none">${c.title}</h1>
+    ${pageStamp([ui.stamp.notFound[0], c.stamp || ui.stamp.notFound[1]])}
+    <h1 class="display page-intro__title" style="max-width:none">${c.title}</h1>
     <p class="lead page-intro__lead">${c.lead}</p>
     <div class="hallway" data-hall-scene>
       ${hall()}

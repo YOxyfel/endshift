@@ -1,6 +1,6 @@
 import { html } from '../../lib/html.js';
 import { btn, chip, notice, meter, dial, slips, faqList, specs, timelineList, productRender, icon, isnt } from '../components.js';
-import { wallSwitch } from '../components.js';
+import { wallSwitch, pageStamp } from '../components.js';
 
 // Living design system. Not indexed, not linked from the main nav. Change tokens in base.css.
 const SWATCHES = [
@@ -24,6 +24,7 @@ export default function system(ctx) {
   const body = html`
 <section class="page-intro">
   <div class="wrap">
+    ${pageStamp(ctx.ui.stamp.system)}
     <h1 class="display page-intro__title">Design system</h1>
     <p class="lead page-intro__lead">The ENDSHIFT kit: an evening, in tokens. Loud and cold at the top of a page, dim and warm at the bottom. Tungsten amber means live, now or actionable. Nothing else gets it.</p>
   </div>

@@ -162,6 +162,7 @@
       if (!LAMP) LAMP = { top: hex(K.lamp.top), bot: hex(K.lamp.bot), c: K.lamp.c.map(hex), a: K.lamp.a, speed: K.lamp.speed, size: K.lamp.size, stars: K.lamp.stars };
       k = blendKey(k, LAMP, offMix * offAmount());
     }
+    if (carry && carryMix > 0.001) k = blendKey(k, carry, carryMix);
     var calm = root.getAttribute('data-calm') === 'on';
     var bg = g.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, css(k.top));
@@ -193,6 +194,28 @@
     currentKey = k;
   }
   var currentKey = null;
+
+  /* ------------------------------------------- one evening across the sides
+     Leaving a side, the light notes what it was showing (the key as drawn, and how far the
+     lights had drifted). The next side starts from exactly that and eases to its own light
+     over a couple of seconds, so the lamps behind the pages never restart or jump: the same
+     lights, in the same places, slowly becoming this side's evening. */
+  var carry = null, carryMix = 0;
+  var LIGHT_KEY = 'es:light';
+  function noteLight() {
+    if (!currentKey) return;
+    try { sessionStorage.setItem(LIGHT_KEY, JSON.stringify({ k: currentKey, T: T, at: Date.now() })); } catch (e) {}
+  }
+  window.addEventListener('pageswap', noteLight);
+  window.addEventListener('pagehide', noteLight);
+  try {
+    var savedLight = JSON.parse(sessionStorage.getItem(LIGHT_KEY) || 'null');
+    if (savedLight && savedLight.k && savedLight.k.c && Date.now() - savedLight.at < 90000) {
+      T = +savedLight.T || 0;
+      carry = savedLight.k;
+      carryMix = 1;
+    }
+  } catch (e) {}
 
   /* ------------------------------------------------- scroll + progress line */
   var bar = document.createElement('div');
@@ -256,6 +279,12 @@
     if (moving && currentKey) T += dt * currentKey.speed * 2;
     if (Math.abs(offMix - offTarget) > 0.001) {
       offMix += (offTarget - offMix) * Math.min(1, dt * (moving ? (offTarget ? 1.1 : 2.4) : 20));
+      dirty = true;
+    }
+    if (carryMix > 0) {
+      // the light we arrived with eases into this side's own (quicker when nothing may move)
+      carryMix += (0 - carryMix) * Math.min(1, dt * (moving ? 0.9 : 8));
+      if (carryMix < 0.002) carryMix = 0;
       dirty = true;
     }
     // ~30 fps is plenty for slow light

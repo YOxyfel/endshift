@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { chip, icon, specs, signupForm, timelineList, shot, founderBlock } from '../components.js';
+import { chip, icon, specs, signupForm, timelineList, shot, founderBlock, pageStamp, posterPreload } from '../components.js';
 
 export default function story(ctx) {
   const c = ctx.content.story;
@@ -12,7 +12,7 @@ export default function story(ctx) {
 
   const body = html`<div class="comic">
 <section class="page-intro page-intro--scene">
-  <figure class="panel scene-band" data-panel>${shot(ctx, 'build', { eager: true })}</figure>
+  <figure class="panel scene-band" data-panel>${shot(ctx, 'build', { eager: true })}${pageStamp(ctx.ui.stamp.story)}</figure>
   <div class="wrap">
     <h1 class="lettering page-intro__title">${c.intro.title}</h1>
     <p class="lead page-intro__lead">${c.intro.lead}</p>
@@ -66,5 +66,5 @@ export default function story(ctx) {
   </div>
 </section>`;
 
-  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', styles: ['story', 'world'], scripts: ['ink', 'story', 'world'] };
+  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', styles: ['story', 'world'], scripts: ['ink', 'story', 'world'], preload: [posterPreload(ctx, 'build')] };
 }

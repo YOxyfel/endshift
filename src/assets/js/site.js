@@ -147,14 +147,35 @@
   var depthMarks = [25, 50, 75, 100];
   var depthDone = {};
 
-  /* Back to the top, smoothly --------------------------------------------------
-     A page always opens at its top (not where a reload, a link or the back button left it).
-     Any link to another page of the site first brings you back up: a short glide if you're
-     near the top, otherwise a quick fade (gliding back through the whole home film would take
-     too long); then the page opens. The logo, or a link to the page you're on, does the same
-     without leaving. Links to a part of a page (#…) work as before. */
-  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
-  if (!location.hash) window.scrollTo(0, 0);
+  /* The turn ------------------------------------------------------------------------
+     The site is one object with sides, not pages. In browsers with cross-document view
+     transitions (components.css, "One object, not pages") a link to another side is a turn:
+     the browser holds this side until the next one is painted, the frame stays where it is,
+     and the side slides out one way and the next slides in from the other, in the direction
+     of the ring of pages. Before leaving, the side notes where it stands on the ring
+     (main[data-ring]); the next side reads that in its inline head script, before its first
+     paint, and marks <html data-turn="next|back|same"> for the CSS. Back and forward put a
+     side back exactly as you left it (the browser's own scroll restoration).
+     Without view transitions, as before: a link to another side first brings you back up (a
+     short glide if you're near the top, otherwise a quick fade) and then the side opens. The
+     logo, or a link to the side you're on, glides to the top without leaving. Links to a part
+     of a page (#…) work as usual. */
+  var turns = 'onpagereveal' in window && 'startViewTransition' in document;
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'auto'; } catch (e) {}
+  var ringHere = parseFloat((qs('main') || document.body).getAttribute('data-ring'));
+  function noteRing() {
+    if (isNaN(ringHere)) return;
+    try { sessionStorage.setItem('es:ring', JSON.stringify({ r: ringHere, at: Date.now() })); } catch (e) {}
+  }
+  window.addEventListener('pageswap', noteRing);
+  window.addEventListener('pagehide', noteRing);
+  // the direction mark is only for the turn itself
+  window.addEventListener('pagereveal', function (e) {
+    var done = function () { root.removeAttribute('data-turn'); };
+    if (e.viewTransition) e.viewTransition.finished.then(done, done);
+    else done();
+  });
+  setTimeout(function () { root.removeAttribute('data-turn'); }, 2500);
   var gliding = 0, veil = null;
   function scrollNow() { return window.pageYOffset || document.documentElement.scrollTop || 0; }
   function veilEl() {
@@ -192,10 +213,9 @@
     gliding = requestAnimationFrame(step);
   }
   ES.glideTop = glideTop;
-  // back from another page (the browser may keep the page as it was): to the top, no veil
-  window.addEventListener('pageshow', function (e) {
+  // back from another side (the browser may keep this one exactly as it was): never dark
+  window.addEventListener('pageshow', function () {
     if (veil) veil.classList.remove('is-on');
-    if (e.persisted && !location.hash) window.scrollTo(0, 0);
   });
   var pagePath = function (p) { return p.replace(/index\.html$/, '').replace(/\/+$/, '/') || '/'; };
   document.addEventListener('click', function (e) {
@@ -210,12 +230,15 @@
     var same = pagePath(url.pathname) === pagePath(location.pathname) && url.search === location.search;
     // a link to a part of a page goes there as before
     if (url.hash && url.hash !== '#' && url.hash !== '#top') return;
-    e.preventDefault();
     if (same) {
+      e.preventDefault();
       glideTop();
       if (location.hash) try { history.replaceState(null, '', location.pathname + location.search); } catch (err) {}
       return;
     }
+    // the turn takes it from here: the browser keeps this side on screen until the next is painted
+    if (turns) return;
+    e.preventDefault();
     glideTop(function () {
       location.href = url.href;
       // (if the page doesn't go after all, don't leave the screen dark)

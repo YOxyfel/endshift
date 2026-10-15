@@ -21,6 +21,7 @@
   --tungsten: #f2a84b; /* the accent: the shift light, about to go off */
   --tungsten-hi: #f8bf74;
   --tungsten-lo: #a8722f;
+  --ink: #0b0d10; /* comic ink: stamp borders and drop shadows (also set by story.css) */
   --fluoro: #cde7ea; /* work-mode light. Only used for "before" states */
   --alert: #ff9b8a; /* errors (always paired with an icon + text) */
   --ok: #bcd7a8; /* success (always paired with text) */

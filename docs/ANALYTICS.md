@@ -33,7 +33,8 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `game_reveal` | The thing hiding the switch moved | `game`, `object` | |
 | `game_win` | The switch was found and flipped | `game`, `type`, `ms`, `level` (help reached), `touches`, `how` | **Game completions**, time to find |
 | `game_skip` | "Skip the game" used | `game`, `ms`, `level` | |
-| `game_replay` | "Play again" | `game` | |
+| `game_replay` | "Play again" (or "Play today's game" from the work-off evening) | `game`, `from` (`after` / `off`) | |
+| `game_off_evening` | The home opened on the evening because work was already switched off (no game played today) | `game` | How often the switch is used from other pages first |
 | `game_reward_view` | The evening with the reward was shown | `game` | |
 | `game_reward_claim` | Email left for the reward | `game` | **Reward claims**; the signup itself arrives with `reward: switch-15` |
 | `shift_switch` | Work mode switched off or on | `state` (`off` / `on`), `source` (`intro` / `hero` / `header` / `ritual` / `game`), `period` (`day` / `evening` / `night`) | Whether the hook works; compare with `cta_click` `hero_primary` |

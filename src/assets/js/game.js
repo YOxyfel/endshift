@@ -237,6 +237,8 @@
     rewardState();
   }
   function rewardState() {
+    var rewardCard = qs('[data-reward-card]', after);
+    if (rewardCard) rewardCard.hidden = false;
     var claimed = !!store.get('es:reward');
     var formBox = qs('[data-reward-form]', after);
     var note = qs('[data-reward-claimed]', after);
@@ -279,9 +281,30 @@
     section.classList.add('is-after', 'is-returning');
   }
 
+  // Work already switched off (on any side of the site): the home opens on the evening too,
+  // not on the cold game. No reward without playing; the game waits one tap away.
+  var replayLabel = qs('[data-game-replay] span', section);
+  function showOff() {
+    state = 'after';
+    var d = new Date();
+    qs('[data-after-time]', after).textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    qs('[data-after-found]', after).textContent = G.after.off || '';
+    qs('[data-after-fits]', after).textContent = D.fitsText || '';
+    qs('[data-after-tomorrow]', after).textContent = fill(G.after.today, { job: D.job });
+    var form = qs('form[data-signup]', after);
+    if (form) form.setAttribute('data-source', 'game-' + id);
+    var rewardCard = qs('[data-reward-card]', after);
+    if (rewardCard) rewardCard.hidden = true;
+    if (replayLabel && G.after.play) replayLabel.textContent = G.after.play;
+    after.hidden = false;
+    section.classList.add('is-after', 'is-returning', 'is-off');
+    track('game_off_evening', { game: id });
+  }
+
   qs('[data-game-replay]', section).addEventListener('click', function () {
-    track('game_replay', { game: id });
-    section.classList.remove('is-after', 'is-won', 'is-returning', 'assist-1', 'assist-2', 'assist-3', 'assist-4');
+    track('game_replay', { game: id, from: section.classList.contains('is-off') ? 'off' : 'after' });
+    section.classList.remove('is-after', 'is-won', 'is-returning', 'is-off', 'assist-1', 'assist-2', 'assist-3', 'assist-4');
+    if (replayLabel && G.after.replay) replayLabel.textContent = G.after.replay;
     after.hidden = true;
     state = 'idle';
     interactedOnce = false;
@@ -297,8 +320,11 @@
   /* Go ---------------------------------------------------------------------------------- */
   var stored = null;
   try { stored = JSON.parse(store.get('es:game') || 'null'); } catch (e) {}
-  if (stored && stored.day === dayKey && stored.id === id && !forced && !params.has('play')) {
+  var wantPlay = !!forced || params.has('play');
+  if (stored && stored.day === dayKey && stored.id === id && !wantPlay) {
     showReturning(stored);
+  } else if (root.getAttribute('data-shift') === 'off' && !wantPlay && !root.classList.contains('intro-pending')) {
+    showOff();
   } else {
     if (!build()) return;
     var waiting = root.classList.contains('intro-pending');

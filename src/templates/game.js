@@ -126,7 +126,7 @@ export function gameClient(ctx) {
     urlParam: cfg.urlParam,
     reward: g.reward && cfg.reward?.percent ? { percent: cfg.reward.percent, tag: cfg.reward.tag } : null,
     hud: { ...g.hud, won: g.hud.won('{t}') },
-    after: { found: g.after.found('{t}', '{job}'), again: g.after.again('{t}'), tomorrow: g.after.tomorrow('{job}') },
+    after: { found: g.after.found('{t}', '{job}'), again: g.after.again('{t}'), tomorrow: g.after.tomorrow('{job}'), off: g.after.off, today: g.after.today('{job}'), play: g.after.play, replay: g.after.replay },
     games: g.games,
   };
 }

@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { btn, chip, icon, notice, meter, faqList, specs, batchAction, signupForm, shiftLabel } from '../components.js';
+import { btn, chip, icon, notice, meter, faqList, specs, batchAction, signupForm, shiftLabel, pageStamp, posterPreload } from '../components.js';
 import { shot } from '../components.js';
 import { STATUSES } from '../../lib/state.js';
 
@@ -102,7 +102,7 @@ export default function batch(ctx) {
 
   const body = html`<div class="comic">
 <section class="page-intro page-intro--scene">
-  <figure class="panel scene-band" data-panel>${shot(ctx, 'racks', { eager: true })}</figure>
+  <figure class="panel scene-band" data-panel>${shot(ctx, 'racks', { eager: true })}${pageStamp(ui.stamp.batch)}</figure>
   <div class="wrap batch__grid">
     <div>
       <p class="page-intro__chip">${chip(ui.status[state.status], state.statusIndex > 0 ? 'live' : '')}</p>
@@ -212,5 +212,5 @@ export default function batch(ctx) {
   </div>
 </section>`;
 
-  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', styles: ['story', 'world'], scripts: ['ink', 'story', 'world'] };
+  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', styles: ['story', 'world'], scripts: ['ink', 'story', 'world'], preload: [posterPreload(ctx, 'racks')] };
 }

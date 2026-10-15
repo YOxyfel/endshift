@@ -152,7 +152,7 @@
 
 .site-header.is-scrolled,
 .site-header.is-solid {
-  background: color-mix(in srgb, var(--night) 94%, transparent);
+  background: color-mix(in srgb, var(--night) 97%, transparent);
   border-bottom-color: var(--line-soft);
 }
 
@@ -228,10 +228,19 @@
 }
 
 .site-nav a[aria-current] {
-  text-decoration: underline;
-  text-decoration-color: var(--tungsten);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.45em;
+  position: relative;
+}
+
+/* the mark under the current page: a named element, so a page turn slides it to the next word */
+.site-nav__mark {
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 0.55rem;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--tungsten);
+  view-transition-name: es-navmark;
 }
 
 .header-tools {
@@ -266,6 +275,21 @@
 
 [data-shift='off'] .header-cta .if-off {
   visibility: visible;
+}
+
+/* on the ritual page the button says "Start now" (and goes to the start card), in the same
+   cell as the other two labels, so the frame keeps its exact width there too */
+.header-cta .if-here {
+  grid-area: 1 / 1;
+  display: inline;
+  text-align: center;
+}
+
+.header-cta[aria-current] .if-on,
+.header-cta[aria-current] .if-off,
+[data-shift] .header-cta[aria-current] .if-on,
+[data-shift] .header-cta[aria-current] .if-off {
+  visibility: hidden;
 }
 
 .lang-link {
@@ -2729,3 +2753,384 @@ html:not(.motion-ok) .workping {
     transform: scale(1.12, 1.25);
   }
 }
+
+/* ==========================================================================================
+   One object, not pages (v0.32)
+   ========================================================================================== */
+
+/* The turn: moving between pages is a page turn, not a cut. The browser holds the old page until
+   the new one is painted, the frame (header, the fixed layers) stays where it is, and the page
+   slides out one way and in from the other, in the direction of the ring of pages (site.js sets
+   data-turn on <html> before the turn: next, back, or same for a language switch). Browsers
+   without cross-document view transitions simply cut, as before. */
+@view-transition {
+  navigation: auto;
+}
+
+.site-header {
+  view-transition-name: es-header;
+}
+
+.ambient {
+  view-transition-name: es-ambient;
+}
+
+.grain {
+  view-transition-name: es-grain;
+}
+
+.sticky-cta {
+  view-transition-name: es-sticky;
+}
+
+.toast {
+  view-transition-name: es-toast;
+}
+
+.evening-rail {
+  view-transition-name: es-rail;
+}
+
+/* the order of the layers during the turn: the light stays at the back (the groups would
+   otherwise paint over the page, in order), the page in the middle, the frame on top */
+::view-transition-group(root) {
+  z-index: 1;
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-group(es-header),
+::view-transition-group(es-navmark),
+::view-transition-group(es-grain),
+::view-transition-group(es-sticky),
+::view-transition-group(es-toast),
+::view-transition-group(es-rail) {
+  z-index: 2;
+}
+
+::view-transition-old(root) {
+  animation: 420ms var(--ease-out) both es-turn-out-next;
+}
+
+::view-transition-new(root) {
+  animation: 420ms var(--ease-out) both es-turn-in-next;
+}
+
+html[data-turn='back']::view-transition-old(root) {
+  animation-name: es-turn-out-back;
+}
+
+html[data-turn='back']::view-transition-new(root) {
+  animation-name: es-turn-in-back;
+}
+
+html[data-turn='same']::view-transition-old(root) {
+  animation: 260ms ease both es-fade-out;
+}
+
+html[data-turn='same']::view-transition-new(root) {
+  animation: 260ms ease both es-fade-in;
+}
+
+/* the fixed layers and the frame: a quiet crossfade, no slide */
+::view-transition-old(es-ambient),
+::view-transition-new(es-ambient),
+::view-transition-old(es-grain),
+::view-transition-new(es-grain),
+::view-transition-old(es-sticky),
+::view-transition-new(es-sticky),
+::view-transition-old(es-rail),
+::view-transition-new(es-rail) {
+  animation-duration: 420ms;
+}
+
+::view-transition-old(es-header),
+::view-transition-new(es-header) {
+  animation-duration: 200ms;
+}
+
+/* the mark under the current page slides along the nav to the next word */
+::view-transition-group(es-navmark) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out);
+}
+
+@keyframes es-turn-out-next {
+  to {
+    opacity: 0;
+    transform: translateX(-9%) scale(0.985);
+  }
+}
+
+@keyframes es-turn-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(9%) scale(0.985);
+  }
+}
+
+@keyframes es-turn-out-back {
+  to {
+    opacity: 0;
+    transform: translateX(9%) scale(0.985);
+  }
+}
+
+@keyframes es-turn-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-9%) scale(0.985);
+  }
+}
+
+@keyframes es-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes es-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* reduced motion and low-stim: a short crossfade, nothing moves */
+@media (prefers-reduced-motion: reduce) {
+  html::view-transition-old(root),
+  html[data-turn]::view-transition-old(root) {
+    animation: 180ms ease both es-fade-out;
+  }
+  html::view-transition-new(root),
+  html[data-turn]::view-transition-new(root) {
+    animation: 180ms ease both es-fade-in;
+  }
+}
+
+html[data-calm='on']::view-transition-old(root),
+html[data-calm='on'][data-turn]::view-transition-old(root) {
+  animation: 180ms ease both es-fade-out;
+}
+
+html[data-calm='on']::view-transition-new(root),
+html[data-calm='on'][data-turn]::view-transition-new(root) {
+  animation: 180ms ease both es-fade-in;
+}
+
+/* The stamp: every page opens the same way, a time-card chip then the title. Over a scene it sits
+   in the top left corner, like the film's "19:25 · Home"; on a plain page, above the title. */
+.page-stamp {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55em;
+  max-width: calc(100% - 2 * var(--gutter));
+  padding: 0.42em 0.75em 0.36em;
+  border: 2px solid var(--ink);
+  background: var(--tungsten);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 860;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.page-stamp__dot {
+  opacity: 0.55;
+}
+
+a.page-stamp:hover,
+a.page-stamp:focus-visible {
+  background: var(--tungsten-hi, #f6c98a);
+}
+
+.page-intro .wrap > .page-stamp {
+  margin-bottom: var(--s-5);
+}
+
+.scene-band > .page-stamp {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--header-h) + 1.1rem);
+  left: var(--gutter);
+}
+
+/* a page's scene when it is a still (no live drawing behind it) */
+.scene-band--still {
+  background: #0e1015;
+}
+
+.scene-band--still .shot-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* one size for every page title, under a scene or on its own, in both languages */
+.page-intro__title,
+html[lang='bg'] .page-intro__title,
+.comic .lettering.product__name,
+.comic .lettering.page-intro__title {
+  font-size: clamp(3rem, 9.5vw, 7rem);
+}
+
+/* Where next: every page ends the same way, by turning to the next one. The two cards are
+   the next sides themselves: each opens on the scene its page opens on, dimmed, with the name
+   and one line, so the hand-off looks like the edge of the next side, not a link list. */
+.where-next {
+  position: relative;
+  padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(3rem, 7vh, 5rem);
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, #000 30%, var(--night));
+}
+
+.where-next__inner {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.where-next__title {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.375rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--paper);
+}
+
+.where-next__title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.where-next__list {
+  list-style: none;
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+}
+
+.where-next__card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: end;
+  min-height: 13rem;
+  height: 100%;
+  padding: var(--s-5);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--graphite);
+  color: var(--paper);
+  text-decoration: none;
+  transition: border-color var(--dur-2), transform var(--dur-2);
+}
+
+.where-next__shot {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: #0e1015;
+}
+
+.where-next__shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  transform: scale(1.02);
+  transition: opacity 0.5s ease, transform 1.1s var(--ease-out);
+}
+
+/* the ink falls from below, so the words stay readable on any scene */
+.where-next__card--scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(11, 13, 16, 0.08), rgba(11, 13, 16, 0.5) 45%, rgba(11, 13, 16, 0.9) 100%);
+}
+
+.where-next__card:hover,
+.where-next__card:focus-visible {
+  border-color: color-mix(in srgb, var(--tungsten) 55%, var(--line));
+}
+
+.where-next__card:hover .where-next__shot img,
+.where-next__card:focus-visible .where-next__shot img {
+  opacity: 0.85;
+  transform: scale(1.06);
+}
+
+.motion-ok .where-next__card:hover {
+  transform: translateY(-2px);
+}
+
+.where-next__text {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.where-next__k {
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tungsten);
+}
+
+.where-next__name {
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+
+.where-next__line {
+  max-width: 34ch;
+  color: var(--paper-2);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+@media (min-width: 640px) {
+  .where-next__list {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-4);
+  }
+
+  .where-next__card {
+    min-height: 15rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .where-next__card {
+    min-height: 17rem;
+    padding: var(--s-6);
+  }
+}
+
+:root[data-calm='on'] .where-next__shot img {
+  opacity: 0.4;
+  transform: none;
+}
+

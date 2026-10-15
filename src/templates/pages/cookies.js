@@ -1,5 +1,5 @@
 import { html } from '../../lib/html.js';
-import { specs } from '../components.js';
+import { specs, pageStamp } from '../components.js';
 
 export default function cookies(ctx) {
   const c = ctx.content.cookies;
@@ -7,6 +7,7 @@ export default function cookies(ctx) {
   const body = html`
 <section class="page-intro">
   <div class="wrap">
+    ${pageStamp(ctx.ui.stamp.cookies)}
     <h1 class="display page-intro__title">${c.title}</h1>
     <p class="lead page-intro__lead">${c.lead}</p>
   </div>

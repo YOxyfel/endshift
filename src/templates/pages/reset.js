@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { btn, chip, meter, faqList, specs, batchAction, visibleIngredients, ingredientGuide, testimonials, signupForm, shiftLabel, shot, jarPhoto } from '../components.js';
+import { btn, chip, meter, faqList, specs, batchAction, visibleIngredients, ingredientGuide, testimonials, signupForm, shiftLabel, shot, jarPhoto, pageStamp, posterPreload } from '../components.js';
 
 export default function reset(ctx) {
   const c = ctx.content.reset;
@@ -24,7 +24,7 @@ export default function reset(ctx) {
   // questions, and the batch with its form. Everything else is a link away.
   const body = html`<div class="comic">
 <section class="page-intro page-intro--scene page-intro--product">
-  <figure class="panel scene-band turntable" data-panel data-turntable>${shot(ctx, 'jarWide', { eager: true })}<canvas class="turntable__cv" data-tt-canvas aria-hidden="true"></canvas>
+  <figure class="panel scene-band turntable" data-panel data-turntable>${shot(ctx, 'jarWide', { eager: true })}${pageStamp(ui.stamp.reset)}<canvas class="turntable__cv" data-tt-canvas aria-hidden="true"></canvas>
     <div class="turntable__ui" data-tt-ui hidden><label class="visually-hidden" for="tt-range">${c.turn.label}</label><input class="turntable__range" id="tt-range" type="range" min="0" max="359" step="1" value="0" data-tt-range><p class="turntable__hint" aria-hidden="true">${c.turn.hint}</p></div>
     <figcaption class="cap cap--note scene-band__note">${state.packagingFinal ? ui.product.renderCaption : ui.product.renderCaptionConcept}</figcaption></figure>
   <div class="wrap product__grid product__grid--facts">
@@ -141,5 +141,5 @@ ${
   // the turntable: the same concept bottle as the film and the ritual, its back label the spec sheet
   const props = Object.assign({}, ...Object.values(ctx.content.game?.games || {}).map((g) => g.props || {}), ctx.content.home?.story?.props || {});
   const client = { world: { turntable: { props, line1: props.jar1, line2: props.jar2, backTitle: c.turn.backTitle, back: c.turn.rows, front_: c.turn.front, back_: c.turn.back, front: 140 } } };
-  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', jsonld, client, styles: ['story', 'world'], scripts: ['ink', 'room', 'world', 'story'] };
+  return { title: c.meta.title, description: c.meta.description, body: body + '</div>', jsonld, client, styles: ['story', 'world'], scripts: ['ink', 'room', 'world', 'story'], preload: [posterPreload(ctx, 'jarWide')] };
 }

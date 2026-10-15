@@ -1,5 +1,5 @@
 import { html, esc } from '../../lib/html.js';
-import { notice, ingredientRow, visibleIngredients, vialGlass, batchAction } from '../components.js';
+import { notice, ingredientRow, visibleIngredients, vialGlass, batchAction, panelPoster, pageStamp, posterPreload } from '../components.js';
 
 // One vial per ingredient, standing in a wooden rack: empty, with a question mark, until its dose
 // is confirmed and published (the glass itself is vialGlass, shared with the journal's covers).
@@ -20,9 +20,10 @@ export default function formulaPage(ctx) {
   const labelStatements = formula.labelStatements[ctx.locale] || formula.labelStatements.en;
 
   const body = html`
-<section class="page-intro">
+<section class="page-intro page-intro--scene">
+  <figure class="panel scene-band scene-band--still" data-panel>${panelPoster(ctx, 'jar', { eager: true })}${pageStamp(ctx.ui.stamp.formula, { href: ctx.url('reset') })}</figure>
   <div class="wrap">
-    <h1 class="display page-intro__title">${c.intro.title}</h1>
+    <h1 class="lettering page-intro__title">${c.intro.title}</h1>
     <p class="lead page-intro__lead">${c.intro.lead}</p>
     ${!state.formulaConfirmed ? `<div style="margin-top:var(--s-6)">${notice(c.intro.notice, { loud: true, iconName: 'alert' })}<p class="small muted" style="margin-top:var(--s-3)">${c.intro.noticeText}</p></div>` : ''}
   </div>
@@ -76,5 +77,5 @@ export default function formulaPage(ctx) {
   </div>
 </section>`;
 
-  return { title: c.meta.title, description: c.meta.description, body, styles: ['world'], scripts: ['world'] };
+  return { title: c.meta.title, description: c.meta.description, body, styles: ['story', 'world'], scripts: ['world'], preload: [posterPreload(ctx, 'jar')] };
 }

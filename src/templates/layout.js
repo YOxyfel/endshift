@@ -1,10 +1,21 @@
 import { html, esc, attrs, plain } from '../lib/html.js';
-import { sprite, icon, mark, btn, wallSwitch, shiftLabel } from './components.js';
+import { sprite, icon, mark, btn, wallSwitch, shiftLabel, panelPoster } from './components.js';
 
-const NAV_MAIN = ['ritual', 'reset', 'batch', 'story', 'faq'];
-const NAV_MENU = ['ritual', 'reset', 'batch', 'formula', 'story', 'faq', 'journal', 'contact'];
+/* The ring: the site's pages in one fixed order, the same in the header, the menu, the footer and
+   the bubble sphere, and the direction a page turn slides in (site.js, view transitions). A page
+   under another (Formula under RESET, a guide under the Journal) sits just after its parent. */
+export const RING = ['home', 'ritual', 'reset', 'formula', 'batch', 'story', 'journal', 'faq', 'contact', 'shipping', 'privacy', 'terms', 'cookies', 'system'];
+export const ringIndex = (id) => {
+  if (id === 'ritual-card') return RING.indexOf('ritual') + 0.5;
+  if (id.startsWith('guide-')) return RING.indexOf('journal') + 0.5;
+  const i = RING.indexOf(id);
+  return i < 0 ? RING.length : i;
+};
+// the header's links (the ritual is the button beside them), the menu's, and the footer's columns
+const NAV_MAIN = ['reset', 'batch', 'story', 'journal', 'faq'];
+const NAV_MENU = ['ritual', 'reset', 'formula', 'batch', 'story', 'journal', 'faq', 'contact'];
 const FOOT = {
-  explore: ['ritual', 'reset', 'batch', 'formula', 'story', 'journal'],
+  explore: ['ritual', 'reset', 'formula', 'batch', 'story', 'journal'],
   help: ['faq', 'contact', 'shipping'],
   legal: ['privacy', 'terms', 'cookies'],
 };
@@ -12,10 +23,11 @@ const FOOT = {
 // pages that live under a section in the nav: that section stays marked while you're on them
 const PARENT = { formula: 'reset', 'ritual-card': 'ritual' };
 
-function navLink(ctx, id) {
+function navLink(ctx, id, mark) {
   const pid = ctx.page.id;
   const current = pid === id ? 'page' : PARENT[pid] === id || (id === 'journal' && pid.startsWith('guide-')) ? 'true' : null;
-  return `<a href="${ctx.url(id)}"${current ? ` aria-current="${current}"` : ''}>${ctx.ui.nav[id]}</a>`;
+  // (the mark under the current link has a name, so a page turn slides it to the next word)
+  return `<a href="${ctx.url(id)}"${current ? ` aria-current="${current}"` : ''}>${ctx.ui.nav[id]}${current && mark ? '<i class="site-nav__mark" aria-hidden="true"></i>' : ''}</a>`;
 }
 
 function langLinks(ctx) {
@@ -35,12 +47,14 @@ export function header(ctx) {
   return html`<header class="site-header${ctx.page.solidHeader ? ' is-solid' : ''}" data-header>
     <div class="wrap site-header__inner">
       <a class="wordmark" href="${ctx.url('home')}" aria-label="${esc(ctx.cfg.brandName)}, ${esc(ui.nav.home)}">${mark()}<span>${esc(ctx.cfg.brandName)}</span></a>
-      <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.filter((id) => id !== 'ritual' || ctx.page.id === 'ritual' || ctx.page.id === 'ritual-card').map((id) => `<li>${navLink(ctx, id)}</li>`)}</ul></nav>
+      <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.map((id) => `<li>${navLink(ctx, id, true)}</li>`)}</ul></nav>
       <div class="header-tools">
         <span class="hdr-switch">${wallSwitch(ctx, { source: 'header', cls: 'wallswitch--mini' })}<span class="hdr-switch__label" aria-hidden="true" data-shift-label>${shiftLabel(ui.shift.labelOn, ui.shift.labelOff)}</span></span>
-        ${ctx.page.id !== 'ritual' ? `<button class="sound-toggle" type="button" data-sound-toggle aria-pressed="false" aria-label="${esc(ui.sound.label)}" title="${esc(ui.sound.hint)}"><span class="sound-toggle__off">${icon('mute')}</span><span class="sound-toggle__on">${icon('sound')}</span></button>` : ''}
+        <button class="sound-toggle" type="button" data-sound-toggle aria-pressed="false" aria-label="${esc(ui.sound.label)}" title="${esc(ui.sound.hint)}"><span class="sound-toggle__off">${icon('mute')}</span><span class="sound-toggle__on">${icon('sound')}</span></button>
         ${langLinks(ctx)}
-        ${ctx.page.id !== 'ritual' ? btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritualShort, ui.cta.ritualShortOff), size: 'sm', trackId: 'header', cls: 'header-cta' }) : ''}
+        ${ctx.page.id === 'ritual'
+          ? btn({ href: '#ritual-start', label: `${shiftLabel(ui.cta.ritualShort, ui.cta.ritualShortOff)}<span class="if-here">${ui.cta.startNow}</span>`, size: 'sm', trackId: 'header_start', cls: 'header-cta', attr: { 'aria-current': 'page' } })
+          : btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritualShort, ui.cta.ritualShortOff), size: 'sm', trackId: 'header', cls: 'header-cta' })}
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle><span class="visually-hidden" data-menu-label>${ui.menu.open}</span>${icon('menu')}</button>
       </div>
     </div>
@@ -87,6 +101,38 @@ export function footer(ctx) {
       </div>
     </div>
   </footer>`;
+}
+
+/* Where next: the same hand-off above the footer on every page, so each side of the site ends by
+   turning to the next one (the next page on the ring, and the ritual, tonight). The home page ends
+   on its own finale, the print card and the 404 have their own ways on. */
+const NEXT = { ritual: 'reset', reset: 'formula', formula: 'batch', batch: 'story', story: 'journal', journal: 'faq', faq: 'contact', contact: 'home', shipping: 'faq', privacy: 'faq', terms: 'faq', cookies: 'privacy' };
+// the scene each side opens on, dimmed behind its card (the legal pages have none: a plain card)
+const SCENE = { home: 'hall', ritual: 'r4', reset: 'jarWide', formula: 'jar', batch: 'racks', story: 'build', journal: 'lineEve', faq: 'bed', contact: 'r1' };
+export function whereNext(ctx) {
+  const pid = ctx.page.id;
+  if (['home', 'ritual-card', '404', 'system'].includes(pid)) return '';
+  const nextId = NEXT[pid] || (pid.startsWith('guide-') ? 'faq' : 'ritual');
+  const { ui } = ctx;
+  const N = ui.next;
+  const go = ctx.content.home?.inShort?.go?.items || [];
+  const line = (id) => N.lines[id] || (go.find((g) => g.to === id && !g.hash) || {}).text || '';
+  const name = (id) => (id === 'home' ? N.home : ui.nav[id]);
+  const card = (k, id, label) => {
+    const view = SCENE[id];
+    return `<li><a class="where-next__card${view ? ' where-next__card--scene' : ''}" href="${ctx.url(id)}" data-track="cta_click" data-track-id="next_${k}">${
+      view ? `<span class="where-next__shot" aria-hidden="true">${panelPoster(ctx, view, { sizes: '(min-width: 640px) 50vw, 100vw' })}</span>` : ''
+    }<span class="where-next__text"><span class="where-next__k">${label}</span><span class="where-next__name">${name(id)}</span><span class="where-next__line">${line(id)}</span></span></a></li>`;
+  };
+  return html`<nav class="where-next" aria-label="${esc(N.title)}">
+    <div class="wrap where-next__inner">
+      <p class="where-next__title">${N.title}</p>
+      <ul class="where-next__list">
+        ${card('ring', nextId, N.next)}
+        ${nextId !== 'ritual' && pid !== 'ritual' ? card('ritual', 'ritual', shiftLabel(N.tonight, N.tonightOff)) : card('home', 'home', N.start)}
+      </ul>
+    </div>
+  </nav>`;
 }
 
 function stickyCta(ctx) {
@@ -162,6 +208,7 @@ ${!ctx.page.noindex && xDefault && ctx.alternates.length > 1 ? `<link rel="alter
 <link rel="apple-touch-icon" href="${ctx.asset('assets/img/apple-touch-icon.png')}">
 <link rel="manifest" href="${ctx.asset('manifest.webmanifest')}">
 ${fontsHead(ctx)}
+${page.preload?.filter(Boolean).map((p) => `<link rel="preload" href="${ctx.asset(p.href)}" as="${p.as || 'image'}"${p.srcset ? ` imagesrcset="${p.srcset}" imagesizes="${p.sizes || '100vw'}"` : ''}>`)}
 <link rel="stylesheet" href="${ctx.asset('assets/css/site.css')}">
 ${page.styles?.map((s) => `<link rel="stylesheet" href="${ctx.asset(`assets/css/${s}.css`)}">`)}
 <script>${initScript(ctx)}</script>
@@ -178,7 +225,10 @@ const initScript = (ctx) => {
     ? `try{var X=${JSON.stringify(exps)},E=JSON.parse(localStorage.getItem('es:exp')||'{}');for(var k in X){if(X[k].indexOf(E[k])<0)E[k]=X[k][Math.floor(Math.random()*X[k].length)];d.setAttribute('data-exp-'+k,E[k])}localStorage.setItem('es:exp',JSON.stringify(E))}catch(e){}`
     : '';
   // Work mode stays off for the rest of the evening: until 05:00 the next morning.
-  return `(function(){var d=document.documentElement,c=false,s='x',m=false,o=false;d.classList.add('js');d.lang=${JSON.stringify(ctx.localeInfo.htmlLang)};try{c=localStorage.getItem('es:calm')==='on';s=localStorage.getItem('es:opening');if(s===null)localStorage.setItem('es:opening','${home ? 'played' : 'skipped'}');var w=JSON.parse(localStorage.getItem('es:shift')||'null');if(w&&w.off&&new Date(w.at-18e6).toDateString()===new Date(Date.now()-18e6).toDateString())o=true}catch(e){}d.setAttribute('data-shift',o?'off':'on');${expJs}if(c)d.setAttribute('data-calm','on');else if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){d.classList.add('motion-ok');m=true}${
+  // The turn (site.js): the side we come from left its place on the ring in sessionStorage;
+  // compared with this side's place, that sets the direction the page slides (data-turn).
+  const ring = ringIndex(ctx.page.id);
+  return `(function(){var d=document.documentElement,c=false,s='x',m=false,o=false;d.classList.add('js');d.lang=${JSON.stringify(ctx.localeInfo.htmlLang)};try{c=localStorage.getItem('es:calm')==='on';s=localStorage.getItem('es:opening');if(s===null)localStorage.setItem('es:opening','${home ? 'played' : 'skipped'}');var w=JSON.parse(localStorage.getItem('es:shift')||'null');if(w&&w.off&&new Date(w.at-18e6).toDateString()===new Date(Date.now()-18e6).toDateString())o=true}catch(e){}d.setAttribute('data-shift',o?'off':'on');${expJs}if(c)d.setAttribute('data-calm','on');else if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){d.classList.add('motion-ok');m=true}try{var R=JSON.parse(sessionStorage.getItem('es:ring')||'null');if(R&&Date.now()-R.at<6e4)d.setAttribute('data-turn',!m||R.r===${ring}?'same':R.r<${ring}?'next':'back')}catch(e){}${
     home && ctx.cfg.opening?.enabled !== false
       ? `var q=location.search,ad=(${ctx.cfg.opening?.skipForCampaigns === false ? 'false' : '/[?&](utm_[a-z]+|gclid|fbclid|ttclid|msclkid)=/.test(q)||!!(navigator.connection&&navigator.connection.saveData)'})||/[?&]confirmed=/.test(q);if(m&&((s===null&&!ad&&d.getAttribute('data-exp-opening')!=='none')||/[?&]intro\\b/.test(q))&&!location.hash&&window.HTMLCanvasElement)d.classList.add('intro-pending')`
       : ''
@@ -210,9 +260,10 @@ export function renderDocument(ctx, page) {
   const body = html`<a class="skip-link" href="#main">${ctx.ui.skip}</a>
 ${sprite()}
 ${header(ctx)}
-<main id="main" tabindex="-1" data-page="${esc(ctx.page.id)}">
+<main id="main" tabindex="-1" data-page="${esc(ctx.page.id)}" data-ring="${ringIndex(ctx.page.id)}">
 ${page.body}
 </main>
+${whereNext(ctx)}
 ${footer(ctx)}
 ${stickyCta(ctx)}
 ${consentBar(ctx)}

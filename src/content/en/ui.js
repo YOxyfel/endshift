@@ -27,6 +27,43 @@ export default ({ cfg }) => ({
     on: 'Low-stimulation mode on',
     off: 'Low-stimulation mode off',
   },
+  // The stamp at the top of every page (a time-card chip, like the film's "19:25 · Home"): where
+  // you are, and one thing about it. {n} is filled in by the page.
+  stamp: {
+    ritual: ['The ritual', '20 minutes'],
+    ritualCard: ['The ritual', 'on one page'],
+    reset: ['RESET', 'the water step'],
+    formula: ['RESET', 'the formula'],
+    batch: ['Batch #001', 'the founding list'],
+    story: ['The story', 'built in public'],
+    journal: ['Journal', '{n} guides'],
+    guide: ['Journal', '{n} min read'],
+    faq: ['Questions', '{n} answered'],
+    contact: ['Contact', 'a person replies'],
+    shipping: ['Shipping & returns', 'updated {n}'],
+    privacy: ['Privacy', 'updated {n}'],
+    terms: ['Terms', 'updated {n}'],
+    cookies: ['Cookies', 'saved on this device'],
+    notFound: ['404', 'OUT'],
+    system: ['Design system', 'internal'],
+  },
+  // "Where next": the hand-off above the footer on every page
+  next: {
+    title: 'Where next',
+    next: 'Next',
+    tonight: 'Tonight',
+    tonightOff: 'Your 20 minutes',
+    start: 'Back to the start',
+    home: 'The start',
+    lines: {
+      home: 'The whole evening, from the top.',
+      contact: 'Questions, ideas, corrections. A person reads every message.',
+      shipping: 'What happens between “ordered” and “on your kitchen table”.',
+      privacy: 'What we collect, and what stays on your device.',
+      terms: 'Plain-language terms for the site, the ritual and the list.',
+      cookies: 'What this site saves on your device.',
+    },
+  },
   // The speaker in the header: sound for the whole site, off until you switch it on.
   sound: {
     label: 'Sound',
@@ -84,6 +121,7 @@ export default ({ cfg }) => ({
     stickyOff: 'Start your 20 minutes',
     ritualShortOff: 'Your 20 minutes',
     ritualShort: 'Free ritual',
+    startNow: 'Start now',
     ritualLong: 'Start the 20-minute ritual',
     meet: 'Meet RESET',
     seeReset: 'See RESET',
