@@ -154,21 +154,34 @@
      and the side slides out one way and the next slides in from the other, in the direction
      of the ring of pages. Before leaving, the side notes where it stands on the ring
      (main[data-ring]); the next side reads that in its inline head script, before its first
-     paint, and marks <html data-turn="next|back|same"> for the CSS. Back and forward put a
-     side back exactly as you left it (the browser's own scroll restoration).
+     paint, and marks <html data-turn="next|back|same"> for the CSS.
+     Where a side opens: a link always opens the next side at its top. Back, forward and reload
+     put a side back exactly where you left it: leaving, the side notes how far down you were
+     under its history entry's key (es:pos), and the inline head script scrolls there before the
+     first paint (the browser's own restoration is switched off there, so no host or browser
+     can carry a position from one side to the next).
      Without view transitions, as before: a link to another side first brings you back up (a
      short glide if you're near the top, otherwise a quick fade) and then the side opens. The
      logo, or a link to the side you're on, glides to the top without leaving. Links to a part
      of a page (#…) work as usual. */
   var turns = 'onpagereveal' in window && 'startViewTransition' in document;
-  try { if ('scrollRestoration' in history) history.scrollRestoration = 'auto'; } catch (e) {}
   var ringHere = parseFloat((qs('main') || document.body).getAttribute('data-ring'));
-  function noteRing() {
-    if (isNaN(ringHere)) return;
-    try { sessionStorage.setItem('es:ring', JSON.stringify({ r: ringHere, at: Date.now() })); } catch (e) {}
+  var posKey = function () {
+    try { if (window.navigation && navigation.currentEntry && navigation.currentEntry.key) return navigation.currentEntry.key; } catch (e) {}
+    return location.pathname + location.search;
+  };
+  function noteLeaving() {
+    try {
+      if (!isNaN(ringHere)) sessionStorage.setItem('es:ring', JSON.stringify({ r: ringHere, at: Date.now() }));
+      var P = JSON.parse(sessionStorage.getItem('es:pos') || '{}');
+      P[posKey()] = Math.round(window.pageYOffset || document.documentElement.scrollTop || 0);
+      var ks = Object.keys(P);
+      if (ks.length > 40) ks.slice(0, ks.length - 40).forEach(function (k) { delete P[k]; });
+      sessionStorage.setItem('es:pos', JSON.stringify(P));
+    } catch (e) {}
   }
-  window.addEventListener('pageswap', noteRing);
-  window.addEventListener('pagehide', noteRing);
+  window.addEventListener('pageswap', noteLeaving);
+  window.addEventListener('pagehide', noteLeaving);
   // the direction mark is only for the turn itself
   window.addEventListener('pagereveal', function (e) {
     var done = function () { root.removeAttribute('data-turn'); };

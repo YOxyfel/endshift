@@ -211,6 +211,7 @@ ${fontsHead(ctx)}
 ${page.preload?.filter(Boolean).map((p) => `<link rel="preload" href="${ctx.asset(p.href)}" as="${p.as || 'image'}"${p.srcset ? ` imagesrcset="${p.srcset}" imagesizes="${p.sizes || '100vw'}"` : ''}>`)}
 <link rel="stylesheet" href="${ctx.asset('assets/css/site.css')}">
 ${page.styles?.map((s) => `<link rel="stylesheet" href="${ctx.asset(`assets/css/${s}.css`)}">`)}
+<link rel="expect" href="#es-end" blocking="render">
 <script>${initScript(ctx)}</script>
 ${[...(page.jsonld || []), breadcrumbs(ctx, page)].filter(Boolean).map((j) => `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, '\\u003c')}</script>`)}`;
 }
@@ -227,8 +228,14 @@ const initScript = (ctx) => {
   // Work mode stays off for the rest of the evening: until 05:00 the next morning.
   // The turn (site.js): the side we come from left its place on the ring in sessionStorage;
   // compared with this side's place, that sets the direction the page slides (data-turn).
+  // Where the side opens: a link opens it at the top; back, forward and reload where you left it
+  // (site.js noted that under the history entry's key). The browser's own restoration is off, so
+  // nothing else can carry a scroll position over; the place is set before the first paint
+  // (pagereveal), and again at DOMContentLoaded and load unless you've already moved.
   const ring = ringIndex(ctx.page.id);
-  return `(function(){var d=document.documentElement,c=false,s='x',m=false,o=false;d.classList.add('js');d.lang=${JSON.stringify(ctx.localeInfo.htmlLang)};try{c=localStorage.getItem('es:calm')==='on';s=localStorage.getItem('es:opening');if(s===null)localStorage.setItem('es:opening','${home ? 'played' : 'skipped'}');var w=JSON.parse(localStorage.getItem('es:shift')||'null');if(w&&w.off&&new Date(w.at-18e6).toDateString()===new Date(Date.now()-18e6).toDateString())o=true}catch(e){}d.setAttribute('data-shift',o?'off':'on');${expJs}if(c)d.setAttribute('data-calm','on');else if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){d.classList.add('motion-ok');m=true}try{var R=JSON.parse(sessionStorage.getItem('es:ring')||'null');if(R&&Date.now()-R.at<6e4)d.setAttribute('data-turn',!m||R.r===${ring}?'same':R.r<${ring}?'next':'back')}catch(e){}${
+  const placeJs =
+    "try{history.scrollRestoration='manual'}catch(e){}var nt='push',pk='';try{if(window.navigation&&navigation.activation)nt=navigation.activation.navigationType;else{var ne=performance.getEntriesByType('navigation')[0];nt=ne&&ne.type==='back_forward'?'traverse':ne&&ne.type==='reload'?'reload':'push'}if(window.navigation&&navigation.currentEntry&&navigation.currentEntry.key)pk=navigation.currentEntry.key}catch(e){}if(!pk)pk=location.pathname+location.search;var sp=0;if(nt==='traverse'||nt==='reload'){try{sp=+(JSON.parse(sessionStorage.getItem('es:pos')||'{}')[pk])||0}catch(e){}}var moved=false;['wheel','touchstart','keydown','pointerdown'].forEach(function(t){addEventListener(t,function(){moved=true},{passive:true,once:true})});var place=function(){if(moved||(location.hash&&nt!=='traverse'))return;if(Math.abs((window.pageYOffset||0)-sp)>1)window.scrollTo(0,sp)};var rv=0;addEventListener('pagereveal',function(){if(++rv===1)place()});addEventListener('DOMContentLoaded',place);addEventListener('load',place);";
+  return `(function(){var d=document.documentElement,c=false,s='x',m=false,o=false;d.classList.add('js');d.lang=${JSON.stringify(ctx.localeInfo.htmlLang)};try{c=localStorage.getItem('es:calm')==='on';s=localStorage.getItem('es:opening');if(s===null)localStorage.setItem('es:opening','${home ? 'played' : 'skipped'}');var w=JSON.parse(localStorage.getItem('es:shift')||'null');if(w&&w.off&&new Date(w.at-18e6).toDateString()===new Date(Date.now()-18e6).toDateString())o=true}catch(e){}d.setAttribute('data-shift',o?'off':'on');${expJs}if(c)d.setAttribute('data-calm','on');else if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)){d.classList.add('motion-ok');m=true}try{var R=JSON.parse(sessionStorage.getItem('es:ring')||'null');if(R&&Date.now()-R.at<6e4)d.setAttribute('data-turn',!m||R.r===${ring}?'same':R.r<${ring}?'next':'back')}catch(e){}${placeJs}${
     home && ctx.cfg.opening?.enabled !== false
       ? `var q=location.search,ad=(${ctx.cfg.opening?.skipForCampaigns === false ? 'false' : '/[?&](utm_[a-z]+|gclid|fbclid|ttclid|msclkid)=/.test(q)||!!(navigator.connection&&navigator.connection.saveData)'})||/[?&]confirmed=/.test(q);if(m&&((s===null&&!ad&&d.getAttribute('data-exp-opening')!=='none')||/[?&]intro\\b/.test(q))&&!location.hash&&window.HTMLCanvasElement)d.classList.add('intro-pending')`
       : ''
@@ -271,7 +278,8 @@ ${consentBar(ctx)}
 <div class="grain" aria-hidden="true"></div>
 ${clientConfig(ctx, page)}
 <script src="${ctx.asset('assets/js/site.js')}" defer></script>
-${page.scripts?.map((s) => `<script src="${ctx.asset(`assets/js/${s}.js`)}" defer></script>`)}`;
+${page.scripts?.map((s) => `<script src="${ctx.asset(`assets/js/${s}.js`)}" defer></script>`)}
+<span id="es-end" hidden></span>`;
 
   if (ctx.fragment) {
     // Preview build: the artifact host wraps this file in its own document skeleton.
