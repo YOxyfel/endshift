@@ -3,7 +3,7 @@ import { html, esc } from '../../lib/html.js';
 import { gameHero, gameClient, welcomeRow } from '../game.js';
 import { film, watchNudge } from '../film.js';
 import PANELS from '../../config/panels.js';
-import { btn, chip, icon, dial, meter, signupForm, productRender, faqList, specs, isnt, slips, timelineList, batchAction, wallSwitch, shiftLabel, shot, jarPhoto, founderFace } from '../components.js';
+import { btn, chip, icon, dial, meter, signupForm, productRender, faqList, specs, isnt, slips, timelineList, batchAction, wallSwitch, shiftLabel, shot, jarPhoto, founderFace, panelPoster } from '../components.js';
 
 export const lines = (x) => (Array.isArray(x) ? x.map((s) => `<span class="ln">${s}</span>`).join(' ') : x);
 
@@ -136,31 +136,49 @@ export default function home(ctx) {
           })}</ul>
         </div>
       </nav>`;
+  // what each of the three lines lets you do
+  const inShortAct = (act) =>
+    act === 'ritual'
+      ? btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'lg', trackId: 'in_short_ritual' })
+      : act === 'batch'
+        ? state.checkoutLive
+          ? batchAction(ctx, { location: 'in_short', variant: 'ghost', size: 'lg' })
+          : btn({ href: ctx.url('batch', { hash: 'join' }), label: ui.cta.batchConcept, variant: 'ghost', size: 'lg', trackId: 'in_short_batch' })
+        : act === 'reset'
+          ? `<a class="in-short__link" href="${ctx.url('reset')}" data-track="cta_click" data-track-id="in_short_reset">${Q.resetLink}</a>`
+          : '';
+  const W = Q.watch;
   const body = html`
 ${useGame ? gameHero(ctx) : classicHero(ctx, pingTrack)}
 <section class="in-short" id="in-short" aria-labelledby="in-short-title">
-  <div class="wrap in-short__inner">
+  <div class="wrap in-short__inner" data-hide-sticky>
     <div class="in-short__head">
       <p class="in-short__kicker">${Q.kicker}</p>
       <h2 class="in-short__title" id="in-short-title">${Q.title}</h2>
-      ${Q.go ? orbit(Q.go) : ''}
     </div>
-    <div class="in-short__body">
-      <ol class="in-short__list">${Q.items.map((it) => html`<li class="in-short__row"><span class="in-short__k">${it.k}</span><span class="in-short__v">${it.v}</span></li>`)}</ol>
-      <div class="cta-row in-short__ctas">
-        ${btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritual, ui.cta.ritualOff), size: 'lg', trackId: 'in_short_ritual' })}
-        ${state.checkoutLive ? batchAction(ctx, { location: 'in_short', variant: 'ghost', size: 'lg' }) : btn({ href: ctx.url('batch', { hash: 'join' }), label: ui.cta.batchConcept, variant: 'ghost', size: 'lg', trackId: 'in_short_batch' })}
-      </div>
-      ${useGame ? html`<div class="jobpick" data-jobpick>
-        <p class="jobpick__q">${Q.jobQ}</p>
-        <div class="jobpick__chips" role="group" aria-label="${esc(Q.jobQ)}">${Q.jobs.map(([id, label]) => `<button class="jobpick__chip" type="button" data-job="${id}" aria-pressed="false">${label}</button>`).join('')}</div>
-        <p class="jobpick__hint" data-jobpick-hint data-saved="${esc(Q.jobSaved)}">${Q.jobHint}</p>
-      </div>` : ''}
-      <div class="in-short__film-row">
-        <a class="in-short__film" href="#after-game" data-track="cta_click" data-track-id="in_short_film">${Q.film} <span aria-hidden="true">↓</span></a>
-        ${Q.watch && S.film.watch ? `<button class="in-short__watch" type="button" data-watch-start data-watch-from="top">${icon('play')}<span>${Q.watch}</span></button>` : ''}
-        ${Q.watch && hasVoice ? watchNudge(S.film.watch, 'inshort', 'top') : ''}
-        ${Q.watch && S.film.watch?.credit && hasVoice ? `<p class="in-short__credit">${S.film.watch.credit}</p>` : ''}
+    <ol class="in-short__list">${Q.items.map((it) => html`<li class="in-short__item in-short__item--${it.act}">
+        <p class="in-short__k">${it.k}</p>
+        <p class="in-short__t">${it.t}</p>
+        <p class="in-short__v">${it.v}</p>
+        <div class="in-short__act">${inShortAct(it.act)}</div>
+      </li>`)}</ol>
+    ${useGame ? html`<div class="jobpick" data-jobpick>
+      <p class="jobpick__q" id="jobpick-q">${Q.jobQ}</p>
+      <div class="jobpick__chips" role="group" aria-labelledby="jobpick-q">${Q.jobs.map(([id, label]) => `<button class="jobpick__chip" type="button" data-job="${id}" aria-pressed="false">${label}</button>`).join('')}</div>
+      <p class="jobpick__hint" data-jobpick-hint data-saved="${esc(Q.jobSaved)}">${Q.jobHint}</p>
+    </div>` : ''}
+  </div>
+  <div class="in-short__next">
+    <div class="wrap in-short__next-inner">
+      ${Q.go ? orbit(Q.go) : ''}
+      <div class="in-short__film">
+        <a class="reel" href="#after-game" data-track="cta_click" data-track-id="in_short_film"${W && S.film.watch ? ' data-watch-start data-watch-from="top"' : ''}>
+          <span class="reel__frame">${panelPoster(ctx, 'hall', { sizes: '(min-width: 900px) 30rem, 92vw' })}<span class="reel__stamp cap cap--stamp" aria-hidden="true">${S.home.stamp}</span><span class="reel__play" aria-hidden="true"><span class="reel__w">${icon('play')}</span><span class="reel__s">${icon('chevron')}</span></span></span>
+          <span class="reel__cap">${W ? html`<span class="reel__w reel__title">${W.title}</span><span class="reel__w reel__meta">${W.meta}</span>` : ''}<span class="reel__s reel__title">${Q.film.title}</span><span class="reel__s reel__meta">${Q.film.meta}</span></span>
+        </a>
+        ${W && hasVoice ? watchNudge(S.film.watch, 'inshort', 'top') : ''}
+        ${W ? `<a class="in-short__scroll" href="#after-game" data-track="cta_click" data-track-id="in_short_scroll">${W.scroll} <span aria-hidden="true">↓</span></a>` : ''}
+        ${W && S.film.watch?.credit && hasVoice ? `<p class="in-short__credit">${S.film.watch.credit}</p>` : ''}
       </div>
     </div>
   </div>

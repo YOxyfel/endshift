@@ -2901,10 +2901,13 @@ code {
 }
 
 /* Home: the one-screen summary right after the game (what ENDSHIFT is, for people who won't
-   scroll the whole film), with "what do you do?" for the game and the ritual -------------- */
+   scroll the whole film). Two parts:
+   - the message: three short lines side by side, each with the one thing you can do about it
+     (only "Tonight" is lit: one amber button in the whole block), and "what do you do?" under them;
+   - a darker band under it, the way on: every page as a bubble, or the film to press play on. */
 .in-short {
   position: relative;
-  padding: clamp(4.5rem, 12vh, 8rem) 0 clamp(3.5rem, 9vh, 6rem);
+  padding-top: clamp(4.5rem, 12vh, 8rem);
   background:
     radial-gradient(60rem 30rem at 85% 0%, rgba(242, 168, 75, 0.07), transparent 70%),
     var(--night);
@@ -2913,8 +2916,14 @@ code {
 
 .in-short__inner {
   display: grid;
-  gap: var(--s-5);
+  gap: clamp(2rem, 5vh, 3rem);
   max-width: 68rem;
+  padding-bottom: clamp(3rem, 8vh, 5rem);
+}
+
+.in-short__head {
+  display: grid;
+  gap: var(--s-3);
 }
 
 .in-short__kicker {
@@ -2929,45 +2938,120 @@ code {
 .in-short__title {
   font-family: var(--font-display);
   font-weight: 860;
-  font-size: var(--fs-display-m);
-  line-height: 0.92;
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  line-height: 0.95;
   text-wrap: balance;
-  max-width: 18ch;
 }
 
+/* the three lines: on phones one under another, from 900 px side by side */
 .in-short__list {
   display: grid;
-  margin-top: var(--s-2);
-  border-bottom: 1px solid var(--line);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.in-short__row {
-  display: grid;
-  grid-template-columns: minmax(6.5rem, 9rem) 1fr;
-  gap: var(--s-4);
-  align-items: baseline;
-  padding: var(--s-4) 0 var(--s-3);
+.in-short__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-5) 0 var(--s-6);
   border-top: 1px solid var(--line);
 }
 
+/* each label is a time stamp, like the film's; tonight's is the lit one */
 .in-short__k {
+  padding: 0.32em 0.6em 0.26em;
+  border: 1.5px solid color-mix(in srgb, var(--paper) 30%, transparent);
+  border-radius: 2px;
+  color: var(--paper-2);
   font-family: var(--font-display);
-  font-weight: 820;
-  font-size: 1.25rem;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  font-size: 0.875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--paper);
 }
 
-.in-short__row:first-child .in-short__k {
-  color: var(--tungsten);
+.in-short__item--ritual .in-short__k {
+  border-color: var(--tungsten);
+  background: var(--tungsten);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
+}
+
+.in-short__t {
+  margin-top: var(--s-1);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 820;
+  font-size: clamp(1.75rem, 2.7vw, 2.3rem);
+  line-height: 1;
+  text-wrap: balance;
 }
 
 .in-short__v {
+  max-width: 34ch;
+  color: var(--fog);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.in-short__act {
+  margin-top: auto;
+  padding-top: var(--s-3);
+}
+
+.in-short__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: var(--paper-2);
-  font-size: var(--fs-lead);
-  line-height: 1.45;
-  max-width: 46ch;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--paper-2) 40%, transparent);
+  text-underline-offset: 0.3em;
+}
+
+.in-short__link:hover {
+  color: var(--paper);
+  text-decoration-color: currentColor;
+}
+
+@media (min-width: 900px) {
+  /* side by side, the stamps, the lines, the details and the actions each on one level
+     (a subgrid: where it isn't supported, each column simply stacks) */
+  .in-short__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr auto;
+    row-gap: var(--s-3);
+    border-top: 1px solid var(--line);
+  }
+  .in-short__item {
+    display: grid;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    justify-items: start;
+    padding: var(--s-6) clamp(1.25rem, 2.5vw, 2.5rem);
+    border-top: 0;
+  }
+  .in-short__t {
+    margin-top: 0;
+  }
+  .in-short__act {
+    align-self: end;
+  }
+  .in-short__item:first-child {
+    padding-left: 0;
+  }
+  .in-short__item:last-child {
+    padding-right: 0;
+  }
+  .in-short__item + .in-short__item {
+    border-left: 1px solid var(--line);
+  }
 }
 
 /* "Skip the walkthrough": every page as a bubble on a sphere.
@@ -3204,229 +3288,35 @@ code {
   opacity: 0;
 }
 
-.in-short__ctas {
-  margin-top: var(--s-3);
-}
-
-/* the two ways into the film: scroll it, or press play */
-.in-short__film-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-3) var(--s-4);
-  margin-top: var(--s-2);
-}
-
-.in-short__watch {
-  display: none;
-}
-
-.has-film .in-short__watch {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-height: 44px;
-  padding: 0.25rem 1rem 0.25rem 0.3rem;
-  border: 1.5px solid color-mix(in srgb, var(--tungsten) 60%, transparent);
-  border-radius: 99px;
-  background: transparent;
-  color: var(--paper);
-  font: inherit;
-  font-weight: 700;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.in-short__watch .icon {
-  flex: none;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0.55rem 0.5rem 0.55rem 0.6rem;
-  border-radius: 50%;
-  background: var(--tungsten);
-  color: var(--ink);
-  fill: currentColor;
-}
-
-.has-film .in-short__watch:hover {
-  border-color: var(--tungsten);
-  background: color-mix(in srgb, var(--tungsten) 10%, transparent);
-}
-
-/* "Much better with narration": under the play button, the arrow coming up at it from the left */
-.nudge--inshort {
-  flex-basis: 100%;
-  margin: -0.55rem 0 0 0.9rem;
-  text-align: left;
-}
-
-.nudge--inshort .nudge__arrow {
-  order: 0;
-  transform: scaleX(-1);
-}
-
-.nudge--inshort .nudge__text {
-  justify-items: start;
-  transform: rotate(2deg);
-  transform-origin: left bottom;
-}
-
-.nudge--inshort .nudge__stars i:nth-child(1) {
-  top: -0.7rem;
-  left: auto;
-  right: 1.2rem;
-}
-
-.nudge--inshort .nudge__stars i:nth-child(3) {
-  left: auto;
-  right: 0.2rem;
-  bottom: 0.2rem;
-}
-
-.motion-ok .nudge--inshort:not([hidden]) .nudge__arrow {
-  animation-name: nudge-bob-mirrored;
-}
-
-.nudge--watch .nudge__ln {
-  display: block;
-  white-space: nowrap;
-}
-
-html:not(.has-film) .nudge--watch {
-  display: none;
-}
-
-/* the button it points at */
-.in-short__watch.is-nudged {
-  position: relative;
-  border-color: var(--tungsten);
-}
-
-.motion-ok .in-short__watch.is-nudged::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border: 2px solid var(--tungsten);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  animation: nudge-ring 2.4s ease-out 1.3s infinite;
-}
-
-.in-short__credit {
-  display: none;
-  flex-basis: 100%;
-  margin: calc(-1 * var(--s-2)) 0 0;
-  color: var(--fog);
-  font-size: var(--fs-small);
-}
-
-.has-film /* "Much better with narration": under the play button, the arrow coming up at it from the left */
-.nudge--inshort {
-  flex-basis: 100%;
-  margin: -0.55rem 0 0 0.9rem;
-  text-align: left;
-}
-
-.nudge--inshort .nudge__arrow {
-  order: 0;
-  transform: scaleX(-1);
-}
-
-.nudge--inshort .nudge__text {
-  justify-items: start;
-  transform: rotate(2deg);
-  transform-origin: left bottom;
-}
-
-.nudge--inshort .nudge__stars i:nth-child(1) {
-  top: -0.7rem;
-  left: auto;
-  right: 1.2rem;
-}
-
-.nudge--inshort .nudge__stars i:nth-child(3) {
-  left: auto;
-  right: 0.2rem;
-  bottom: 0.2rem;
-}
-
-.motion-ok .nudge--inshort:not([hidden]) .nudge__arrow {
-  animation-name: nudge-bob-mirrored;
-}
-
-.nudge--watch .nudge__ln {
-  display: block;
-  white-space: nowrap;
-}
-
-html:not(.has-film) .nudge--watch {
-  display: none;
-}
-
-/* the button it points at */
-.in-short__watch.is-nudged {
-  position: relative;
-  border-color: var(--tungsten);
-}
-
-.motion-ok .in-short__watch.is-nudged::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border: 2px solid var(--tungsten);
-  border-radius: inherit;
-  pointer-events: none;
-  opacity: 0;
-  animation: nudge-ring 2.4s ease-out 1.3s infinite;
-}
-
-.in-short__credit {
-  display: block;
-}
-
-.in-short__film {
-  color: var(--fog);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--fog) 50%, transparent);
-  text-underline-offset: 0.3em;
-}
-
-.in-short__film:hover {
-  color: var(--paper);
-}
-
+/* "What do you do?": one quiet row under the three lines */
 .jobpick {
   display: grid;
   gap: var(--s-3);
-  margin-top: var(--s-4);
-  padding: var(--s-4) var(--s-5);
-  border: 1px dashed var(--line);
-  border-radius: var(--r-2, 10px);
+  align-items: center;
 }
 
 .jobpick__q {
+  color: var(--paper-2);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.375rem;
-  color: var(--paper);
+  font-size: 1.25rem;
 }
 
 .jobpick__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .jobpick__chip {
   min-height: 44px;
-  padding: 0 1.05rem;
+  padding: 0 0.95rem;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: transparent;
   color: var(--paper-2);
   font: inherit;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: border-color var(--dur-2) ease, color var(--dur-2) ease, background-color var(--dur-2) ease;
@@ -3448,44 +3338,274 @@ html:not(.has-film) .nudge--watch {
   font-size: var(--fs-small);
 }
 
-/* phones and tablets: one column, the summary first, then where to go */
-.in-short__head,
-.in-short__body {
-  display: contents;
+@media (min-width: 900px) {
+  .jobpick {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--s-6);
+  }
+  .jobpick__hint {
+    grid-column: 2;
+    margin-top: calc(-1 * var(--s-1));
+  }
 }
 
-.in-short__kicker { order: 1; }
-.in-short__title { order: 2; }
-.in-short__list { order: 3; }
-.in-short__ctas { order: 4; }
-.in-short__go { order: 5; margin-top: var(--s-4); }
-.jobpick { order: 6; }
-.in-short__film-row { order: 7; }
+/* the way on: a darker band, the bubbles and the film */
+.in-short__next {
+  padding: clamp(3rem, 8vh, 5rem) 0 clamp(3.5rem, 9vh, 6rem);
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, #000 38%, var(--night));
+}
 
-/* wider: the title and the page list on the left, the three lines on the right */
+.in-short__next-inner {
+  display: grid;
+  gap: var(--s-8);
+  max-width: 68rem;
+}
+
 @media (min-width: 900px) {
-  .in-short__inner {
+  .in-short__next-inner {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     column-gap: clamp(2.5rem, 6vw, 6rem);
-    align-items: start;
-  }
-  .in-short__head,
-  .in-short__body {
-    display: grid;
-    gap: var(--s-5);
-    align-content: start;
-  }
-  .in-short__go {
-    margin-top: var(--s-6);
+    align-items: center;
   }
 }
 
-/* phones: the label sits above its line, so the line gets the full width */
-@media (max-width: 599px) {
-  .in-short__row {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
-  }
+.in-short__film {
+  display: grid;
+  gap: var(--s-4);
+  justify-items: start;
+  max-width: 32rem;
+}
+
+/* the film's first frame: press play on it where the film runs; elsewhere it leads on to the
+   drawn version (the .reel__w parts are for watching, the .reel__s parts for scrolling) */
+.reel {
+  display: grid;
+  gap: var(--s-3);
+  width: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.reel__w,
+.has-film .reel__s {
+  display: none;
+}
+
+.has-film .reel__w {
+  display: revert;
+}
+
+.has-film .reel__cap .reel__w {
+  display: block;
+}
+
+.reel__frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-slip);
+  background: #0e1015;
+}
+
+.reel__frame .shot-poster {
+  filter: brightness(0.78) saturate(0.92);
+  transition: filter 0.3s ease, transform 0.6s ease;
+}
+
+.reel__frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(8, 9, 12, 0.5), transparent 40%);
+  pointer-events: none;
+}
+
+.reel__stamp {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 1;
+  font-size: 0.8125rem;
+}
+
+.reel__play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  translate: -50% -50%;
+  transition: scale 0.25s ease, background-color 0.25s ease;
+}
+
+.reel__play .icon {
+  display: block;
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.reel__play .reel__w .icon {
+  margin-left: 0.22rem; /* the triangle's weight is left of its box */
+  fill: currentColor;
+}
+
+.reel__play .reel__s .icon {
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-top: 0.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+.reel:hover .shot-poster,
+.reel:focus-visible .shot-poster {
+  filter: brightness(0.95) saturate(1);
+}
+
+.motion-ok .reel:hover .shot-poster {
+  transform: scale(1.025);
+}
+
+.reel:hover .reel__play {
+  background: var(--paper);
+  scale: 1.06;
+}
+
+.reel:focus-visible {
+  outline: none;
+}
+
+.reel:focus-visible .reel__frame {
+  outline: 2px solid var(--tungsten);
+  outline-offset: 3px;
+}
+
+.reel__cap {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.reel__cap .reel__s {
+  display: block;
+}
+
+.has-film .reel__cap .reel__s {
+  display: none;
+}
+
+.reel__title {
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 820;
+  font-size: 1.625rem;
+  line-height: 1;
+}
+
+.reel__meta {
+  color: var(--fog);
+  font-size: 0.9375rem;
+}
+
+/* "Much better with narration": under the film, the arrow coming up at it from the left */
+.nudge--inshort {
+  margin: -0.4rem 0 0 0.9rem;
+  text-align: left;
+}
+
+.nudge--inshort .nudge__arrow {
+  order: 0;
+  transform: scaleX(-1);
+}
+
+.nudge--inshort .nudge__text {
+  justify-items: start;
+  transform: rotate(2deg);
+  transform-origin: left bottom;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(1) {
+  top: -0.7rem;
+  left: auto;
+  right: 1.2rem;
+}
+
+.nudge--inshort .nudge__stars i:nth-child(3) {
+  left: auto;
+  right: 0.2rem;
+  bottom: 0.2rem;
+}
+
+.motion-ok .nudge--inshort:not([hidden]) .nudge__arrow {
+  animation-name: nudge-bob-mirrored;
+}
+
+.nudge--watch .nudge__ln {
+  display: block;
+  white-space: nowrap;
+}
+
+html:not(.has-film) .nudge--watch {
+  display: none;
+}
+
+/* the film it points at */
+.reel.is-nudged .reel__frame {
+  border-color: var(--tungsten);
+}
+
+.motion-ok .reel.is-nudged .reel__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 2px solid var(--tungsten);
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  animation: nudge-ring 2.4s ease-out 1.3s infinite;
+}
+
+/* or scroll it yourself (only offered where the film can play; otherwise the still is the way on) */
+.in-short__scroll {
+  display: none;
+  color: var(--fog);
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--fog) 50%, transparent);
+  text-underline-offset: 0.3em;
+}
+
+.has-film .in-short__scroll {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: calc(-1 * var(--s-2)) 0;
+}
+
+.in-short__scroll:hover {
+  color: var(--paper);
+}
+
+.in-short__credit {
+  display: none;
+  margin-top: calc(-1 * var(--s-2));
+  color: var(--fog);
+  font-size: 0.8125rem;
+}
+
+.has-film .in-short__credit {
+  display: block;
 }
 
 /* Home, for people who've done the ritual before: "Evening 4?" and a way straight in.

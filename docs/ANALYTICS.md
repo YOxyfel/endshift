@@ -43,6 +43,7 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `ritual_choice` | A step's option picked (paper/typed, water/tea, read/music/sit) | `step`, `choice` | Which personal touches people use |
 | `ritual_guide` | Guide me switched on or off | `on` | |
 | `ritual_nudge` | The “Now with narration” note by Adjust was tapped | `where` (setup / door) | |
+| `cta_click` from In short | The three lines and the way on, on the home page | `id`: `in_short_ritual` (Tonight's start button), `in_short_reset` (About RESET), `in_short_batch` (join the founding list), `in_short_film` (the film's still: where the film runs it also starts Watch with sound, see `film_watch` with `from: top`), `in_short_scroll` (or scroll through it yourself) | Which of the three lines people act on, and how they go on into the film. Counts towards the `inshort` experiment |
 | `cta_click` from the In short bubbles | A bubble in “Skip the walkthrough” on the home page was opened | `id` `in_short_go_<page>` (e.g. `in_short_go_formula`; the ritual's step strip is `in_short_go_ritual_plan`), `page` | Which pages people jump to instead of scrolling the film. Counts towards the `inshort` experiment |
 | `reset_turn` | The RESET bottle turned by dragging | | Whether people play with the bottle |
 | `guide_tonight` | Something ticked on a guide's "Take this into tonight" | `guide`, `items` | Which guides turn into evenings |

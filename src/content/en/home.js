@@ -19,12 +19,15 @@ export default ({ cfg, state, fmt, t, formula }) => {
     // One screen right after the game: what ENDSHIFT is, for people who won't scroll the whole film
     inShort: {
       kicker: 'In short',
-      title: 'What ENDSHIFT is, in three lines',
+      title: 'ENDSHIFT, in three lines',
+      // Each line: a label (k), the line itself (t), a quieter detail (v), and what you can do
+      // about it (act: 'ritual' = the start button, 'reset' = a link to RESET, 'batch' = join).
       items: [
-        { k: 'Tonight', v: 'A free 20-minute ritual that walks you from work mode to sleep. In your browser, no account.' },
-        { k: 'Later', v: 'RESET, an evening capsule for one step of it. Still in development; nothing is for sale.' },
-        { k: 'Now', v: 'The founding list, free. At 150 sign-ups, everyone on it gets an email to pay, and the first batch is made for them.' },
+        { k: 'Tonight', t: `A free ${keep('20-minute')} ritual.`, v: 'From work mode to sleep, in your browser. No account.', act: 'ritual' },
+        { k: 'Later', t: 'RESET, an evening capsule.', v: 'For one step of the ritual. In development; nothing is for sale.', act: 'reset' },
+        { k: 'Now', t: 'The founding list. Free.', v: 'At 150 sign-ups, an email to pay. The first batch is made for them.', act: 'batch' },
       ],
+      resetLink: 'About RESET',
       // Every page as a bubble, for people who'd rather not scroll the film. `to` is a page id
       // (`hash` an anchor on it), `slot` where it sits: 'c' is the middle, 0–7 go round clockwise
       // from the top. The list order is the keyboard order. `text` shows when a bubble is enlarged.
@@ -47,10 +50,11 @@ export default ({ cfg, state, fmt, t, formula }) => {
           { to: 'journal', slot: 5, name: 'Journal', text: 'Guides for switching off after work.' },
         ],
       },
-      film: 'Or scroll on: the evening, drawn. About two minutes.',
-      watch: 'Or press play and watch it with sound. About four minutes.',
+      // the way into the film: a still of its first frame to press play on, or scroll it yourself
+      film: { title: 'The evening, drawn', meta: 'Scroll on. About two minutes.' },
+      watch: { title: 'Watch the evening', meta: 'With sound. About four minutes.', scroll: 'Or scroll through it yourself, about two minutes' },
       jobQ: 'What do you do?',
-      jobHint: 'Pick one and the game plays your job, and the ritual suggests the right version.',
+      jobHint: 'The game and the ritual will fit your job.',
       jobSaved: 'Got it. Next time the game plays your job.',
       jobs: [
         ['kitchen', 'Kitchen'],

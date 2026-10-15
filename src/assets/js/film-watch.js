@@ -1261,7 +1261,8 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-watch-start]');
     if (!b) return;
-    if (st.on) { play('button'); return; }
+    if (st.on) { e.preventDefault(); play('button'); return; }
+    // (a link, like the film's still under the summary, goes on to the film if it can't play)
     if (start(b.getAttribute('data-watch-from') || 'here', b)) e.preventDefault();
   });
   // a tap on the picture: pause, play (not on a link or a button in it)
