@@ -1849,9 +1849,17 @@
     g.fillStyle = '#f2a84b';
     g.font = '800 92px ' + DF;
     g.fillText(String(D.cardOver).toUpperCase(), cx, 620);
+    // what work threw at you before you switched it off (onshift.js keeps the count)
+    var pings = 0;
+    try { var os = JSON.parse(localStorage.getItem('es:onshift') || 'null'); pings = os && os.ignored > 0 ? os.ignored : 0; } catch (e) {}
     g.fillStyle = '#d8d4ca';
     g.font = '500 42px ' + BF;
-    g.fillText(c.m === 1 && D.cardMinute ? D.cardMinute : fill(D.cardMinutes, { m: c.m }), cx, H - 250);
+    g.fillText(c.m === 1 && D.cardMinute ? D.cardMinute : fill(D.cardMinutes, { m: c.m }), cx, pings && D.cardPings ? H - 292 : H - 250);
+    if (pings && D.cardPings) {
+      g.fillStyle = '#a7aaa8';
+      g.font = '500 36px ' + BF;
+      g.fillText(fill(D.cardPings, { n: pings }), cx, H - 244);
+    }
     g.fillStyle = '#a7aaa8';
     g.font = '500 34px ' + BF;
     var dateText = '';

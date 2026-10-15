@@ -48,6 +48,7 @@ const ICONS = {
   vote: '<path d="M4 13.5h16v6H4z"/><path d="M8 13.5 12.5 4l5 2.3-3.4 7.2"/>',
   card: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/><circle cx="17" cy="9" r="1"/>',
   spark: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
+  power: '<path d="M12 3v9"/><path d="M6.6 6.6a7.5 7.5 0 1 0 10.8 0"/>',
 };
 
 export const sprite = () =>

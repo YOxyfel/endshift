@@ -1,0 +1,1364 @@
+/* ==========================================================================================
+   Still on shift (onshift.js): the slips, the meeting, the lean-in, the Overtime gauntlet.
+   Everything is paper and ink, drawn into one fixed layer under the header (the header, and
+   its switch, stay above it all). The layer itself lets clicks through; its things don't.
+   ========================================================================================== */
+
+:root {
+  --os-paper: #f1ead9;
+  --os-paper-2: #e6dcc3;
+  --os-kraft: #d9c49a;
+  --os-ink: var(--ink, #0b0d10);
+  --os-red: #d8463a;
+  --os-z: 45;
+}
+
+.onshift {
+  position: fixed;
+  inset: 0;
+  z-index: var(--os-z);
+  pointer-events: none;
+}
+
+.onshift[hidden] {
+  display: none;
+}
+
+.onshift > * {
+  pointer-events: auto;
+}
+
+.onshift > .os-flicker,
+.onshift > .os-rere {
+  pointer-events: none;
+}
+
+/* The slips ---------------------------------------------------------------------------------- */
+.os-slip {
+  position: fixed;
+  width: min(22rem, 86vw);
+  padding: 0.9rem 1rem 0.85rem;
+  border: 3px solid var(--os-ink);
+  border-radius: 3px;
+  background: var(--os-paper);
+  color: #1b1a17;
+  box-shadow: 7px 8px 0 rgba(0, 0, 0, 0.55);
+  transform: translate(calc(var(--tx, 0px) + var(--dx, 0px)), calc(var(--ty, 0px) + var(--dy, 0px))) rotate(calc(var(--rot, 0deg) + var(--tilt, 0deg)));
+  transition: transform 260ms var(--ease-out), opacity 260ms ease;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* a strip of tape at the top, as if it were stuck on */
+.os-slip::before {
+  content: '';
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  width: 4.5rem;
+  height: 1.2rem;
+  transform: translateX(-50%) rotate(-2deg);
+  background: rgba(242, 168, 75, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.os-slip--flick {
+  cursor: grab;
+}
+
+.os-slip.is-held {
+  cursor: grabbing;
+  transition: none;
+  box-shadow: 14px 18px 0 rgba(0, 0, 0, 0.45);
+}
+
+.motion-ok .os-slip:not(.is-in) {
+  opacity: 0;
+  transform: translate(calc(var(--tx, 0px) + 40vw), calc(var(--ty, 0px) - 6vh)) rotate(calc(var(--rot, 0deg) + 9deg));
+}
+
+.motion-ok .os-slip.is-in {
+  animation: os-land 520ms var(--ease-out) both;
+}
+
+@keyframes os-land {
+  0% {
+    opacity: 0;
+    transform: translate(calc(var(--tx, 0px) + 40vw), calc(var(--ty, 0px) - 6vh)) rotate(calc(var(--rot, 0deg) + 9deg));
+  }
+  70% {
+    opacity: 1;
+    transform: translate(calc(var(--tx, 0px) - 1.5vw), calc(var(--ty, 0px) + 0.4vh)) rotate(calc(var(--rot, 0deg) - 1.5deg));
+  }
+  100% {
+    opacity: 1;
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--rot, 0deg));
+  }
+}
+
+.os-slip.is-flying {
+  transition: transform 560ms cubic-bezier(0.3, 0, 0.9, 0.5), opacity 500ms ease 100ms;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.os-slip.is-gone {
+  opacity: 0;
+  transform: translate(var(--tx, 0px), calc(var(--ty, 0px) + 10px)) rotate(var(--rot, 0deg)) scale(0.97);
+  pointer-events: none;
+}
+
+.os-slip.is-drawer,
+.os-lean.is-drawer {
+  transition: transform 620ms cubic-bezier(0.5, 0, 1, 0.6), opacity 500ms ease 150ms;
+  opacity: 0;
+  transform: translate(var(--tx, 0px), calc(var(--ty, 0px) + 70vh)) rotate(calc(var(--rot, 0deg) + 12deg));
+  pointer-events: none;
+}
+
+.os-slip__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px dashed rgba(27, 26, 23, 0.35);
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.os-slip__who {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.os-slip__dot {
+  display: inline-grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--os-ink);
+  color: var(--os-paper);
+  font-style: normal;
+  font-size: 0.8rem;
+}
+
+.os-slip__time {
+  color: rgba(27, 26, 23, 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-slip__text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+.os-slip__text--q {
+  font-weight: 650;
+}
+
+.os-slip__note {
+  margin-top: 0.4rem;
+  color: rgba(27, 26, 23, 0.65);
+  font-size: var(--fs-small);
+  min-height: 1.2em;
+}
+
+.os-slip__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.os-slip .btn--ghost {
+  border-color: var(--os-ink);
+  color: #1b1a17;
+}
+
+.os-slip .btn--ghost:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #000;
+}
+
+/* the way out, on every slip: the switch's own amber */
+.os-slip .btn--quiet {
+  background: var(--tungsten);
+  border: 2px solid var(--os-ink);
+  color: #1b1a17;
+}
+
+.os-slip .btn--quiet:hover {
+  background: var(--tungsten-hi);
+  color: #000;
+}
+
+/* sizes: a note, a message, half the screen */
+.os-slip--xs {
+  width: min(17rem, 80vw);
+  padding: 0.6rem 0.8rem;
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.5);
+}
+
+.os-slip--xs .os-slip__head {
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.os-slip--xs .os-slip__text {
+  font-size: 0.95rem;
+}
+
+.os-slip--m {
+  width: min(34rem, 92vw);
+  padding: 1.1rem 1.25rem 1rem;
+}
+
+.os-slip--m .os-slip__text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 4.6vw, 2.2rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.os-slip--m .os-slip__text--q {
+  font-family: var(--font-body);
+  font-weight: 650;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.os-slip--l {
+  width: min(62rem, 94vw);
+  min-height: min(52vh, 34rem);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 1.25rem 1.5rem 1.25rem;
+  box-shadow: 14px 16px 0 rgba(0, 0, 0, 0.55);
+}
+
+.os-slip--l .os-slip__body {
+  display: grid;
+  align-content: center;
+}
+
+.os-slip--l .os-slip__text {
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: clamp(2.6rem, 9vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.os-slip--l .os-slip__head {
+  font-size: 1.05rem;
+}
+
+/* Finance's envelope */
+.os-slip--envelope {
+  background:
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.035) 0 6px, transparent 6px 14px),
+    var(--os-kraft);
+}
+
+.os-slip--envelope::before {
+  background: rgba(216, 70, 58, 0.65);
+}
+
+.os-slip--envelope .os-slip__text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+/* the survey's row of numbers, the timesheet's field */
+.os-rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+}
+
+.os-rate {
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 3px;
+  background: transparent;
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.os-rate:hover {
+  background: var(--os-ink);
+  color: var(--os-paper);
+}
+
+.os-field {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-field .input {
+  background: #fff;
+  color: #1b1a17;
+  border-color: var(--os-ink);
+}
+
+/* The pile of ignored slips, bottom left ------------------------------------------------------ */
+.os-pile {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  width: 3.6rem;
+  height: 2.6rem;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.os-pile.is-on {
+  opacity: 1;
+}
+
+.os-pile i {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--os-ink);
+  border-radius: 2px;
+  background: var(--os-paper);
+  box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+.os-pile i:nth-child(1) {
+  transform: translate(-4px, 4px) rotate(-7deg);
+}
+
+.os-pile i:nth-child(2) {
+  transform: translate(3px, 1px) rotate(5deg);
+}
+
+.os-pile__n {
+  position: absolute;
+  right: -0.6rem;
+  top: -0.7rem;
+  min-width: 1.5rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--os-red);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+
+.motion-ok .os-pile.is-bump {
+  animation: os-bump 320ms var(--ease-out);
+}
+
+@keyframes os-bump {
+  40% {
+    transform: translateY(-4px) scale(1.06);
+  }
+}
+
+/* The small cruelties ---------------------------------------------------------------------- */
+.os-flicker {
+  position: fixed;
+  inset: 0;
+  background: #cde7ea;
+  opacity: 0;
+  animation: os-flick 820ms steps(1, end) both;
+}
+
+@keyframes os-flick {
+  0% { opacity: 0.18; }
+  8% { opacity: 0; }
+  14% { opacity: 0.26; }
+  20% { opacity: 0; }
+  46% { opacity: 0.1; }
+  52% { opacity: 0; }
+  70% { opacity: 0.32; }
+  76% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+html.is-os-busy,
+html.is-os-busy * {
+  cursor: progress !important;
+}
+
+.os-rere {
+  position: fixed;
+  padding: 0.2rem 0.55rem 0.15rem;
+  border: 2px solid var(--os-red);
+  border-radius: 3px;
+  color: var(--os-red);
+  background: rgba(15, 17, 18, 0.7);
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  transition: opacity 400ms ease;
+}
+
+.motion-ok .os-rere {
+  animation: os-stamp-in 260ms var(--ease-out) both;
+}
+
+.os-rere.is-gone {
+  opacity: 0;
+}
+
+@keyframes os-stamp-in {
+  0% {
+    opacity: 0;
+    transform: rotate(-6deg) scale(1.6);
+  }
+}
+
+/* Someone leaning in at the edge ------------------------------------------------------------ */
+.os-lean {
+  position: fixed;
+  right: -0.5rem;
+  top: 36vh;
+  width: 12rem;
+  transform: translateX(105%);
+  transition: transform 520ms var(--ease-out);
+}
+
+.os-lean.is-in {
+  transform: translateX(18%) rotate(-8deg);
+}
+
+.os-lean .os-fig {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(-4px 6px 0 rgba(0, 0, 0, 0.5));
+}
+
+.os-lean .os-fig__body {
+  fill: #cfd3d3;
+}
+
+.os-lean__say {
+  position: absolute;
+  right: 88%;
+  top: 12%;
+  white-space: nowrap;
+  padding: 0.45rem 0.8rem 0.4rem;
+  border: 3px solid var(--os-ink);
+  border-radius: 999px;
+  background: var(--os-paper);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.5);
+}
+
+.os-lean__say::after {
+  content: '';
+  position: absolute;
+  right: -0.75rem;
+  bottom: 0.35rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  background: var(--os-paper);
+  border-right: 3px solid var(--os-ink);
+  border-bottom: 3px solid var(--os-ink);
+  transform: rotate(-45deg);
+}
+
+/* The people, in ink ----------------------------------------------------------------------- */
+.os-fig {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.os-fig path,
+.os-fig circle,
+.os-fig ellipse {
+  stroke: var(--os-ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.os-fig__body {
+  fill: #2a3338;
+}
+
+.os-fig__head {
+  fill: #f1ead9;
+}
+
+.os-fig__hair {
+  fill: var(--os-ink);
+}
+
+.os-fig .os-eye {
+  fill: var(--os-ink);
+  stroke: none;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.motion-ok .os-fig .os-eye {
+  animation: os-blink 5.2s steps(1, end) infinite;
+}
+
+.os-fig--1 .os-eye {
+  animation-delay: 1.7s;
+}
+
+.os-fig--2 .os-eye {
+  animation-delay: 3.1s;
+}
+
+@keyframes os-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  94%, 98% { transform: scaleY(0.1); }
+}
+
+.os-mouth {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.motion-ok .is-speaking .os-mouth {
+  animation: os-talk 360ms ease-in-out infinite alternate;
+}
+
+@keyframes os-talk {
+  from { transform: scaleY(0.6); }
+  to { transform: scaleY(2.2) translateY(2px); }
+}
+
+/* The meeting -------------------------------------------------------------------------------- */
+/* inside the layer: slips under the veil, the veil under a dialog, the gauntlet strip on top */
+.os-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(8, 9, 10, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transition: opacity 400ms ease;
+}
+
+.os-veil.is-gone {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.os-call {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: calc(var(--header-h) + 2vh);
+  width: min(94vw, 60rem);
+  max-height: calc(100vh - var(--header-h) - 4vh);
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #111416;
+  color: var(--paper);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%) translateY(16px);
+  opacity: 0;
+  transition: transform 420ms var(--ease-out), opacity 320ms ease;
+}
+
+.os-call.is-in {
+  transform: translateX(-50%);
+  opacity: 1;
+}
+
+.os-call__top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--line-soft);
+  background: #0c0e10;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.os-call__rec {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--os-red);
+}
+
+.motion-ok .os-call__rec {
+  animation: os-rec 1.4s ease-in-out infinite;
+}
+
+@keyframes os-rec {
+  50% { opacity: 0.25; }
+}
+
+.os-call__time {
+  margin-left: auto;
+  color: var(--fog);
+  font-variant-numeric: tabular-nums;
+}
+
+.os-call__stage {
+  display: grid;
+  gap: 0.5rem;
+  min-height: 0;
+  padding: 0.5rem;
+  overflow: auto;
+}
+
+.os-call__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.os-tile {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(205, 231, 234, 0.12), transparent 60%),
+    linear-gradient(180deg, #1c2328, #121719);
+  transition: border-color 200ms ease;
+}
+
+.os-tile--1 {
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(242, 168, 75, 0.1), transparent 60%),
+    linear-gradient(180deg, #221f1b, #141211);
+}
+
+.os-tile--2 {
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(205, 231, 234, 0.08), transparent 60%),
+    linear-gradient(180deg, #1a1d24, #0f1116);
+}
+
+.os-tile .os-fig {
+  position: absolute;
+  left: 50%;
+  bottom: -4%;
+  width: 62%;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.os-tile.is-speaking {
+  border-color: #8fd39a;
+}
+
+.os-tile__name {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.45rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+}
+
+.os-tile--you {
+  display: grid;
+  place-items: center;
+  background: #0a0b0c;
+  color: var(--fog);
+}
+
+.os-tile__off {
+  font-family: var(--font-display);
+  font-weight: 760;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.os-share {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 6px;
+  background: #0c0e10;
+}
+
+.os-share[hidden] {
+  display: none;
+}
+
+.os-share__who {
+  color: var(--fog);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.os-chart {
+  width: 100%;
+  max-height: 11rem;
+  border-radius: 4px;
+  background: #f1ead9;
+}
+
+.os-chart path,
+.os-chart rect {
+  stroke: #1b1a17;
+  stroke-width: 1.6;
+  fill: #9fb3d9;
+}
+
+.os-chart path {
+  fill: none;
+}
+
+.os-chart__line {
+  stroke: var(--os-red);
+  stroke-width: 2.2;
+}
+
+@media (min-width: 760px) {
+  .os-call.is-sharing .os-call__stage {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+
+  .os-call.is-sharing .os-call__grid {
+    order: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+  }
+
+  .os-call.is-sharing .os-tile__name {
+    font-size: 0.65rem;
+  }
+
+  .os-call.is-sharing .os-tile__off {
+    font-size: 0.8rem;
+  }
+
+  .os-call.is-sharing .os-share {
+    order: 1;
+    align-content: start;
+  }
+}
+
+.os-call__cap {
+  padding: 0.45rem 0.9rem;
+  border-top: 1px solid var(--line-soft);
+  background: #0c0e10;
+  color: var(--paper-2);
+  font-size: var(--fs-small);
+  font-style: italic;
+  min-height: 2.2rem;
+}
+
+.os-call.is-lost .os-call__stage {
+  opacity: 0.35;
+  filter: blur(1px);
+}
+
+.os-call__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.os-call__leave {
+  margin-left: auto;
+  background: var(--os-red);
+  border-color: var(--os-red);
+  color: #fff;
+}
+
+.os-call__leave:hover {
+  background: #e85a4e;
+}
+
+.os-call__sure {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-top: 1px solid var(--line);
+  background: #15181b;
+}
+
+.os-call__sure[hidden] {
+  display: none;
+}
+
+.os-call__k {
+  padding: 0.4rem 0.9rem;
+  background: var(--tungsten);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Dana's deck */
+.os-slide {
+  position: relative;
+  display: grid;
+  gap: 0.6rem;
+  align-content: center;
+  justify-items: start;
+  aspect-ratio: 16 / 9;
+  max-height: 46vh;
+  padding: 1rem 1.2rem;
+  border-radius: 4px;
+  background: #f1ead9;
+  color: #1b1a17;
+}
+
+.os-slide .os-chart {
+  max-height: 7rem;
+  width: 60%;
+}
+
+.os-slide__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.os-slide__lines {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.os-slide__lines i {
+  display: block;
+  height: 0.55rem;
+  width: 80%;
+  border-radius: 2px;
+  background: rgba(27, 26, 23, 0.18);
+}
+
+.os-slide__lines i:nth-child(2) {
+  width: 62%;
+}
+
+.os-slide__lines i:nth-child(3) {
+  width: 70%;
+}
+
+.os-share__next {
+  justify-self: end;
+}
+
+.os-stamp {
+  display: inline-block;
+  padding: 0.35rem 0.8rem 0.3rem;
+  border: 4px solid var(--os-red);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+}
+
+.os-stamp--btn {
+  justify-self: center;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.os-stamp--btn:hover,
+.os-stamp--btn:focus-visible {
+  background: rgba(216, 70, 58, 0.12);
+}
+
+/* The Overtime gauntlet ----------------------------------------------------------------------- */
+.os-hud {
+  position: fixed;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.35rem var(--gutter);
+  background: var(--tungsten);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateY(-100%);
+  transition: transform 360ms var(--ease-out);
+}
+
+.os-hud.is-in {
+  transform: none;
+}
+
+.os-hud__stamps {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.os-hud__stamps i {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid #1b1a17;
+  border-radius: 50%;
+}
+
+.os-hud__stamps i.is-on {
+  background: #1b1a17;
+}
+
+.os-hud__quit {
+  margin-left: auto;
+  min-height: 32px;
+  color: #1b1a17;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.os-stage {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: min(92vw, 40rem);
+  padding: 1.25rem 1.5rem 1.5rem;
+  border: 3px solid var(--os-ink);
+  border-radius: 4px;
+  background: var(--os-paper);
+  color: #1b1a17;
+  box-shadow: 12px 14px 0 rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -50%) translateY(14px);
+  opacity: 0;
+  transition: transform 380ms var(--ease-out), opacity 300ms ease;
+}
+
+.os-stage.is-in {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+.os-stage--catch {
+  top: calc(var(--header-h) + 3.4rem);
+  width: min(92vw, 30rem);
+  padding: 0.8rem 1rem;
+  transform: translateX(-50%) translateY(14px);
+}
+
+.os-stage--catch.is-in {
+  transform: translateX(-50%);
+}
+
+.os-stage__k {
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.os-stage__title {
+  margin-top: 0.3rem;
+  font-family: var(--font-display);
+  font-weight: 860;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.os-stage__how {
+  margin-top: 0.5rem;
+  color: #3a3833;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
+.os-stage__meter {
+  position: relative;
+  height: 0.5rem;
+  margin-top: 1rem;
+  border: 2px solid var(--os-ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.os-stage__meter i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--os-red);
+  transition: width 120ms linear;
+}
+
+/* 1. the printer */
+.os-printer {
+  position: relative;
+  height: 9rem;
+  margin-top: 1.25rem;
+}
+
+.os-printer__slot {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 16rem;
+  height: 5rem;
+  transform: translateX(-50%);
+  border-radius: 8px 8px 3px 3px;
+  background: #2a2f33;
+  box-shadow: inset 0 -1rem 0 #1b1f22, 0 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+.os-printer__slot::after {
+  content: '';
+  position: absolute;
+  left: 2rem;
+  right: 2rem;
+  top: 1.1rem;
+  height: 0.35rem;
+  border-radius: 2px;
+  background: #0b0d10;
+}
+
+.os-paper {
+  position: absolute;
+  left: 50%;
+  bottom: 3.6rem;
+  width: 8.5rem;
+  height: 6rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--os-ink);
+  background: #fff;
+  color: #9a948a;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: grab;
+  touch-action: none;
+  transform: translateX(calc(-50% + var(--dx, 0px))) rotate(-3deg);
+  transition: transform 80ms linear;
+}
+
+.os-paper:active {
+  cursor: grabbing;
+}
+
+.os-stage.is-toner .os-paper {
+  background: repeating-linear-gradient(0deg, #fff 0 6px, #e9e3d4 6px 9px);
+}
+
+.motion-ok .os-stage.is-shaking .os-printer__slot {
+  animation: os-shake 160ms ease-in-out;
+}
+
+@keyframes os-shake {
+  25% { transform: translateX(calc(-50% - 4px)) rotate(-1deg); }
+  75% { transform: translateX(calc(-50% + 4px)) rotate(1deg); }
+}
+
+/* 2. hold to approve */
+.os-hold {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 14rem;
+  margin-top: 0.75rem;
+}
+
+.os-hold__btn {
+  --p: 0;
+  position: relative;
+  width: 11rem;
+  height: 11rem;
+  border: 4px solid var(--os-ink);
+  border-radius: 50%;
+  background: #fff;
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: 3rem;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.os-hold__btn::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: conic-gradient(var(--os-red) calc(var(--p) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%);
+  mask: radial-gradient(circle, transparent 62%, #000 63%);
+}
+
+.os-hold__btn.is-held {
+  background: #ffe9b0;
+}
+
+.os-hold__btn.is-done {
+  background: var(--tungsten);
+}
+
+.os-hold__covers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.os-cover {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid var(--os-ink);
+  background: var(--os-paper-2);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 3px 4px 0 rgba(0, 0, 0, 0.45);
+  transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px))) rotate(var(--rot, 0deg));
+}
+
+.motion-ok .os-cover {
+  animation: os-drop 360ms var(--ease-out) both;
+}
+
+@keyframes os-drop {
+  from {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px) - 60px)) rotate(var(--rot, 0deg)) scale(1.4);
+  }
+}
+
+/* 4. the code that runs */
+.os-runner {
+  position: fixed;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  padding: 0.6rem 0.9rem;
+  border: 3px solid var(--os-ink);
+  border-radius: 3px;
+  background: var(--os-kraft);
+  color: #1b1a17;
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 5px 6px 0 rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+}
+
+.os-runner.is-tired {
+  background: var(--os-paper);
+}
+
+.motion-ok .os-runner.is-tired {
+  animation: os-pant 900ms ease-in-out infinite;
+}
+
+@keyframes os-pant {
+  50% { translate: 0 2px; }
+}
+
+.motion-ok .os-runner.is-jump {
+  animation: os-hop 260ms var(--ease-out);
+}
+
+@keyframes os-hop {
+  50% { scale: 1.15; }
+}
+
+.os-runner.is-caught {
+  transition: opacity 400ms ease, scale 400ms ease;
+  opacity: 0;
+  scale: 1.6;
+}
+
+/* The claim ----------------------------------------------------------------------------------- */
+.os-claim {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  width: min(92vw, 36rem);
+  max-height: calc(100vh - var(--header-h) - 2rem);
+  overflow: auto;
+  display: grid;
+  gap: var(--s-4);
+  padding: 1.5rem 1.5rem 1.4rem;
+  border: 3px solid var(--os-ink);
+  border-radius: 4px;
+  background: var(--os-paper);
+  color: #1b1a17;
+  box-shadow: 14px 16px 0 rgba(0, 0, 0, 0.55);
+  transform: translate(-50%, -50%) translateY(14px);
+  opacity: 0;
+  transition: transform 380ms var(--ease-out), opacity 300ms ease;
+}
+
+.os-claim[hidden] {
+  display: none;
+}
+
+.os-claim.is-in {
+  transform: translate(-50%, -50%);
+  opacity: 1;
+}
+
+.os-claim__stamp {
+  justify-self: start;
+  padding: 0.35rem 0.8rem 0.3rem;
+  border: 4px solid var(--os-red);
+  border-radius: 4px;
+  color: var(--os-red);
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: clamp(1.2rem, 4vw, 1.7rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+}
+
+.os-claim__title {
+  font-family: var(--font-display);
+  font-weight: 880;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.os-claim__title:focus {
+  outline: none;
+}
+
+.os-claim__text {
+  color: #3a3833;
+  line-height: 1.45;
+}
+
+.os-claim .signup .label,
+.os-claim .signup__note,
+.os-claim .form-status,
+.os-claim__terms {
+  color: #4a4740;
+}
+
+.os-claim .signup .input {
+  background: #fff;
+  color: #1b1a17;
+  border-color: var(--os-ink);
+}
+
+.os-claim .btn--ghost {
+  border-color: var(--os-ink);
+  color: #1b1a17;
+}
+
+.os-claim .link {
+  color: #1b1a17;
+}
+
+/* phones: the big slip is the whole width, the meeting fills the screen */
+@media (max-width: 600px) {
+  .os-slip--l {
+    min-height: 56vh;
+    padding: 1rem 1.1rem;
+  }
+
+  .os-call {
+    top: var(--header-h);
+    width: 100vw;
+    max-height: calc(100vh - var(--header-h));
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .os-lean {
+    width: 7.5rem;
+    top: 44vh;
+  }
+
+  .os-stage {
+    padding: 1rem 1.1rem 1.25rem;
+  }
+}
+
+/* low-stim and reduced motion: the layer doesn't run (onshift.js), and if something is left
+   on screen, nothing moves */
+:root[data-calm='on'] .onshift {
+  display: none;
+}

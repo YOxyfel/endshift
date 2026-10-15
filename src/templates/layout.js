@@ -1,5 +1,5 @@
 import { html, esc, attrs, plain } from '../lib/html.js';
-import { sprite, icon, mark, btn, wallSwitch, shiftLabel, panelPoster } from './components.js';
+import { sprite, icon, mark, btn, wallSwitch, shiftLabel, panelPoster, signupForm } from './components.js';
 
 /* The ring: the site's pages in one fixed order, the same in the header, the menu, the footer and
    the bubble sphere, and the direction a page turn slides in (site.js, view transitions). A page
@@ -134,6 +134,29 @@ export function whereNext(ctx) {
   </nav>`;
 }
 
+/* Still on shift: the layer work mode uses while it's on (onshift.js draws the slips, the meeting
+   and the rest into it). The 50% claim is real markup, so the site's form handling binds it. Not
+   on the ritual, Contact, the legal pages, the print card or the design-system page. */
+const ONSHIFT_OFF = ['ritual', 'ritual-card', 'contact', 'shipping', 'privacy', 'terms', 'cookies', 'system', '404'];
+const onshiftOn = (ctx) => !!(ctx.content.onshift && ctx.cfg.onshift?.enabled && !ONSHIFT_OFF.includes(ctx.page.id));
+function onshiftLayer(ctx) {
+  if (!onshiftOn(ctx)) return '';
+  const o = ctx.content.onshift;
+  const R = ctx.cfg.onshift.reward;
+  const cl = o.overtime.claim;
+  const claim = R?.percent
+    ? html`<div class="os-claim" data-os-claim hidden role="dialog" aria-modal="true" aria-labelledby="os-claim-title">
+      <p class="os-claim__stamp" aria-hidden="true">${cl.stamp}</p>
+      <h2 class="os-claim__title" id="os-claim-title" tabindex="-1">${cl.title}</h2>
+      <p class="os-claim__text">${cl.text}</p>
+      ${signupForm(ctx, { source: 'overtime', submit: cl.submit, label: cl.label, note: cl.note, reward: R.tag, doneTitle: cl.doneTitle, doneText: cl.doneText })}
+      <p class="small muted os-claim__terms">${cl.terms} <a class="link" href="${ctx.url('terms', { hash: 'overtime' })}">${cl.termsLink}</a></p>
+      <div class="cta-row"><button class="btn btn--ghost" type="button" data-os-clockout>${icon('power')}<span>${o.clockOut}</span></button></div>
+    </div>`
+    : '';
+  return html`<div class="onshift" data-onshift hidden>${claim}</div>`;
+}
+
 function stickyCta(ctx) {
   // not where it would interrupt reading or a form: guides, legal pages, contact, the print card
   if (['ritual', '404', 'ritual-card', 'contact'].includes(ctx.page.id) || ['article', 'legal', 'cookies'].includes(ctx.page.template)) return '';
@@ -256,6 +279,7 @@ function clientConfig(ctx, page) {
     // the domain printed on the founder card (left off while it's still the placeholder)
     site: /\.example$/.test(String(cfg.siteUrl || '').replace(/\/$/, '')) ? '' : String(cfg.siteUrl || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
     shiftOut: cfg.shiftOut,
+    ...(onshiftOn(ctx) ? { onshift: { ...ctx.content.onshift, reward: cfg.onshift.reward || null } } : {}),
     sw: ctx.mode === 'prod' ? '/sw.js' : null,
     ...(page.client || {}),
   };
@@ -272,6 +296,7 @@ ${page.body}
 ${whereNext(ctx)}
 ${footer(ctx)}
 ${stickyCta(ctx)}
+${onshiftLayer(ctx)}
 ${consentBar(ctx)}
 <div class="toast" data-toast role="status" aria-live="polite"></div>
 <div class="grain" aria-hidden="true"></div>

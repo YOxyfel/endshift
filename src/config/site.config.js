@@ -63,6 +63,16 @@ export default {
     },
   },
 
+  // Work mode, while it's on: the shift that won't end (messages, a meeting that starts by itself,
+  // someone leaning in; wilder the longer it stays on). Words in src/content/<locale>/onshift.js.
+  // Not on the ritual, Contact or the legal pages. The switch in the header is always the way out.
+  onshift: {
+    enabled: true,
+    // Finance approves a code at the absurd end, collected through the Overtime gauntlet.
+    // A real promise, like the game's: honour it at checkout. null → no code, no gauntlet.
+    reward: { percent: 50, tag: 'overtime-50' },
+  },
+
   // Production URL, no trailing slash. Used for canonical URLs, sitemap and Open Graph.
   siteUrl: 'https://endshift.example',
 

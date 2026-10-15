@@ -451,6 +451,7 @@ export default ({ state }) => ({
     cardOver: 'Shift over.',
     cardMinutes: '{m} minutes to switch off.',
     cardMinute: '1 minute to switch off.',
+    cardPings: '{n} pings ignored.',
     cardRitual: 'Ritual no. {n}',
     installTitle: 'Keep it on your home screen',
     installText: 'Opens straight into the ritual, works offline, no app store.',

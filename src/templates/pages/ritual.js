@@ -459,6 +459,7 @@ export default function ritual(ctx) {
           cardOver: r.done.cardOver,
           cardMinutes: r.done.cardMinutes,
           cardMinute: r.done.cardMinute,
+          cardPings: r.done.cardPings,
           cardRitual: r.done.cardRitual,
           stamp: r.done.stamp,
           site: ctx.cfg.siteUrl.replace(/^https?:\/\//, ''),

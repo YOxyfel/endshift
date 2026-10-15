@@ -141,7 +141,7 @@ await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
 
 const css = (
-  await Promise.all(['base', 'components', 'sections'].map((f) => readFile(path.join(SRC, 'assets/css', `${f}.css`), 'utf8')))
+  await Promise.all(['base', 'components', 'sections', 'onshift'].map((f) => readFile(path.join(SRC, 'assets/css', `${f}.css`), 'utf8')))
 ).join('\n');
 const sizes = {};
 sizes['site.css'] = await writeAsset('assets/css/site.css', css, 'css');
@@ -151,7 +151,7 @@ for (const extra of ['game', 'story', 'film', 'world', 'card']) {
 }
 // JS bundles: files are concatenated in order (each is a self-contained IIFE)
 const JS_BUNDLES = {
-  site: ['site.js', 'ambient.js', 'shift.js', 'intro.js'],
+  site: ['site.js', 'ambient.js', 'shift.js', 'intro.js', 'onshift.js'],
   ritual: ['ritual-audio.js', 'ritual-scenes.js', 'ritual-music.js', 'ritual.js'],
   room: ['evening-room.js'],
   world: ['world.js'],
@@ -350,6 +350,11 @@ for (const loc of locales) {
       const en = await contentModule(DEF, 'game');
       const lo = loc.code === DEF ? null : await contentModule(loc.code, 'game');
       if (en) ctx.content.game = deepMerge(en(contentArgs), lo ? lo(contentArgs) : null);
+    }
+    // Work mode's words (every page): the locale's, else English
+    if (cfg.onshift?.enabled) {
+      const mod = (await contentModule(loc.code, 'onshift')) || (await contentModule(DEF, 'onshift'));
+      if (mod) ctx.content.onshift = mod(contentArgs);
     }
     // Shared content a page depends on (e.g. ritual steps on home) falls back to the default locale.
     for (const id of ['ritual', 'faq']) {

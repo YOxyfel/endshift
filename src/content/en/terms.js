@@ -47,6 +47,21 @@ ${cfg.game.reward.expiresDays ? `<li>The code works for ${cfg.game.reward.expire
             },
           ]
         : []),
+      ...(cfg.onshift?.enabled && cfg.onshift.reward?.percent
+        ? [
+            {
+              id: 'overtime',
+              title: `The Overtime code: ${cfg.onshift.reward.percent}% off`,
+              body: `<p><strong>Draft:</strong> these terms are being finalised and will be fixed here before preorders open.</p>
+<ul>
+<li>While work mode is on, the site behaves like a shift that won’t end. If you put up with it long enough, Finance offers a ${cfg.onshift.reward.percent}% code, collected by finishing the Overtime gauntlet (unjam the printer, hold to approve, sit through the deck, catch the code). Playing is free and needs no purchase.</li>
+<li>You claim it by leaving your email. We send the code to that address when preorders open. Leaving your email also puts you on the founding list, which you can leave in one click.</li>
+<li>One code per person and per email address, for one RESET order from Batch #001. It can’t be exchanged for cash or combined with other discounts, including the switch game’s.</li>
+<li>The discount comes off the product price at checkout, not off shipping.</li>
+</ul>`,
+            },
+          ]
+        : []),
       {
         id: 'product',
         title: 'About RESET',
