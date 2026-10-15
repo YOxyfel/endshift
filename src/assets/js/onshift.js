@@ -64,7 +64,7 @@
   var L = load(localStorage, LKEY, { pings: 0, ignored: 0, survived: 0, overtime: null, answered: 0, surveys: 0, sent: 0 });
   var saveS = function () { save(sessionStorage, SKEY, S); };
   var saveL = function () { save(localStorage, LKEY, L); };
-  var CAP = 24; // incidents per page load (a cap, so a long read isn't a storm forever)
+  var CAP = 400; // incidents per page load (the desk's own cap, LIVE_MAX, is what bounds the screen)
   var shownHere = 0;
   var live = []; // slips on screen
   var modal = null; // the meeting, a gauntlet stage, the update screen or the claim: one at a time
@@ -97,6 +97,7 @@
     S.lvl = l;
     saveS();
     meter(true);
+    if (l >= 2) { ensureTicker(); ensureBar(); glitch(); }
     if (O.meter && O.meter.levelUp && O.meter.levelUp[l]) toast(O.meter.levelUp[l]);
     track('onshift_level', { level: l, t: S.t, ignored: S.dismissed });
   }
@@ -131,15 +132,58 @@
   function unread(n) { S.unread = Math.max(0, S.unread + n); saveS(); badge(); }
 
   /* ------------------------------------------------------------------ slips of paper */
-  function place(e, size) {
-    var rot = still() ? 0 : rnd(-3, 3);
+  // where a slip lands: anywhere there's room. The viewport is a grid of cells (four by four, two by
+  // four on phones); the emptiest cells win, leaning to the edges and corners from level 2, so the
+  // screen fills from the outside in and nothing waits politely in the middle
+  var SIZE = { xs: [272, 92], s: [352, 160], m: [544, 240], l: [864, 400] };
+  var headerH = function () { var h = parseFloat(getComputedStyle(root).getPropertyValue('--header-h')) || 4; return h * (parseFloat(getComputedStyle(root).fontSize) || 16); };
+  function grid() { return { cols: innerWidth < 600 ? 2 : innerWidth < 1000 ? 3 : 4, rows: innerHeight < 640 ? 3 : 4 }; }
+  function place(e, size, near) {
+    var rot = still() ? 0 : rnd(-4, 4);
     e.style.setProperty('--rot', rot.toFixed(1) + 'deg');
-    if (size === 'xs') { e.style.right = '1rem'; e.style.bottom = '5rem'; return; }
-    if (size === 's') { e.style.right = rnd(3, 8).toFixed(0) + 'vw'; e.style.top = rnd(18, 48).toFixed(0) + 'vh'; return; }
-    if (size === 'm') { e.style.left = '50%'; e.style.top = rnd(16, 28).toFixed(0) + 'vh'; e.style.setProperty('--tx', '-50%'); return; }
-    // a form sits in the middle of what's under the header, straighter than a note
-    if (size === 'f') e.style.setProperty('--rot', (rot / 3).toFixed(1) + 'deg');
-    e.style.left = '50%'; e.style.top = size === 'f' ? 'calc(50% + var(--header-h) / 2)' : '50%'; e.style.setProperty('--tx', '-50%'); e.style.setProperty('--ty', '-50%');
+    if (size === 'f') {
+      // a form sits in the middle of what's under the header, straighter than a note
+      e.style.setProperty('--rot', (rot / 4).toFixed(1) + 'deg');
+      e.style.left = '50%'; e.style.top = 'calc(50% + var(--header-h) / 2)'; e.style.setProperty('--tx', '-50%'); e.style.setProperty('--ty', '-50%');
+      return;
+    }
+    var W = innerWidth, H = innerHeight, top0 = headerH() + (host.classList.contains('has-ticker') ? 34 : 8), bot = host.classList.contains('has-bar') ? 42 : 6;
+    var dim = SIZE[size] || SIZE.s;
+    var w = Math.min(dim[0], W * (size === 'l' ? 0.94 : size === 'm' ? 0.92 : 0.86)), h = Math.min(dim[1], H - top0 - bot - 8);
+    var x, y;
+    if (near) { x = near[0] - w / 2 + rnd(-140, 140); y = near[1] - h / 2 + rnd(-110, 110); }
+    else {
+      var g = grid(), n = g.cols * g.rows, counts = [], i;
+      for (i = 0; i < n; i++) counts.push(0);
+      live.forEach(function (s) { if (s.__cell != null && counts[s.__cell] != null) counts[s.__cell]++; });
+      var min = Math.min.apply(null, counts), empties = [], edges = [];
+      for (i = 0; i < n; i++) if (counts[i] === min) {
+        empties.push(i);
+        var c = i % g.cols, r = Math.floor(i / g.cols);
+        if (c === 0 || c === g.cols - 1 || r === 0 || r === g.rows - 1) edges.push(i);
+      }
+      var pool = level() >= 2 && edges.length && Math.random() < 0.7 ? edges : empties;
+      var cell = pool[Math.floor(Math.random() * pool.length)];
+      e.__cell = cell;
+      var cw = W / g.cols, ch = (H - top0 - bot) / g.rows, cc = cell % g.cols, cr = Math.floor(cell / g.cols);
+      x = cc * cw + cw / 2 - w / 2 + rnd(-cw * 0.3, cw * 0.3);
+      y = top0 + cr * ch + ch / 2 - h / 2 + rnd(-ch * 0.3, ch * 0.3);
+    }
+    x = Math.max(6, Math.min(W - w - 6, x));
+    y = Math.max(top0, Math.min(H - h - bot, y));
+    e.style.left = x.toFixed(0) + 'px'; e.style.top = y.toFixed(0) + 'px';
+    e.style.right = 'auto'; e.style.bottom = 'auto';
+    e.style.setProperty('--tx', '0px'); e.style.setProperty('--ty', '0px');
+  }
+  // the desk has an edge: past a number of slips (by level), the oldest fall off
+  var LIVE_MAX = [0, 8, 12, 16];
+  function room() {
+    var max = LIVE_MAX[level()];
+    for (var k = 0; k < 20 && live.length > max; k++) {
+      var old = live.filter(function (e) { return !e.hasAttribute('data-keep'); })[0];
+      if (!old) break;
+      remove(old, 'is-drawer');
+    }
   }
   function remove(e, how) {
     if (!e || !e.parentNode) return;
@@ -169,7 +213,7 @@
         thread(e, o.chat, v, f);
       });
     }
-    place(e, o.size || 's');
+    place(e, o.size || 's', o.near);
     if (o.flick !== false) flickable(e, function () { dismiss(e, 'flick', o.kind); });
     e.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-act]');
@@ -182,6 +226,7 @@
     host.appendChild(e);
     live.push(e);
     if (!still()) { void e.offsetWidth; e.classList.add('is-in'); } else e.classList.add('is-in');
+    room();
     return e;
   }
   // drag a slip and let go: it skids off the desk in that direction
@@ -273,16 +318,23 @@
     saveS(); saveL();
     pile();
     levelCheck();
+    var r = e.getBoundingClientRect(), at = [r.left + r.width / 2, r.top + r.height / 2];
     remove(e, how === 'flick' ? 'is-flying' : 'is-gone');
     track('onshift_incident', { kind: kind || 'ping', action: 'dismiss', how: how, level: level() });
-    // they reply (level 2 and up, most of the time)
-    if (level() >= 2 && kind === 'ping' && Math.random() < 0.6 && workOn()) {
-      later(1500, function () {
-        if (!workOn() || paused()) return;
-        var r = slip({ size: 'xs', from: pick(['dana', 'petar', 'mira']), text: pick(O.replies), kind: 'reply', flick: true });
-        later(3200, function () { remove(r); });
-      });
-    }
+    hydra(kind, at);
+  }
+  // ignore one and more come, where it was: one at level 2 (most of the time), two or three at level 3
+  function hydra(kind, at) {
+    var lvl = level();
+    if (!workOn() || lvl < 2 || ['storm', 'typing', 'shadow', 'spinner', 'resched', 'ghost', 'update'].indexOf(kind) >= 0) return;
+    var n = lvl === 3 ? 2 + (Math.random() < 0.5 ? 1 : 0) : Math.random() < 0.7 ? 1 : 0;
+    for (var i = 0; i < n; i++) later(350 + i * 480, function () {
+      if (!workOn() || paused() || (modal && modal.kind !== 'call')) return;
+      var who = pick(['dana', 'petar', 'mira', 'channel']);
+      slip({ size: 'xs', from: who, text: pick(Math.random() < 0.5 ? O.chaos.hydra : O.replies), kind: 'reply', chat: who, near: at });
+      unread(1);
+      L.pings++;
+    });
   }
   // dealt with: answered, submitted, approved, signed
   function finish(e, kind, how) {
@@ -318,15 +370,37 @@
   }
 
   /* ------------------------------------------------------------------ incidents: the slips */
+  var shuffle = function (a) { return a.slice().sort(function () { return Math.random() - 0.5; }); };
+  var tags = function (n) { return '<div class="os-tags" aria-hidden="true">' + shuffle(O.chaos.stickers).slice(0, n).map(function (t) { return '<i style="--r:' + rnd(-6, 6).toFixed(0) + 'deg">' + esc(t) + '</i>'; }).join('') + '</div>'; };
+  // the half-screen slip is a poster, not a line: tags, the shout, the thread under it, reactions, who's typing
+  function posterHtml(m) {
+    var P = O.chaos.poster;
+    var others = ['dana', 'petar', 'mira'].filter(function (x) { return x !== m.from; });
+    var earlier = shuffle(O.pings[1].concat(O.pings[2])).slice(0, 3).map(function (x) { return '<span>' + esc(x.text) + '</span>'; }).join('');
+    var reacts = P.reacts.map(function (r) { return '<span class="os-poster__r">' + r + ' ' + Math.floor(rnd(2, 60)) + '</span>'; }).join('');
+    return '<p class="os-poster__to">' + esc(fill(P.to, { n: Math.floor(rnd(9, 40)) })) + '</p>' + tags(3) +
+      '<p class="os-slip__text">' + esc(m.text) + '</p>' +
+      '<div class="os-poster__thread"><b>' + esc(P.earlier) + '</b>' + earlier + '</div>' +
+      '<div class="os-poster__react">' + reacts + '<button class="btn btn--sm btn--ghost" type="button" data-act="react">' + esc(P.react) + '</button></div>' +
+      '<p class="os-poster__typing">' + esc(fill(P.typing, { a: name(others[0]), b: name(others[1]), n: Math.floor(rnd(3, 20)) })) + '</p>';
+  }
   function ping() {
     var lvl = level();
     var m = pick(O.pings[lvl].filter(function (x) { return x.text !== S.lastText; }));
     S.lastText = m.text;
-    var size = lvl === 1 ? 's' : lvl === 2 ? (Math.random() < 0.5 ? 'm' : 'l') : 'l';
-    // one half-screen slip at a time: the next one pushes the last off the desk
-    if (size === 'l') live.filter(function (e) { return e.classList.contains('os-slip--l') && !e.hasAttribute('data-keep'); }).forEach(function (e) { remove(e, 'is-gone'); });
+    var size = lvl === 1 ? (Math.random() < 0.3 ? 'm' : 's') : lvl === 2 ? (Math.random() < 0.5 ? 'm' : 'l') : (Math.random() < 0.7 ? 'l' : 'm');
+    // posters: one at a time until level 3, then two; the next pushes the oldest off the desk
+    if (size === 'l') {
+      var posters = live.filter(function (e) { return e.classList.contains('os-slip--l') && !e.hasAttribute('data-keep'); });
+      while (posters.length >= (lvl === 3 ? 2 : 1)) remove(posters.shift(), 'is-gone');
+    }
     S.unread++; L.pings++;
-    slip({ size: size, from: m.from, text: m.text, kind: 'ping', aria: true, chat: m.from, buttons: [{ label: O.later, act: 'later' }] });
+    slip({
+      size: size, from: m.from, kind: 'ping', aria: true, chat: m.from, cls: size === 'l' ? 'os-poster' : '',
+      html: size === 'l' ? posterHtml(m) : (size === 'm' ? tags(2) : '') + '<p class="os-slip__text">' + esc(m.text) + '</p>',
+      buttons: [{ label: O.later, act: 'later' }],
+      on: function (act, b) { if (act === 'react') { b.classList.add('is-picked'); b.textContent = pick(O.chaos.poster.reacts) + ' ' + O.chaos.poster.react; } },
+    });
     badge();
   }
 
@@ -357,9 +431,13 @@
     setTimeout(function () { e.classList.add('is-gone'); setTimeout(function () { rm(e); }, 500); }, 2600);
   }
 
+  var leanSide = 0;
   function lean() {
-    if (qs('.os-lean', host)) return ping();
-    var e = el('os-lean', figure('dana', 0) + '<span class="os-lean__say">' + esc(O.lean.say) + '</span>');
+    if (qsa('.os-lean', host).length >= (level() === 3 ? 2 : 1)) return ping();
+    leanSide = 1 - leanSide;
+    var who = leanSide ? 'petar' : 'dana';
+    var e = el('os-lean' + (leanSide ? ' os-lean--left' : ''), figure(who, leanSide ? 1 : 0) + '<span class="os-lean__say">' + esc(O.lean.say) + '</span>');
+    e.style.top = rnd(22, 58).toFixed(0) + 'vh';
     e.setAttribute('aria-hidden', 'true');
     host.appendChild(e);
     void e.offsetWidth;
@@ -541,8 +619,7 @@
     var next = function () {
       if (!workOn() || i >= n) return;
       var e = slip({ size: i % 3 === 2 ? 's' : 'xs', from: pick(['petar', 'mira', 'dana', 'channel', 'finance', 'hr', 'rec']), kind: 'storm', html: '<p class="os-mail__re">' + esc(T.subject) + '</p><p class="os-slip__text">' + esc(T.lines[i]) + '</p>' });
-      e.style.right = rnd(2, 40).toFixed(0) + 'vw'; e.style.bottom = rnd(6, 50).toFixed(0) + 'vh'; e.style.top = 'auto';
-      later(4800, function () { remove(e); });
+      later(level() === 3 ? 9000 : 4800, function () { remove(e); });
       S.unread++; L.pings++; i++;
       badge();
       later(rnd(550, 800), next);
@@ -833,10 +910,10 @@
     opts = opts || {};
     if (modal) return;
     if (opts.deck || opts.force) return call(opts);
-    var n = 5;
+    var n = 5, I = O.chaos.invite;
     var e = slip({
-      size: 'm', from: 'dana', kind: 'invite', flick: false, aria: true,
-      html: '<p class="os-slip__text os-slip__text--q">' + esc(M.invite) + '</p><p class="os-slip__note" data-count>' + esc(fill(M.startingIn, { n: n })) + '</p>',
+      size: 'm', from: 'dana', kind: 'invite', flick: false, aria: true, cls: 'os-invite',
+      html: tags(2) + '<p class="os-slip__text os-slip__text--q">' + esc(M.invite) + '</p><ul class="os-invite__meta"><li>' + esc(fill(I.who, { n: Math.floor(rnd(4, 12)) })) + '</li><li>' + esc(I.room) + '</li><li>' + esc(I.length) + '</li><li>' + esc(I.agenda) + '</li></ul><p class="os-slip__note os-invite__count" data-count>' + esc(fill(M.startingIn, { n: n })) + '</p>',
       buttons: [{ label: M.decline, act: 'decline' }, { label: M.join, act: 'join', cls: 'btn--primary' }],
       on: function (act) {
         clearInterval(tm);
@@ -864,10 +941,10 @@
   // the call that comes back: it rings, you pick up (or it picks up for you)
   function ring() {
     if (modal || formOpen()) { S.forced = S.t + 10; saveS(); return; }
-    var who = 'dana', C = O.callback;
+    var who = 'dana', C = O.callback, Rg = O.chaos.ring;
     var e = slip({
       size: 'm', from: who, kind: 'ring', flick: false, aria: true, cls: 'os-slip--ring',
-      html: '<p class="os-slip__text os-slip__text--q">' + esc(fill(C.text, { name: name(who) })) + '</p><span class="os-ring" aria-hidden="true"><i></i><i></i><i></i></span>',
+      html: '<div class="os-ringcard"><div class="os-ringcard__fig">' + figure(who, 0) + '</div><div class="os-ringcard__txt"><p class="os-slip__k">' + esc(Rg.incoming) + '</p><p class="os-slip__text os-slip__text--q">' + esc(fill(C.text, { name: name(who) })) + '</p><p class="os-slip__note">' + esc(M.title) + ' · ' + esc(fill(Rg.others, { n: Math.floor(rnd(3, 9)) })) + '</p><span class="os-ring" aria-hidden="true"><i></i><i></i><i></i></span> <span class="os-ringcard__t" data-ringt>' + esc(Rg.timer) + ' 00:00</span></div></div>',
       buttons: [{ label: C.decline, act: 'decline' }, { label: C.accept, act: 'accept', cls: 'btn--primary' }],
       on: function (act) {
         clearTimeout(auto);
@@ -881,6 +958,7 @@
       },
     });
     var auto = setTimeout(function () { if (e.parentNode && !e.getAttribute('data-done')) { remove(e); call({ force: true }); } }, 7000);
+    var rs = 0, rt = setInterval(function () { var t = qs('[data-ringt]', e); if (!t || !e.parentNode) return clearInterval(rt); rs++; t.textContent = Rg.timer + ' ' + pad(0) + ':' + pad(rs); }, 1000);
     unread(1);
     track('onshift_meeting', { action: 'ring' });
   }
@@ -909,9 +987,9 @@
       '<p class="os-call__cap" data-cap aria-live="off">' + esc(M.joining) + '</p>' +
       '<div class="os-call__bar"><button class="btn btn--ghost btn--sm" type="button" data-act="mute">' + esc(M.unmute) + '</button><button class="btn btn--ghost btn--sm" type="button" data-act="share">' + esc(M.share) + '</button><button class="btn btn--ghost btn--sm" type="button" data-act="raise">' + esc(M.raise) + '</button><button class="btn btn--sm os-call__leave" type="button" data-act="leave">' + esc(M.leave) + '</button></div>' +
       '<div class="os-call__sure" data-sure hidden><p>' + esc(M.leaveSure) + '</p><div class="cta-row"><button class="btn btn--ghost btn--sm" type="button" data-act="stay">' + esc(M.stay) + '</button><button class="btn btn--primary btn--sm" type="button" data-act="leave-anyway">' + esc(M.leaveAnyway) + '</button></div></div>';
+    // no veil: the call is one more window, and the storm goes on around it
     var veil = el('os-veil');
-    veil.setAttribute('aria-hidden', 'true');
-    host.appendChild(veil);
+    if (opts.deck) { veil.setAttribute('aria-hidden', 'true'); host.appendChild(veil); }
     host.appendChild(c);
     var rec = { el: c, veil: veil, kind: 'call', timers: [] };
     modal = rec;
@@ -1022,7 +1100,7 @@
     c.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { ev.stopPropagation(); qs('[data-sure]', c).hidden = false; } });
     setTimeout(function () { var l = qs('[data-act="leave"]', c); if (l) try { l.focus({ preventScroll: true }); } catch (e) {} }, 60);
     // a call without a deck wraps itself up eventually
-    if (!opts.deck) rec.timers.push(setTimeout(function () { say(M.captions[3]); setTimeout(function () { endCall(c); }, 2500); }, 95000));
+    if (!opts.deck) rec.timers.push(setTimeout(function () { say(M.captions[3]); setTimeout(function () { endCall(c); }, 2500); }, 60000));
   }
   function chart() {
     var bars = '';
@@ -1519,6 +1597,7 @@
     if (modal && modal.kind === 'claim') { var m = modal; modal = null; m.el.classList.remove('is-in'); m.el.hidden = true; rm(m.veil); }
     else if (modal) closeModal();
     sweep();
+    dropAmbient();
     qsa('.os-lean, .os-rere, .os-flicker, .os-runner, .os-ghost', host).forEach(rm);
     shareStop(true);
     dropHud();
@@ -1536,48 +1615,169 @@
     else { badge(); if (meterEl) meter(); }
   });
 
+  /* ------------------------------------------------------------------ the edges fill in */
+  // from level 2 the screen stops being a page with slips on it: a ticker runs under the header, a
+  // taskbar fills along the bottom, stickers stick wherever, alerts take the corners, the picture
+  // glitches, slips nag. None of it waits for anything else; it runs beside the incidents
+  var CH = O.chaos || {};
+  var tickerEl = null, barEl = null, tickerLines = [];
+  function ensureTicker() {
+    if (tickerEl || !CH.live) return;
+    tickerEl = el('os-ticker', '<span class="os-ticker__live">' + esc(CH.live) + '</span><div class="os-ticker__wrap"><div class="os-ticker__track" data-track></div></div>');
+    tickerEl.setAttribute('aria-hidden', 'true');
+    host.appendChild(tickerEl);
+    host.classList.add('has-ticker');
+    for (var i = 0; i < 6; i++) line(true);
+    void tickerEl.offsetWidth;
+    tickerEl.classList.add('is-in');
+  }
+  function line(quiet) {
+    if (!tickerEl) return;
+    var lvl = level(), src = Math.random() < 0.7 ? pick(O.pings[lvl]) : { from: pick(Mm.items).from, text: pick(Mm.items).subject };
+    var txt = name(src.from) + ': ' + src.text;
+    if (tickerLines.indexOf(txt) >= 0) txt = name(pick(['dana', 'petar', 'mira', 'channel', 'hr', 'it'])) + ': ' + pick(O.chaos.hydra);
+    tickerLines.push(txt);
+    if (tickerLines.length > 14) tickerLines.shift();
+    var s = tickerLines.join('  ·  ') + '  ·  ';
+    qs('[data-track]', tickerEl).innerHTML = '<span>' + esc(s) + '</span><span>' + esc(s) + '</span>';
+    if (!quiet) { tickerEl.classList.remove('is-new'); void tickerEl.offsetWidth; tickerEl.classList.add('is-new'); }
+  }
+  function ensureBar() {
+    if (barEl || !CH.tabs) return;
+    barEl = el('os-bar', '<div class="os-bar__tabs" data-tabs></div><span class="os-bar__clock">' + clock() + '</span>');
+    barEl.setAttribute('aria-hidden', 'true');
+    host.appendChild(barEl);
+    host.classList.add('has-bar');
+    for (var i = 0; i < 4; i++) tab(true);
+    void barEl.offsetWidth;
+    barEl.classList.add('is-in');
+  }
+  function tab(quiet) {
+    if (!barEl) return;
+    var t = el('os-bar__tab' + (quiet ? '' : ' is-new'), '<i></i>' + esc(pick(CH.tabs)), 'span');
+    var box = qs('[data-tabs]', barEl);
+    box.appendChild(t);
+    while (box.children.length > 36) box.removeChild(box.firstChild);
+    if (!quiet) later(4000, function () { t.classList.remove('is-new'); });
+    var ck = qs('.os-bar__clock', barEl);
+    if (ck) ck.textContent = clock();
+  }
+  function sticker() {
+    if (!CH.stickers) return;
+    var max = innerWidth < 600 ? 12 : 26, all = qsa('.os-sticker', host);
+    if (all.length >= max) rm(all[0]);
+    var s = el('os-sticker os-sticker--' + (Math.random() < 0.3 ? 'big' : 'sm'), esc(pick(CH.stickers)), 'span');
+    s.setAttribute('aria-hidden', 'true');
+    var top0 = headerH() + 36;
+    s.style.left = rnd(0, innerWidth - 90).toFixed(0) + 'px';
+    s.style.top = rnd(top0, innerHeight - 70).toFixed(0) + 'px';
+    s.style.setProperty('--r', rnd(-24, 24).toFixed(0) + 'deg');
+    host.appendChild(s);
+    void s.offsetWidth;
+    s.classList.add('is-in');
+    later(rnd(14000, 40000), function () { s.classList.remove('is-in'); later(500, function () { rm(s); }); });
+  }
+  function corner() {
+    if (!CH.alerts) return;
+    var all = qsa('.os-alert', host);
+    if (all.length >= 7) rm(all[0]);
+    var a = pick(CH.alerts);
+    var e = el('os-alert', '<span class="os-alert__i">!</span><span class="os-alert__t">' + esc(a.text) + '</span><button class="os-alert__ok" type="button">' + esc(a.ok) + '</button>');
+    e.setAttribute('role', 'status');
+    // the corners and the edges, with a little drift
+    var W = innerWidth, H = innerHeight, top0 = headerH() + 40, bot = host.classList.contains('has-bar') ? 46 : 10;
+    var spots = [[8, top0], [W - 300, top0], [8, H - bot - 60], [W - 300, H - bot - 60], [W / 2 - 150, top0], [8, H / 2], [W - 300, H / 2], [W / 2 - 150, H - bot - 60]];
+    var p = pick(spots);
+    e.style.left = Math.max(6, Math.min(W - 296, p[0] + rnd(-30, 30))).toFixed(0) + 'px';
+    e.style.top = Math.max(top0, Math.min(H - bot - 56, p[1] + rnd(-24, 24))).toFixed(0) + 'px';
+    host.appendChild(e);
+    void e.offsetWidth;
+    e.classList.add('is-in');
+    var gone = function () { e.classList.remove('is-in'); later(300, function () { rm(e); }); };
+    qs('button', e).addEventListener('click', function () { gone(); L.answered++; saveL(); });
+    later(rnd(18000, 30000), gone);
+  }
+  function glitch() {
+    if (still() || qs('.os-glitch', host)) return;
+    var g = el('os-glitch');
+    g.setAttribute('aria-hidden', 'true');
+    host.appendChild(g);
+    host.classList.add('is-jitter');
+    later(520, function () { rm(g); host.classList.remove('is-jitter'); });
+  }
+  function nag() {
+    var cand = live.filter(function (e) { return !e.hasAttribute('data-keep'); });
+    if (!cand.length) return sticker();
+    var e = pick(cand);
+    if (!qs('.os-slip__nag', e)) { var n = el('os-slip__nag', esc(CH.nag || '!!'), 'i'); n.setAttribute('aria-hidden', 'true'); e.appendChild(n); }
+    e.classList.remove('is-nag'); void e.offsetWidth; e.classList.add('is-nag');
+    later(800, function () { e.classList.remove('is-nag'); });
+  }
+  var AMB = { sticker: sticker, tab: tab, line: line, alert: corner, glitch: glitch, nag: nag, lean: lean, flicker: flicker, typing: typingNote };
+  var ambNext = 0;
+  function ambient() {
+    var lvl = level();
+    if (!workOn() || paused() || S.shown === 0 || S.t < ambNext) return;
+    ambNext = S.t + Math.round(lvl === 1 ? rnd(6, 9) : lvl === 2 ? rnd(2, 4) : rnd(1, 2));
+    if (lvl >= 2) { ensureTicker(); ensureBar(); }
+    var bag = lvl === 1 ? ['sticker', 'sticker'] :
+      lvl === 2 ? ['sticker', 'sticker', 'tab', 'tab', 'line', 'line', 'alert', 'lean', 'typing'] :
+        ['sticker', 'sticker', 'tab', 'tab', 'line', 'line', 'alert', 'alert', 'glitch', 'nag', 'nag', 'lean', 'flicker', 'typing'];
+    var k = pick(bag);
+    if ((k === 'lean' || k === 'flicker' || k === 'typing') && (modal || formOpen())) k = 'sticker';
+    AMB[k]();
+    if (k === 'sticker' && lvl === 3) for (var i = 0; i < 1 + Math.floor(rnd(0, 2)); i++) later(200 + i * 220, sticker);
+  }
+  function dropAmbient() {
+    qsa('.os-ticker, .os-bar, .os-sticker, .os-alert, .os-glitch', host).forEach(rm);
+    tickerEl = barEl = null;
+    tickerLines = [];
+    host.classList.remove('has-ticker', 'has-bar', 'is-jitter');
+    ambNext = 0;
+  }
+
   /* ------------------------------------------------------------------ the clock that decides */
   // what can happen, from which level, how often (weight per level), how many times a visit
   var KINDS = {
-    ping: { run: ping, w: [5, 4, 4] },
-    email: { run: email, w: [3, 2, 2] },
+    ping: { run: ping, w: [5, 4, 4], small: true },
+    email: { run: email, w: [3, 2, 2], small: true },
     survey: { run: survey, w: [1, 2, 2], max: 10 },
-    lunch: { run: lunch, w: [1, 1, 0], max: 1 },
-    comment: { run: comment, w: [1, 1, 1], max: 2 },
+    lunch: { run: lunch, w: [1, 1, 0], max: 1, small: true },
+    comment: { run: comment, w: [1, 1, 1], max: 3, small: true },
     birthday: { run: birthday, w: [1, 1, 0], max: 1 },
-    sys: { run: sysNote, w: [1, 1, 2], max: 4 },
-    notice: { run: notice, w: [1, 1, 1], max: 5 },
+    sys: { run: sysNote, w: [1, 1, 2], max: 8, small: true },
+    notice: { run: notice, w: [1, 1, 1], max: 6, small: true },
     meeting: { run: meeting, w: [0, 2, 2], gate: function () { return S.t - S.meetAt >= 60 && !S.declined; } },
-    lean: { run: lean, w: [0, 1, 1], light: true },
-    flicker: { run: flicker, w: [0, 1, 1], light: true },
-    spinner: { run: spinner, w: [0, 1, 1], light: true },
-    twofa: { run: twofa, w: [0, 1, 1], max: 2 },
+    lean: { run: lean, w: [0, 1, 1], small: true },
+    flicker: { run: flicker, w: [0, 1, 1], small: true },
+    spinner: { run: spinner, w: [0, 1, 1], small: true },
+    twofa: { run: twofa, w: [0, 1, 1], max: 3, small: true },
     conflict: { run: conflict, w: [0, 1, 1], max: 1 },
-    status: { run: status, w: [0, 1, 1], max: 2 },
+    status: { run: status, w: [0, 1, 1], max: 3, small: true },
     policy: { run: policy, w: [0, 1, 1], max: 1 },
     training: { run: training, w: [0, 1, 1], max: 1 },
-    desk: { run: desk, w: [0, 1, 1], max: 1 },
+    desk: { run: desk, w: [0, 1, 1], max: 1, small: true },
     share: { run: share, w: [0, 1, 1], max: 1, gate: function () { return !shareEl; } },
-    typing: { run: typingNote, w: [0, 1, 1], max: 3, light: true },
+    typing: { run: typingNote, w: [0, 1, 1], max: 6, small: true },
     timesheet: { run: timesheet, w: [0, 1, 1], max: 2 },
-    rere: { run: rere, w: [0, 0, 1], light: true },
-    storm: { run: storm, w: [0, 0, 1], max: 1 },
-    update: { run: update, w: [0, 0, 1], max: 1 },
-    ghost: { run: ghost, w: [0, 0, 1], max: 1 },
-    shadow: { run: shadow, w: [0, 0, 1], max: 2, light: true, gate: function () { return !coarse; } },
+    rere: { run: rere, w: [0, 0, 1], small: true },
+    storm: { run: storm, w: [0, 0, 1], max: 3 },
+    update: { run: update, w: [0, 0, 1], max: 2 },
+    ghost: { run: ghost, w: [0, 0, 1], max: 2 },
+    shadow: { run: shadow, w: [0, 0, 1], max: 4, small: true, gate: function () { return !coarse; } },
     offer: { run: offer, w: [0, 0, 0] },
   };
-  function choose(lvl) {
+  function choose(lvl, small) {
     var bag = [];
     Object.keys(KINDS).forEach(function (k) {
       var d = KINDS[k], w = d.w[lvl - 1];
       if (!w) return;
+      if (small && !d.small) return;
       if (d.max && (S.seen[k] || 0) >= d.max) return;
       if (d.gate && !d.gate()) return;
-      if (live.length >= 3 && !d.light) return; // the desk is full: only the things that aren't slips
       for (var i = 0; i < w; i++) bag.push(k);
     });
-    if (!bag.length) bag = live.length >= 3 ? ['flicker'] : ['ping'];
+    if (!bag.length) bag = ['ping'];
     return pick(bag, S.last);
   }
   function fire(kindWanted) {
@@ -1599,18 +1799,20 @@
     KINDS[kind].run();
     saveL();
     meter(S.shown === 1);
-    // the absurd level comes in bursts: something small right behind the thing itself
-    if (lvl === 3 && !kindWanted && Math.random() < 0.4 && kind !== 'storm' && kind !== 'update' && kind !== 'offer') {
-      later(1800, function () {
-        if (!workOn() || paused() || modal || formOpen()) return;
-        var k2 = pick(['sys', 'typing', 'ping', 'shadow'].filter(function (k) { return !(KINDS[k].gate && !KINDS[k].gate()); }));
-        fire(k2);
-      });
-    }
+  }
+  // nothing comes alone: a burst is the thing itself and one to four more behind it, by level
+  function burst() {
+    var lvl = level();
+    fire();
+    var extra = lvl === 1 ? 1 : lvl === 2 ? 1 + (Math.random() < 0.6 ? 1 : 0) : 2 + Math.floor(rnd(0, 3));
+    for (var i = 0; i < extra; i++) later(500 + i * 600, function () {
+      if (!workOn() || paused() || (modal && modal.kind !== 'call') || formOpen()) return;
+      fire(choose(level(), true));
+    });
   }
   function gap() {
     var lvl = level();
-    return Math.round(lvl === 1 ? rnd(11, 16) : lvl === 2 ? rnd(8, 12) : rnd(5, 9));
+    return Math.round(lvl === 1 ? rnd(4, 6) : lvl === 2 ? rnd(3, 5) : rnd(2, 4));
   }
   function tick() {
     if (!workOn() || paused()) return;
@@ -1618,9 +1820,10 @@
     if (S.t % 5 === 0) saveS();
     if (meterEl || S.shown > 0) meter();
     levelCheck();
-    if (modal || formOpen() || shownHere >= CAP) return;
+    ambient();
+    if ((modal && modal.kind !== 'call') || formOpen() || shownHere >= CAP) return;
     if (S.t >= S.next) {
-      fire();
+      burst();
       S.next = S.t + gap();
       saveS();
     }
@@ -1630,6 +1833,7 @@
     setInterval(tick, 1000);
     badge();
     if (L.ignored || S.shown > 0) meter();
+    if (workOn() && level() >= 2 && S.shown > 0) { ensureTicker(); ensureBar(); }
     // a gauntlet left mid-way comes back where it was
     if (S.stage > 0 && hasReward && !L.overtime) setTimeout(function () { if (workOn() && !paused()) gauntlet(S.stage); }, 2500);
   }
@@ -1647,6 +1851,7 @@
     kinds: function () { return Object.keys(KINDS); },
     state: function () { return { S: S, L: L, live: live.length, modal: modal ? modal.kind : null, paused: paused(), form: formOpen(), share: !!shareEl }; },
     jump: function (t, next) { S.t = t; S.next = next == null ? t : next; saveS(); },
-    clear: function () { live.slice().forEach(rm); live = []; if (modal && modal.kind !== 'claim') closeModal(); shareStop(true); qsa('.os-ghost, .os-lean, .os-runner', host).forEach(rm); },
+    clear: function (all) { live.slice().forEach(rm); live = []; if (modal && modal.kind !== 'claim') closeModal(); shareStop(true); qsa('.os-ghost, .os-lean, .os-runner', host).forEach(rm); if (all) dropAmbient(); },
+    ambient: function (k) { if (AMB[k]) AMB[k](); else ambient(); },
   };
 })();

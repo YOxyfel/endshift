@@ -65,6 +65,35 @@ export default ({ cfg }) => {
       on: 'On shift',
       levelUp: { 2: 'They can see you’re online.', 3: 'This is where it gets absurd.' },
     },
+    // the screen fills from the edges in: the ticker, the taskbar, the stickers, the corner alerts
+    chaos: {
+      live: 'LIVE',
+      stickers: ['URGENT', 'ASAP', 'FYI', 'EOD?', 'PLS', '???', 'TODAY', 'FINAL', 'FINAL v7', 'RE:', 'FW:', '@you', 'NOT URGENT (urgent)', 'QUICK ONE', 'SEEN', 'UNREAD 48', '!!!', 'per my last', 'bump', '+1'],
+      alerts: [
+        { text: 'Connection unstable.', ok: 'Retry' },
+        { text: 'Low disk space: 412 MB left.', ok: 'Clean up' },
+        { text: 'Antivirus expired 412 days ago.', ok: 'Renew' },
+        { text: '14 tabs recovered.', ok: 'Restore' },
+        { text: 'Calendar: 9 conflicts today.', ok: 'Resolve' },
+        { text: 'Unread: 1,204.', ok: 'Mark read' },
+        { text: 'Clipboard is full.', ok: 'OK' },
+        { text: 'Your password expires in 2 days.', ok: 'Later' },
+        { text: 'Microphone in use by 3 apps.', ok: 'OK' },
+        { text: 'Sync paused: 3,118 items.', ok: 'Resume' },
+      ],
+      tabs: ['Quick sync', 'Re: Re: Re: cake', 'Survey (1 of 12)', 'Timesheet', 'Policy v7.3', 'Expense_FINAL_v7.xlsx', 'Untitled 14', 'Q3_plan_FINAL2.pptx', 'Recording.mp4', 'Recovered document', 'Chat (48)', 'Calendar', 'Mail (1,204)', 'Approvals', 'Room 4', 'Dana', 'Petar (phone)', 'Help desk #4471', 'Onboarding (day 1)', 'budget_v3_FINAL_use_this.xlsx'],
+      hydra: ['+1', 'same', 'bump', 'following', 'any update', 'sorry one more', '^^', 'ping', 'seen?', 'cc-ing you', 'quick one', 'pls', 'today?', 'also this'],
+      nag: '!!',
+      poster: {
+        to: 'To: you + {n} others',
+        typing: '{a}, {b} and {n} others are typing…',
+        earlier: 'earlier',
+        react: 'React',
+        reacts: ['👍', '❤️', '👀', '😬'],
+      },
+      invite: { who: 'Dana, Petar, Mira + {n}', agenda: 'Agenda: (none)', room: 'Room 4 · online', length: '15 min (45)' },
+      ring: { incoming: 'Incoming call', others: '{n} others already in', timer: 'ringing' },
+    },
 
     // email: read it, reply to it (it goes nowhere), get a reply anyway
     mail: {
