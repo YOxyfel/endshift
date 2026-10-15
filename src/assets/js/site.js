@@ -248,6 +248,57 @@
   });
   syncCalm();
 
+  /* Sound: the speaker in the header. Off until someone switches it on, then remembered on this
+     device (es:sound). On, the film plays its music and small sounds as you scroll (film-watch.js);
+     switched off on purpose, the work switch is quiet too. Never in low-stim mode.
+     Browsers only let a page make sound after a click, a tap or a key: until then, with sound
+     on from an earlier visit, the button waits (is-waiting) and the first one starts it. ---------- */
+  var SOUND_KEY = 'es:sound';
+  var soundBtns = qsa('[data-sound-toggle]');
+  var soundLocked = !(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  ES.sound = {
+    on: function () { return store.get(SOUND_KEY) === 'on' && root.getAttribute('data-calm') !== 'on'; },
+    muted: function () { return store.get(SOUND_KEY) === 'off' || root.getAttribute('data-calm') === 'on'; },
+    set: function (on) { setSound(on); },
+    locked: function () { return soundLocked; },
+    sync: function () { syncSound(); },
+  };
+  function syncSound() {
+    var on = ES.sound.on();
+    // (waiting only matters where there's something to hear: the film, for now)
+    var wait = on && soundLocked && root.classList.contains('has-film');
+    soundBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('is-waiting', wait);
+    });
+  }
+  function setSound(on) {
+    store.set(SOUND_KEY, on ? 'on' : 'off');
+    soundLocked = false;
+    syncSound();
+    toast(on ? (root.classList.contains('has-film') && S.sound.onFilm ? S.sound.onFilm : S.sound.on) : S.sound.off);
+    track('sound_toggle', { state: on ? 'on' : 'off' });
+    // (inside the click: the one moment a browser lets a page start its sound)
+    window.dispatchEvent(new CustomEvent('es:sound', { detail: { on: on } }));
+    if (on && ES.shift && ES.shift.sfx && ES.shift.sfx.chime) ES.shift.sfx.chime();
+  }
+  soundBtns.forEach(function (b) {
+    b.addEventListener('click', function () { setSound(!ES.sound.on()); });
+  });
+  // the first click, tap or key on the page lets it make sound (es:sound-unlock, inside that event)
+  ['mousedown', 'pointerup', 'touchend', 'keydown'].forEach(function (ev) {
+    window.addEventListener(ev, function (e) {
+      if (!soundLocked) return;
+      if (e.type === 'keydown' && (e.key === 'Escape' || e.metaKey || e.ctrlKey || e.altKey)) return;
+      if (navigator.userActivation && !navigator.userActivation.isActive) return;
+      soundLocked = false;
+      syncSound();
+      window.dispatchEvent(new CustomEvent('es:sound-unlock'));
+    }, true);
+  });
+  window.addEventListener('es:calm', syncSound);
+  syncSound();
+
   /* Header, scroll warmth, depth ---------------------------------------------- */
   var header = qs('[data-header]');
   var ticking = false;

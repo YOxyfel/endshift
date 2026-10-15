@@ -95,7 +95,8 @@
   /* Sound: a rocker's two-stage click, and the office tube's hum dying (or striking) ------- */
   var ac = null, out = null, noise = null;
   function audio() {
-    if (calm()) return null;
+    // (quiet in low-stim mode, and when sound was switched off in the header)
+    if (calm() || (ES.sound && ES.sound.muted())) return null;
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
@@ -325,6 +326,19 @@
       var t = a.currentTime + 0.01;
       tone(a, t, 'sawtooth', 120, 118, 0.025, 0.01, 0.16);
       tone(a, t + 0.22, 'sawtooth', 120, 118, 0.025, 0.01, 0.16);
+    },
+    // sound switched on in the header: two soft notes, low then high (D, A)
+    chime: function () {
+      var a = audio();
+      if (!a) return;
+      var go = function () {
+        var t = a.currentTime + 0.02;
+        tone(a, t, 'sine', 293.66, 293.66, 0.07, 0.01, 1.1);
+        tone(a, t + 0.13, 'sine', 440, 440, 0.06, 0.01, 1.4);
+        tone(a, t + 0.13, 'sine', 880, 880, 0.012, 0.01, 0.9);
+      };
+      if (a.state === 'running') go();
+      else if (a.resume) a.resume().then(go, function () {});
     },
   };
 

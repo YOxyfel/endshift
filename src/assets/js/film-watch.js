@@ -464,13 +464,13 @@
     L.padF.frequency.setTargetAtTime(lv.padF, t, 0.8);
     L.dream.gain.setTargetAtTime(lv.dream, t, 0.8);
     // (these two only while the picture moves: held on a line, the water and the breath wait too)
-    var mv = st.playing ? clamp(st.v / (0.1 * TS), 0, 1) : 0;
+    var mv = st.playing ? clamp(st.v / (0.1 * TS), 0, 1) : sc.audible ? clamp(sc.v / 0.1, 0, 1) : 0;
     L.pour.gain.setTargetAtTime(lv.pour * mv, t, 0.04);
     L.pour.f.setTargetAtTime(lv.pourF, t, 0.08);
     L.breath.gain.setTargetAtTime(lv.breath * mv, t, 0.09);
     L.breath.f.setTargetAtTime(lv.breathF, t, 0.12);
     sfxBus.gain.setTargetAtTime(speaking ? SFX_LV * 0.8 : SFX_LV, t, 0.25);
-    var on = st.on && (st.playing || st.waiting) && pref.sound;
+    var on = (st.on && (st.playing || st.waiting) && pref.sound) || sc.audible;
     master.gain.setTargetAtTime(on ? 1 : 0, t, on ? 0.35 : 0.12);
     // the music steps back while a line is said
     bedBus.gain.setTargetAtTime(speaking ? 0.55 : 1, t, 0.3);
@@ -801,8 +801,9 @@
       { a: G('s3', 0.33), b: G('s3', 0.415), sfx: 'bubble', per: 170, acc: 0 },
     ];
   }
-  function events(a, b) {
-    if (!ac || !pref.sound || b <= a || b - a > 0.25) return;
+  function events(a, b, max) {
+    if (!ac || b <= a || b - a > (max || 0.25)) return;
+    if (st.on && !pref.sound) return;
     var t = ac.currentTime + 0.04;
     EV.forEach(function (e) { if (e[0] > a && e[0] <= b) SFX[e[1]](t, e[2]); });
     GR.forEach(function (g) {
@@ -995,6 +996,7 @@
 
   function start(from, trigger) {
     if (!F.live()) return false;
+    sc.audible = false;
     // inside the tap: wake the sound and the voice now (browsers only allow it here)
     audio();
     session(true);
@@ -1055,6 +1057,8 @@
     if (st.raf) cancelAnimationFrame(st.raf);
     st.raf = 0;
     if (ac && master) master.gain.setTargetAtTime(0, ac.currentTime, 0.15);
+    sc.T = null;
+    setTimeout(scrollKick, 400);
     root.classList.remove('is-watching', 'watch-idle');
     setTimeout(nudgeUi, 0);
     clearTimeout(idleT);
@@ -1065,6 +1069,71 @@
       if (back) { try { back.focus({ preventScroll: true }); } catch (e) {} }
     }
   }
+
+  /* ------------------------------------------------------------------ sound while scrolling
+     With the site's sound on (the speaker in the header: ES.sound in site.js), the film plays the
+     same music and small sounds as you scroll it yourself, without the voice. The music follows
+     where you are; the small sounds play as you pass them going forward (not going back); the
+     water and the breaths only while the picture moves. It steps aside while Watch with sound is
+     on. Until the first click, tap or key the browser won't let it start: the speaker waits. */
+  var sc = { audible: false, raf: 0, T: null, v: 0, lastNow: 0, moved: 0, here: false };
+  function scrollWanted() { return !!(ES.sound && ES.sound.on()) && F.live() && !st.on && !document.hidden; }
+  function inFilm() { var t = F.t(scrollNow()); return t > -0.35 && t < F.TOTAL + 0.35; }
+  function scrollKick() {
+    if (sc.raf || !scrollWanted()) return;
+    sc.raf = requestAnimationFrame(scrollFrame);
+  }
+  function scrollFrame(now) {
+    sc.raf = 0;
+    if (!scrollWanted()) { scrollQuiet(); return; }
+    if (!ac || ac.state !== 'running') { sc.T = null; return; }
+    if (!EV) buildEvents();
+    var here = inFilm();
+    var T = F.at();
+    var dt = sc.lastNow ? Math.min(0.1, (now - sc.lastNow) / 1000) : 0;
+    sc.lastNow = now;
+    if (sc.T !== null && dt > 0) {
+      var d = T - sc.T;
+      sc.v += (Math.max(0, d) / dt - sc.v) * Math.min(1, dt * 8);
+      if (here && d > 0) events(sc.T, T, 0.6);
+      if (Math.abs(d) > 1e-4) sc.moved = now;
+    }
+    sc.T = T;
+    var changed = here !== sc.here;
+    sc.here = sc.audible = here;
+    soundTo(T, false, changed);
+    // on while in the film, and a moment longer after the picture stops or you leave it (the fade)
+    if (here || now - sc.moved < 1500) sc.raf = requestAnimationFrame(scrollFrame);
+    else sc.lastNow = 0;
+  }
+  function scrollQuiet() {
+    if (sc.raf) cancelAnimationFrame(sc.raf);
+    sc.raf = 0;
+    sc.audible = sc.here = false;
+    sc.T = null;
+    sc.lastNow = 0;
+    sc.v = 0;
+    if (ac && master && !st.on) master.gain.setTargetAtTime(0, ac.currentTime, 0.25);
+  }
+  // inside the click on the speaker, or the page's first click, tap or key: start the sound
+  function scrollWake() {
+    if (!scrollWanted()) return;
+    var a = audio();
+    if (!a) return;
+    a.onstatechange = function () { if (a.state === 'running') scrollKick(); };
+    scrollKick();
+  }
+  window.addEventListener('es:sound', function (e) {
+    if (e.detail && e.detail.on) scrollWake();
+    else scrollQuiet();
+  });
+  window.addEventListener('es:sound-unlock', scrollWake);
+  window.addEventListener('scroll', scrollKick, { passive: true });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) scrollQuiet(); else scrollKick(); });
+  window.addEventListener('es:calm', function () { if (!scrollWanted()) scrollQuiet(); });
+  // (the film decides a moment after load whether it runs; then the speaker knows whether to wait)
+  setTimeout(function () { if (ES.sound && ES.sound.sync) ES.sound.sync(); if (ES.sound && !ES.sound.locked()) scrollWake(); }, 0);
+  window.addEventListener('load', function () { if (ES.sound && ES.sound.sync) ES.sound.sync(); });
 
   /* ------------------------------------------------------------------ "much better with narration"
      A hand-drawn note points at the play buttons while the narration is new: on the first six
@@ -1332,6 +1401,6 @@
     // (for testing: a faster film)
     speed: function (x) { TS = x || 1; V = 0.3 * TS; },
     // (for testing: the sounds, their moments, and where they go)
-    sounds: function () { if (!cues) { cues = buildCues(); buildEvents(); } return { sfx: SFX, ev: EV, ac: audio(), bus: sfxBus }; },
+    sounds: function () { if (!cues) { cues = buildCues(); buildEvents(); } return { sfx: SFX, ev: EV, ac: audio(), bus: sfxBus, master: master, scroll: sc }; },
   };
 })();

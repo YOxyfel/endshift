@@ -69,6 +69,7 @@ Path B  page view /reset/ ─► cta_click (batch_*) ─► signup_success (list
 | `story_engage` | Story video, social or timeline media link opened | `id` | **Founder story engagement**, together with page views and scroll depth on `/story/` |
 | `scroll_depth` | 25 / 50 / 75 / 100 % reached, once each per page view | `percent`, `page` | **Scroll depth** |
 | `low_stim_toggle` | Low-stim mode switched | `state` | How many people use it |
+| `sound_toggle` | The speaker in the header switched (sound for the whole site, off by default) | `state` (`on` / `off`) | How many people want the film's sound while they scroll |
 | `language_switch` | Language link used | `id` | |
 | `share` | Share button used on the ritual end screen | `method` (`native` / `copy`) | |
 | `contact_submit` | Contact form sent | `topic`, `preview` | |

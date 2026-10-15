@@ -27,6 +27,14 @@ export default ({ cfg }) => ({
     on: 'Low-stimulation mode on',
     off: 'Low-stimulation mode off',
   },
+  // The speaker in the header: sound for the whole site, off until you switch it on.
+  sound: {
+    label: 'Sound',
+    hint: 'Sound: the film’s music and small sounds as you scroll',
+    on: 'Sound on',
+    onFilm: 'Sound on. Scroll on to hear the evening.',
+    off: 'Sound off',
+  },
 
   // The work-mode switch: on the home page, in the header of every page, and at the end of the opening.
   shift: {

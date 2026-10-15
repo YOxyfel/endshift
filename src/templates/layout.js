@@ -38,6 +38,7 @@ export function header(ctx) {
       <nav class="site-nav" aria-label="${esc(ui.nav.label)}"><ul>${NAV_MAIN.filter((id) => id !== 'ritual' || ctx.page.id === 'ritual' || ctx.page.id === 'ritual-card').map((id) => `<li>${navLink(ctx, id)}</li>`)}</ul></nav>
       <div class="header-tools">
         <span class="hdr-switch">${wallSwitch(ctx, { source: 'header', cls: 'wallswitch--mini' })}<span class="hdr-switch__label" aria-hidden="true" data-shift-label>${shiftLabel(ui.shift.labelOn, ui.shift.labelOff)}</span></span>
+        ${ctx.page.id !== 'ritual' ? `<button class="sound-toggle" type="button" data-sound-toggle aria-pressed="false" aria-label="${esc(ui.sound.label)}" title="${esc(ui.sound.hint)}"><span class="sound-toggle__off">${icon('mute')}</span><span class="sound-toggle__on">${icon('sound')}</span></button>` : ''}
         ${langLinks(ctx)}
         ${ctx.page.id !== 'ritual' ? btn({ href: ctx.url('ritual'), label: shiftLabel(ui.cta.ritualShort, ui.cta.ritualShortOff), size: 'sm', trackId: 'header', cls: 'header-cta' }) : ''}
         <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" data-menu-toggle><span class="visually-hidden" data-menu-label>${ui.menu.open}</span>${icon('menu')}</button>
@@ -194,7 +195,7 @@ function clientConfig(ctx, page) {
     analytics: cfg.analytics,
     countEndpoint: cfg.batch.countEndpoint,
     urls: { ritual: ctx.url('ritual'), cookies: ctx.url('cookies'), batch: ctx.url('batch') },
-    strings: { signup: ui.signup, toast: ui.toast, calm: ui.calm, menu: ui.menu, shift: ui.shift, meter: { live: ui.meter.live }, joined: ui.joined },
+    strings: { signup: ui.signup, toast: ui.toast, calm: ui.calm, sound: ui.sound, menu: ui.menu, shift: ui.shift, meter: { live: ui.meter.live }, joined: ui.joined },
     batch: { goal: cfg.batch.founderGoal },
     // the domain printed on the founder card (left off while it's still the placeholder)
     site: /\.example$/.test(String(cfg.siteUrl || '').replace(/\/$/, '')) ? '' : String(cfg.siteUrl || '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
