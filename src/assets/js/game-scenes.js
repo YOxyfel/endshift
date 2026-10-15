@@ -30,6 +30,13 @@
     VIS.forEach(function (k) { if (s[k] !== undefined) o[k] = s[k]; });
     return o;
   }
+  // a rotation that turns a cylinder's axis (y) to point along d
+  function upTo(d) {
+    var l = Math.hypot(d[0], d[1], d[2]) || 1, x = d[0] / l, y = d[1] / l, z = d[2] / l;
+    var s = Math.hypot(z, x);
+    if (s < 1e-5) return y > 0 ? M.rotY(0) : M.rotX(Math.PI);
+    return M.axis([z / s, 0, -x / s], Math.acos(clamp(y, -1, 1)));
+  }
   function rot(a, s) {
     var R = M.rotY(((a || 0) + (s.ry || 0)) * DEG);
     if (s.rx) R = M.mul3(R, M.rotX(s.rx * DEG));
@@ -1410,10 +1417,23 @@
     B.add({ geo: 'cyl', pos: [-127, 52 + 4.5, 156], s: [6, 8.6, 6], color: '#9fc8e8', alpha: 0.5, blend: 'alpha', border: 0, hatch: 0 });
     B.add({ geo: 'box', pos: [-112, 52.6, 156], R: M.rotY(72 * DEG), s: [8, 1, 16], color: '#1b1d22', border: 0.18, name: 'phonedown' });
     jar(B, -96, 52, 154, api, 142);
-    // a desk lamp, on in the evening
+    // a desk lamp, on in the evening: a stem up from its base, an arm out over the desk, and the
+    // shade hanging from the arm's end, its opening down towards the desk (narrow end up: a cylinder's
+    // taper narrows its top). Each part starts where the last one ends.
     B.cyl({ wall: 'e', u: -132, v: 74, o: 10, r: 6, h: 2, c: '#24262a' });
-    B.cyl({ wall: 'e', u: -132, v: 76, o: 14, r: 0.9, h: 30, c: '#24262a', rx: -16 });
-    var dl = B.cyl({ wall: 'e', u: -132, v: 98, o: 22, r: 7, h: 9, c: '#d9583a', taper: 0.5, rx: 160 });
+    var lf = B.frame('e');
+    var lp = function (o, y) { var q = lf.at(-132, o); return [q[0], y, q[1]]; };
+    var toWall = (function () { var a = lf.at(0, 0), b = lf.at(0, 1); return [a[0] - b[0], 0, a[1] - b[1]]; })();
+    var rod = function (a, b, r) {
+      var d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+      return B.add({ geo: 'cyl', pos: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], R: upTo(d), s: [r * 2, Math.hypot(d[0], d[1], d[2]), r * 2], color: '#24262a', border: 0.3 });
+    };
+    var base = lp(16, 76), elbow = lp(18, 110), tip = lp(30, 113);
+    rod(base, elbow, 0.9);
+    rod(elbow, tip, 0.8);
+    // (the shade's axis leans 20 degrees back towards the wall, so its opening faces the desk)
+    var sa = [toWall[0] * Math.sin(20 * DEG), Math.cos(20 * DEG), toWall[2] * Math.sin(20 * DEG)];
+    var dl = B.add({ geo: 'cyl', pos: [tip[0] - sa[0] * 4.5, tip[1] - sa[1] * 4.5, tip[2] - sa[2] * 4.5], R: upTo(sa), s: [14, 9, 14], color: '#d9583a', taper: 0.5, border: 0.3 });
     dl.warmEmit = 0.6;
     var dlp = B.frame('e').at(-128, 30);
     B.light({ p: [dlp[0], 96, dlp[1]], c: '#ffb46a', i: 1.1, r: 230, k: 'warm' });

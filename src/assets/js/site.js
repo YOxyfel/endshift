@@ -259,7 +259,8 @@
   ES.sound = {
     on: function () { return store.get(SOUND_KEY) === 'on' && root.getAttribute('data-calm') !== 'on'; },
     muted: function () { return store.get(SOUND_KEY) === 'off' || root.getAttribute('data-calm') === 'on'; },
-    set: function (on) { setSound(on); },
+    // (quiet: no chime or note, for Watch with sound switching it on as it starts)
+    set: function (on, opts) { setSound(on, opts); },
     locked: function () { return soundLocked; },
     sync: function () { syncSound(); },
   };
@@ -272,15 +273,16 @@
       b.classList.toggle('is-waiting', wait);
     });
   }
-  function setSound(on) {
+  function setSound(on, opts) {
+    var quiet = !!(opts && opts.quiet);
     store.set(SOUND_KEY, on ? 'on' : 'off');
     soundLocked = false;
     syncSound();
-    toast(on ? (root.classList.contains('has-film') && S.sound.onFilm ? S.sound.onFilm : S.sound.on) : S.sound.off);
-    track('sound_toggle', { state: on ? 'on' : 'off' });
+    if (!quiet) toast(on ? (root.classList.contains('has-film') && S.sound.onFilm ? S.sound.onFilm : S.sound.on) : S.sound.off);
+    track('sound_toggle', { state: on ? 'on' : 'off', via: quiet ? 'watch' : 'speaker' });
     // (inside the click: the one moment a browser lets a page start its sound)
     window.dispatchEvent(new CustomEvent('es:sound', { detail: { on: on } }));
-    if (on && ES.shift && ES.shift.sfx && ES.shift.sfx.chime) ES.shift.sfx.chime();
+    if (on && !quiet && ES.shift && ES.shift.sfx && ES.shift.sfx.chime) ES.shift.sfx.chime();
   }
   soundBtns.forEach(function (b) {
     b.addEventListener('click', function () { setSound(!ES.sound.on()); });

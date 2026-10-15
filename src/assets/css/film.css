@@ -1789,14 +1789,12 @@
   color: rgba(243, 240, 232, 0.55);
 }
 
-/* the voice and the music: on, or struck through */
-.watch__voice,
-.watch__sound {
+/* the voice: on, or struck through (sound itself is the header's speaker) */
+.watch__voice {
   position: relative;
 }
 
-.watch__voice[aria-pressed='false'],
-.watch__sound[aria-pressed='false'] {
+.watch__voice[aria-pressed='false'] {
   color: rgba(243, 240, 232, 0.5);
 }
 
@@ -1816,15 +1814,6 @@
 .watch__voice.is-na {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.watch__sound .watch__i-off,
-.watch__sound[aria-pressed='false'] .watch__i-on {
-  display: none;
-}
-
-.watch__sound[aria-pressed='false'] .watch__i-off {
-  display: block;
 }
 
 @media (max-width: 479px) {

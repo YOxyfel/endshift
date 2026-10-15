@@ -297,7 +297,6 @@ export default ({ cfg, state, fmt, t, formula }) => {
           position: 'Where you are in the film',
           of: 'of',
           voice: 'Voice',
-          sound: 'Music and sound',
           close: 'Stop watching',
           deviceVoice: 'Voice: read by your device',
           noVoice: 'No English voice on this device. The words stay on screen.',
