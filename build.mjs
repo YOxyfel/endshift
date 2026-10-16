@@ -32,6 +32,9 @@ const OUT = path.join(ROOT, ARTIFACT ? 'dist-artifact' : PREVIEW ? 'dist-preview
 const load = async (p) => (await import(pathToFileURL(path.join(SRC, p)).href)).default;
 
 const cfg = await load('config/site.config.js');
+// SITE_URL=https://example.org/path node build.mjs … → canonical links, the sitemap and robots.txt
+// point there (a GitHub Pages or other host without touching site.config.js)
+if (process.env.SITE_URL) cfg.siteUrl = process.env.SITE_URL.replace(/\/+$/, '');
 const formula = await load('config/formula.js');
 const timeline = await load('config/timeline.js');
 const music = await load('config/music.js');
